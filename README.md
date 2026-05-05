@@ -73,9 +73,11 @@ All modules include interactive charts and graphs powered by Chart.js:
 
 ## 🌍 Language Support
 
-- Primary language: Arabic (العربية)
-- RTL text direction support
-- Localized interface elements
+- **Bilingual Interface**: Arabic (العربية) and English
+- Dynamic language switching with toggle button (EN/عر)
+- RTL/LTR text direction support
+- Fully localized interface elements and data labels
+- Default language: Arabic
 
 ## 👨‍💻 Developer
 

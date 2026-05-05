@@ -379,10 +379,10 @@ body::before{
   <button class="main-tab t-bio" onclick="setTab('bio')" id="tab-bio" data-ar="المفترسات والطفيليات" data-en="Predators & Parasitoids">
     <span class="tab-dot"></span>المفترسات والطفيليات
   </button>
-  <button class="main-tab t-chem" onclick="setTab('chem')" id="tab-chem">
+  <button class="main-tab t-chem" onclick="setTab('chem')" id="tab-chem" data-ar="المبيدات المُطبَّقة" data-en="Applied Chemicals">
     <span class="tab-dot"></span>المبيدات المُطبَّقة
   </button>
-  <button class="main-tab t-chart" onclick="setTab('charts')" id="tab-charts">
+  <button class="main-tab t-chart" onclick="setTab('charts')" id="tab-charts" data-ar="التحليل والشارتات" data-en="Analysis & Charts">
     <span class="tab-dot"></span>التحليل والشارتات
   </button>
 </div>
@@ -514,18 +514,18 @@ const CHEM_DB = [
 //  ROOMS & FARMS
 // ═══════════════════════════════════════════
 const FARMS = [
-  {id:"F-01",name:"مزرعة الواحة",color:"#1a6fff"},
-  {id:"F-02",name:"مزرعة الشمس",color:"#f59e0b"},
-  {id:"F-03",name:"مزرعة النيل",color:"#00d4aa"},
+  {id:"F-01",name:"مزرعة الواحة",nameEn:"Al-Waha Farm",color:"#1a6fff"},
+  {id:"F-02",name:"مزرعة الشمس",nameEn:"Al-Shams Farm",color:"#f59e0b"},
+  {id:"F-03",name:"مزرعة النيل",nameEn:"Al-Nile Farm",color:"#00d4aa"},
 ];
 const ROOMS = [
-  {id:"BB-01",farmId:"F-01",variety:"بيانكا",area:600},
-  {id:"BB-02",farmId:"F-01",variety:"اوني",area:420},
-  {id:"BB-03",farmId:"F-01",variety:"مِسي",area:500},
-  {id:"BB-04",farmId:"F-02",variety:"بيانكا",area:580},
-  {id:"BB-05",farmId:"F-02",variety:"دوك",area:380},
-  {id:"BB-06",farmId:"F-03",variety:"بلوكروب",area:750},
-  {id:"BB-07",farmId:"F-03",variety:"مِسي",area:320},
+  {id:"BB-01",farmId:"F-01",variety:"بيانكا",varietyEn:"Bianca",area:600},
+  {id:"BB-02",farmId:"F-01",variety:"اوني",varietyEn:"O'Neal",area:420},
+  {id:"BB-03",farmId:"F-01",variety:"مِسي",varietyEn:"Misty",area:500},
+  {id:"BB-04",farmId:"F-02",variety:"بيانكا",varietyEn:"Bianca",area:580},
+  {id:"BB-05",farmId:"F-02",variety:"دوك",varietyEn:"Duke",area:380},
+  {id:"BB-06",farmId:"F-03",variety:"بلوكروب",varietyEn:"Bluecrop",area:750},
+  {id:"BB-07",farmId:"F-03",variety:"مِسي",varietyEn:"Misty",area:320},
 ];
 
 // ═══════════════════════════════════════════
@@ -620,11 +620,11 @@ let chartInstances = {};
 // ═══════════════════════════════════════════
 function initSelects(){
   // farm
-  const sf=$('sel-farm'); sf.innerHTML='<option value="all">كل المزارع</option>';
-  FARMS.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.name;sf.appendChild(o);});
+  const sf=$('sel-farm'); sf.innerHTML=`<option value="all" data-ar="كل المزارع" data-en="All Farms">${currentLang === 'ar' ? 'كل المزارع' : 'All Farms'}</option>`;
+  FARMS.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=currentLang === 'ar' ? f.name : f.nameEn;sf.appendChild(o);});
   // room
-  const sr=$('sel-room'); sr.innerHTML='<option value="all">كل الغرف</option>';
-  ROOMS.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.id} — ${r.variety}`;sr.appendChild(o);});
+  const sr=$('sel-room'); sr.innerHTML=`<option value="all" data-ar="كل الغرف" data-en="All Rooms">${currentLang === 'ar' ? 'كل الغرف' : 'All Rooms'}</option>`;
+  ROOMS.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.id} — ${currentLang === 'ar' ? r.variety : r.varietyEn}`;sr.appendChild(o);});
   // pest filter
   const sp=$('sel-pest');
   PEST_DB.filter(p=>p.type==="pest").forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.icon} ${p.name}`;sp.appendChild(o);});
@@ -633,7 +633,7 @@ function initSelects(){
   PEST_DB.filter(p=>p.type==="disease").forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.icon} ${p.name}`;sd.appendChild(o);});
   // bio filter
   const sb=$('sel-bio');
-  BIO_DB.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.icon} ${b.arabic}`;sb.appendChild(o);});
+  BIO_DB.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.icon} ${currentLang === 'ar' ? b.arabic : b.name}`;sb.appendChild(o);});
 }
 
 function applyFilters(){
@@ -693,7 +693,11 @@ function sevLevel(count, threshold){
   if(ratio<1.5) return "over";
   return "critical";
 }
-const SEV_LABELS = {clear:"غير موجود",trace:"أثر",low:"منخفض",near:"قريب من العتبة",over:"تجاوز العتبة",critical:"⚠ حرج"};
+const SEV_LABELS_AR = {clear:"غير موجود",trace:"أثر",low:"منخفض",near:"قريب من العتبة",over:"تجاوز العتبة",critical:"⚠ حرج"};
+const SEV_LABELS_EN = {clear:"Not present",trace:"Trace",low:"Low",near:"Near threshold",over:"Above threshold",critical:"⚠ Critical"};
+function getSevLabel(level) {
+  return (currentLang === 'ar' ? SEV_LABELS_AR : SEV_LABELS_EN)[level];
+}
 const SEV_COLORS = {clear:"var(--fog3)",trace:"var(--ok)",low:"var(--ok)",near:"var(--warn)",over:"var(--pest)",critical:"var(--alert)"};
 const SEV_BG    = {clear:"var(--bg4)",trace:"rgba(34,197,94,.08)",low:"rgba(34,197,94,.08)",near:"rgba(245,158,11,.08)",over:"rgba(255,107,53,.1)",critical:"rgba(244,63,94,.12)"};
 const SEV_BORDER= {clear:"var(--line)",trace:"rgba(34,197,94,.2)",low:"rgba(34,197,94,.2)",near:"rgba(245,158,11,.25)",over:"rgba(255,107,53,.3)",critical:"rgba(244,63,94,.35)"};
@@ -745,7 +749,7 @@ function renderThreats(){
     pests = PEST_DB.filter(p=>selType==="all"||(selType==="pest"&&p.type==="pest")||(selType==="disease"&&p.type==="disease"));
   }
 
-  if(!rooms.length){$('view-threats').innerHTML='<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">لا توجد غرف</div>';return;}
+  if(!rooms.length){$('view-threats').innerHTML=`<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">${currentLang === 'ar' ? 'لا توجد غرف' : 'No rooms'}</div>`;return;}
 
   // If single pest selected → cross-room view
   if(selPest!=="all"||selDisease!=="all"){
@@ -787,10 +791,10 @@ function renderCrossRoomView(rooms, pest){
         <div style="width:6px;height:36px;border-radius:3px;background:${farm.color};flex-shrink:0"></div>
         <div>
           <div style="font-family:var(--display);font-weight:800;font-size:14px">${room.id}</div>
-          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${room.variety} · ${farm.name}</div>
+          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${currentLang === 'ar' ? room.variety : room.varietyEn} · ${currentLang === 'ar' ? farm.name : farm.nameEn}</div>
         </div>
         <div style="margin-right:auto;display:flex;gap:6px;align-items:center">
-          <div class="sev-badge" style="background:${sevBg};border-color:${sevBorder};color:${sevColor}">${SEV_LABELS[sev]}</div>
+          <div class="sev-badge" style="background:${sevBg};border-color:${sevBorder};color:${sevColor}">${getSevLabel(sev)}</div>
         </div>
         <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:${sevColor}">${last.count} ${pest.unit}</div>
       </div>
@@ -799,12 +803,12 @@ function renderCrossRoomView(rooms, pest){
           <div class="count-bar-track" style="height:6px">
             <div class="count-bar-fill" style="width:${barW}%;background:${sevColor}"></div>
           </div>
-          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono);white-space:nowrap">عتبة: ${pest.thresholdNum}</span>
+          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono);white-space:nowrap">${currentLang === 'ar' ? 'عتبة:' : 'Threshold:'} ${pest.thresholdNum}</span>
         </div>
         ${last.notes?`<div style="font-size:11px;color:var(--warn);background:rgba(245,158,11,.07);border-radius:5px;padding:5px 8px;margin-bottom:7px">📌 ${last.notes}</div>`:''}
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono)">آخر فحص: ${last.date}</span>
-          <button class="history-btn" onclick="openHistory('${room.id}','pest','${pest.id}','${pest.name} — ${room.id}')">📈 السجل</button>
+          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono)">${currentLang === 'ar' ? 'آخر فحص:' : 'Last survey:'} ${last.date}</span>
+          <button class="history-btn" onclick="openHistory('${room.id}','pest','${pest.id}','${pest.name} — ${room.id}')">📈 ${currentLang === 'ar' ? 'السجل' : 'History'}</button>
           ${defenders.length?`<div style="display:flex;gap:4px;flex-wrap:wrap">
             ${defenders.map(b=>{
               const st=bioStatus(room.id,b.id);
@@ -828,7 +832,7 @@ function renderCrossRoomView(rooms, pest){
         <div style="font-family:var(--display);font-weight:800;font-size:16px;color:${themeColor}">${pest.name}</div>
         <div style="font-size:10px;color:var(--fog3);font-family:var(--mono);font-style:italic">${pest.latin}</div>
       </div>
-      <div style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--fog2)">العتبة: <span style="color:var(--alert)">${pest.threshold}</span></div>
+      <div style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--fog2)">${currentLang === 'ar' ? 'العتبة:' : 'Threshold:'} <span style="color:var(--alert)">${pest.threshold}</span></div>
       <div style="font-size:11px;color:var(--fog)">${rooms.length} غرفة</div>
     </div>
     <div class="rooms-grid">${cards}</div>`;
@@ -865,25 +869,25 @@ function renderRoomThreats(room, pests){
       <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
       <div>
         <div class="rc-id">${room.id}</div>
-        <div class="rc-variety">${room.variety} · ${room.area} م²</div>
+        <div class="rc-variety">${currentLang === 'ar' ? room.variety : room.varietyEn} · ${room.area} ${currentLang === 'ar' ? 'م²' : 'm²'}</div>
       </div>
       <div class="rc-badges">
-        ${isAlert?`<span class="badge b-alert">⚠ ${alertCount} تنبيه</span>`:'<span class="badge b-ok">✓ سليم</span>'}
-        <span class="badge" style="background:rgba(255,255,255,.05);border-color:var(--line2);color:var(--fog3)">${farm.name}</span>
+        ${isAlert?`<span class="badge b-alert">⚠ ${alertCount} ${currentLang === 'ar' ? 'تنبيه' : 'alert'}</span>`:`<span class="badge b-ok">✓ ${currentLang === 'ar' ? 'سليم' : 'OK'}</span>`}
+        <span class="badge" style="background:rgba(255,255,255,.05);border-color:var(--line2);color:var(--fog3)">${currentLang === 'ar' ? farm.name : farm.nameEn}</span>
       </div>
       <div class="rc-expand">▶</div>
     </div>
     <div class="rc-scout-bar">
-      <span>آخر فحص:</span><span class="scout-date">${rd.lastScout}</span>
-      <span style="margin-right:auto">الفحص القادم:</span><span style="color:var(--warn)">${rd.nextScout}</span>
+      <span data-ar="آخر فحص:" data-en="Last survey:">${currentLang === 'ar' ? 'آخر فحص:' : 'Last survey:'}</span><span class="scout-date">${rd.lastScout}</span>
+      <span style="margin-right:auto" data-ar="الفحص القادم:" data-en="Next survey:">${currentLang === 'ar' ? 'الفحص القادم:' : 'Next survey:'}</span><span style="color:var(--warn)">${rd.nextScout}</span>
     </div>
     <div class="rc-body">
       ${pests.filter(p=>p.type==="pest").length?`
-        <div class="section-hdr">🦗 الحشرات والآفات</div>
+        <div class="section-hdr">🦗 ${currentLang === 'ar' ? 'الحشرات والآفات' : 'Insects & Pests'}</div>
         ${pests.filter(p=>p.type==="pest").map(p=>renderPestItem(room,p,"pest")).join('')}
       `:''}
       ${pests.filter(p=>p.type==="disease").length?`
-        <div class="section-hdr" style="margin-top:6px">🍄 الأمراض</div>
+        <div class="section-hdr" style="margin-top:6px">🍄 ${currentLang === 'ar' ? 'الأمراض' : 'Diseases'}</div>
         ${pests.filter(p=>p.type==="disease").map(p=>renderPestItem(room,p,"disease")).join('')}
       `:''}
       ${bioSection}
@@ -896,7 +900,7 @@ function renderRoomBioStrip(room){
   const pills = BIO_DB.map(b=>{
     const st = bioStatus(room.id, b.id);
     const pill_cls = !st?'empty':st.ok?'ok':'low';
-    const label = !st?'غير مُطلق':`${st.perM2} ${b.unit}`;
+    const label = !st?(currentLang === 'ar' ? 'غير مُطلق' : 'Not released'):`${st.perM2} ${b.unit}`;
     const targetPest = PEST_DB.find(p=>p.id===b.target);
     return `<span class="bio-strip-pill ${pill_cls}"
       onclick="openHistory('${room.id}','bio','${b.id}','${b.arabic} — ${room.id}')"
@@ -914,13 +918,13 @@ function renderRoomBioStrip(room){
   return `
   <div class="rc-bio-section">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
-      <div class="section-hdr" style="border:none;margin:0;padding:0">🌿 المفترسات والطفيليات</div>
-      <span class="badge b-bio" style="font-size:9px">✓ ${activeCount} نشط</span>
-      ${lowCount?`<span class="badge b-warn" style="font-size:9px">⚠ ${lowCount} ضعيف</span>`:''}
-      ${noneCount?`<span class="badge" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2);color:var(--alert);font-size:9px">○ ${noneCount} غير مُطلق</span>`:''}
+      <div class="section-hdr" style="border:none;margin:0;padding:0">🌿 ${currentLang === 'ar' ? 'المفترسات والطفيليات' : 'Predators & Parasites'}</div>
+      <span class="badge b-bio" style="font-size:9px">✓ ${activeCount} ${currentLang === 'ar' ? 'نشط' : 'active'}</span>
+      ${lowCount?`<span class="badge b-warn" style="font-size:9px">⚠ ${lowCount} ${currentLang === 'ar' ? 'ضعيف' : 'weak'}</span>`:''}
+      ${noneCount?`<span class="badge" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2);color:var(--alert);font-size:9px">○ ${noneCount} ${currentLang === 'ar' ? 'غير مُطلق' : 'not released'}</span>`:''}
     </div>
     <div class="rc-bio-strip">${pills}</div>
-    <div style="font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:5px">اضغط على أي عامل لعرض سجله التاريخي</div>
+    <div style="font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:5px">${currentLang === 'ar' ? 'اضغط على أي عامل لعرض سجله التاريخي' : 'Click any agent to view its history'}</div>
   </div>`;
 }
 
@@ -953,7 +957,7 @@ function renderPestItem(room, pest, type){
         </div>
       </div>
       <div class="pest-meta">
-        <div class="sev-badge" style="background:${SEV_BG[sev]};border-color:${SEV_BORDER[sev]};color:${sevColor}">${SEV_LABELS[sev]}</div>
+        <div class="sev-badge" style="background:${SEV_BG[sev]};border-color:${SEV_BORDER[sev]};color:${sevColor}">${getSevLabel(sev)}</div>
         ${last.notes?'<span style="font-size:9px;color:var(--warn)">📌</span>':''}
       </div>
       <div class="pest-expand">▶</div>
@@ -961,25 +965,25 @@ function renderPestItem(room, pest, type){
     <div class="pest-detail">
       <div class="detail-grid">
         <div class="detail-cell">
-          <div class="dc-lbl">آخر فحص</div>
+          <div class="dc-lbl" data-ar="آخر فحص" data-en="Last Survey">${currentLang === 'ar' ? 'آخر فحص' : 'Last Survey'}</div>
           <div class="dc-val" style="color:var(--bio)">${last.date}</div>
         </div>
         <div class="detail-cell">
-          <div class="dc-lbl">العدد المرصود</div>
+          <div class="dc-lbl" data-ar="العدد المرصود" data-en="Observed Count">${currentLang === 'ar' ? 'العدد المرصود' : 'Observed Count'}</div>
           <div class="dc-val" style="color:${sevColor}">${last.count} ${pest.unit}</div>
         </div>
         <div class="detail-cell">
-          <div class="dc-lbl">عتبة التدخل</div>
+          <div class="dc-lbl" data-ar="عتبة التدخل" data-en="Action Threshold">${currentLang === 'ar' ? 'عتبة التدخل' : 'Action Threshold'}</div>
           <div class="dc-val" style="color:var(--alert)">${pest.threshold}</div>
         </div>
         <div class="detail-cell">
-          <div class="dc-lbl">حالة التعداد</div>
-          <div class="dc-val" style="color:${sevColor};font-size:11px">${SEV_LABELS[sev]}</div>
+          <div class="dc-lbl" data-ar="حالة التعداد" data-en="Population Status">${currentLang === 'ar' ? 'حالة التعداد' : 'Population Status'}</div>
+          <div class="dc-val" style="color:${sevColor};font-size:11px">${getSevLabel(sev)}</div>
         </div>
       </div>
       ${last.notes?`<div class="note-box"><span class="note-icon">📌</span><span>${last.notes}</span></div>`:''}
       <div class="detail-cell" style="padding:8px 10px">
-        <div class="dc-lbl">الإجراء الموصى به</div>
+        <div class="dc-lbl" data-ar="الإجراء الموصى به" data-en="Recommended Action">${currentLang === 'ar' ? 'الإجراء الموصى به' : 'Recommended Action'}</div>
         <div style="font-size:11px;color:var(--fog);margin-top:4px;line-height:1.6">💊 ${pest.action}</div>
       </div>
       <div style="display:flex;gap:7px;flex-wrap:wrap">
@@ -999,7 +1003,7 @@ function renderPestItem(room, pest, type){
 // ═══════════════════════════════════════════
 function renderBio(){
   const rooms = filteredRooms();
-  if(!rooms.length){$('view-bio').innerHTML='<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">لا توجد غرف</div>';return;}
+  if(!rooms.length){$('view-bio').innerHTML=`<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">${currentLang === 'ar' ? 'لا توجد غرف' : 'No rooms'}</div>`;return;}
 
   const bios = selBio==="all" ? BIO_DB : BIO_DB.filter(b=>b.id===selBio);
 
@@ -1047,10 +1051,10 @@ function renderBioCrossRoom(rooms, bio){
         <div style="width:6px;height:36px;border-radius:3px;background:${farm.color};flex-shrink:0"></div>
         <div>
           <div style="font-family:var(--display);font-weight:800;font-size:14px">${r.id}</div>
-          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${r.variety} · ${farm.name}</div>
+          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${currentLang === 'ar' ? r.variety : r.varietyEn} · ${currentLang === 'ar' ? farm.name : farm.nameEn}</div>
         </div>
         <div style="margin-right:auto;font-family:var(--mono);font-size:13px;font-weight:600;color:${statusColor}">${last.perM2} ${bio.unit}</div>
-        <span class="badge ${st&&st.ok?'b-bio':'b-warn'}" style="font-size:9px">${st&&st.ok?'✓ كافٍ':'⚠ ضعيف'}</span>
+        <span class="badge ${st&&st.ok?'b-bio':'b-warn'}" style="font-size:9px">${st&&st.ok?(currentLang === 'ar' ? '✓ كافٍ' : '✓ Sufficient'):(currentLang === 'ar' ? '⚠ ضعيف' : '⚠ Weak')}</span>
       </div>
       <div style="margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:7px">
@@ -1061,13 +1065,13 @@ function renderBioCrossRoom(rooms, bio){
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
-        <div class="detail-cell"><div class="dc-lbl">آخر إطلاق</div><div class="dc-val" style="color:var(--bio);font-size:11px">${rd.lastRelease}</div></div>
-        <div class="detail-cell"><div class="dc-lbl">معدل الإطلاق</div><div class="dc-val" style="font-size:11px">${rd.releaseRate} ${bio.unit}</div></div>
-        <div class="detail-cell"><div class="dc-lbl">الإجمالي المقدّر</div><div class="dc-val" style="font-size:11px">${last.totalEst.toLocaleString()} فرد</div></div>
-        <div class="detail-cell"><div class="dc-lbl">آخر رصد</div><div class="dc-val" style="font-size:11px;color:var(--fog2)">${last.date}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">${currentLang === 'ar' ? 'آخر إطلاق' : 'Last Release'}</div><div class="dc-val" style="color:var(--bio);font-size:11px">${rd.lastRelease}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">${currentLang === 'ar' ? 'معدل الإطلاق' : 'Release Rate'}</div><div class="dc-val" style="font-size:11px">${rd.releaseRate} ${bio.unit}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">${currentLang === 'ar' ? 'الإجمالي المقدّر' : 'Total Estimated'}</div><div class="dc-val" style="font-size:11px">${last.totalEst.toLocaleString()} ${currentLang === 'ar' ? 'فرد' : 'indiv.'}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">${currentLang === 'ar' ? 'آخر رصد' : 'Last Survey'}</div><div class="dc-val" style="font-size:11px;color:var(--fog2)">${last.date}</div></div>
       </div>
       ${last.notes?`<div style="font-size:10px;color:var(--warn);background:rgba(245,158,11,.07);border-radius:5px;padding:4px 8px;margin-bottom:5px">📌 ${last.notes}</div>`:''}
-      <button class="history-btn" onclick="openHistory('${r.id}','bio','${bio.id}','${bio.arabic} — ${r.id}')">📈 السجل التاريخي (${hist.length} رصد)</button>
+      <button class="history-btn" onclick="openHistory('${r.id}','bio','${bio.id}','${bio.arabic} — ${r.id}')">📈 ${currentLang === 'ar' ? 'السجل التاريخي' : 'Historical Log'} (${hist.length} ${currentLang === 'ar' ? 'رصد' : 'surveys'})</button>
     </div>`;
   }).join('');
 
@@ -1078,8 +1082,8 @@ function renderBioCrossRoom(rooms, bio){
         <div style="font-family:var(--display);font-weight:800;font-size:16px;color:var(--bio)">${bio.arabic}</div>
         <div style="font-size:10px;color:var(--fog3);font-family:var(--mono);font-style:italic">${bio.name}</div>
       </div>
-      <div style="margin-right:auto;font-size:11px;color:var(--fog2)">هدفه: <span style="color:var(--pest)">${targetPest?.name||bio.target}</span></div>
-      <div style="font-family:var(--mono);font-size:11px">هدف: ${bio.ratio_min}–${bio.ratio_max} ${bio.unit}</div>
+      <div style="margin-right:auto;font-size:11px;color:var(--fog2)">${currentLang === 'ar' ? 'هدفه:' : 'Targets:'} <span style="color:var(--pest)">${targetPest?.name||bio.target}</span></div>
+      <div style="font-family:var(--mono);font-size:11px">${currentLang === 'ar' ? 'هدف:' : 'Target:'} ${bio.ratio_min}–${bio.ratio_max} ${bio.unit}</div>
     </div>
     <div class="rooms-grid">${cards}</div>`;
 }
@@ -1094,7 +1098,7 @@ function renderBioHeatmap(rooms, bios){
       const st=bioStatus(r.id,b.id);
       const rd=ROOM_DATA[r.id].bioRecords[b.id];
       const last=rd.history[rd.history.length-1];
-      if(!st){ return `<td><div class="hm-cell" style="background:rgba(244,63,94,.07);color:rgba(244,63,94,.5)" title="${b.name}">○<div class="hm-sub">غير مطلق</div></div></td>`; }
+      if(!st){ return `<td><div class="hm-cell" style="background:rgba(244,63,94,.07);color:rgba(244,63,94,.5)" title="${b.name}">○<div class="hm-sub">${currentLang === 'ar' ? 'غير مطلق' : 'Not released'}</div></div></td>`; }
       const pct=Math.min(100,Math.round(st.ratio*100));
       const bg=st.ok?`rgba(34,217,138,${Math.min(.7,pct/200+.15)})`:`rgba(245,158,11,${Math.min(.6,pct/200+.1)})`;
       const fg=st.ok?'#22d98a':'#f59e0b';
@@ -1141,7 +1145,7 @@ function renderBioHeatmap(rooms, bios){
       <div style="font-size:11px;font-weight:700;color:var(--fog2);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🗺 خريطة تغطية المفترسات — كل الغرف</div>
       <div class="heatmap-wrap">
         <table class="heatmap-tbl">
-          <thead><tr><th>الغرفة</th>${headerCells}</tr></thead>
+          <thead><tr><th>${currentLang === 'ar' ? 'الغرفة' : 'Room'}</th>${headerCells}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -1163,20 +1167,20 @@ function renderRoomBio(room, bios){
       <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
       <div>
         <div class="rc-id">${room.id}</div>
-        <div class="rc-variety">${room.variety} · ${room.area} م²</div>
+        <div class="rc-variety">${currentLang === 'ar' ? room.variety : room.varietyEn} · ${room.area} ${currentLang === 'ar' ? 'م²' : 'm²'}</div>
       </div>
       <div class="rc-badges">
-        <span class="badge b-bio">🌿 ${bioOk} نشط</span>
-        ${bioBad>0?`<span class="badge b-warn">⚠ ${bioBad} ضعيف</span>`:''}
+        <span class="badge b-bio">🌿 ${bioOk} ${currentLang === 'ar' ? 'نشط' : 'active'}</span>
+        ${bioBad>0?`<span class="badge b-warn">⚠ ${bioBad} ${currentLang === 'ar' ? 'ضعيف' : 'weak'}</span>`:''}
       </div>
       <div class="rc-expand">▶</div>
     </div>
     <div class="rc-scout-bar">
-      <span>المساحة:</span><span class="scout-date">${room.area} م²</span>
-      <span style="margin-right:auto">العمليات البيولوجية:</span><span style="color:var(--bio)">${BIO_DB.length} برنامج</span>
+      <span data-ar="المساحة:" data-en="Area:">${currentLang === 'ar' ? 'المساحة:' : 'Area:'}</span><span class="scout-date">${room.area} ${currentLang === 'ar' ? 'م²' : 'm²'}</span>
+      <span style="margin-right:auto" data-ar="العمليات البيولوجية:" data-en="Bio Programs:">${currentLang === 'ar' ? 'العمليات البيولوجية:' : 'Bio Programs:'}</span><span style="color:var(--bio)">${BIO_DB.length} ${currentLang === 'ar' ? 'برنامج' : 'programs'}</span>
     </div>
     <div class="rc-body">
-      <div class="section-hdr">🔬 المفترسات والطفيليات</div>
+      <div class="section-hdr">🔬 ${currentLang === 'ar' ? 'المفترسات والطفيليات' : 'Predators & Parasites'}</div>
       ${BIO_DB.map(b=>renderBioItem(room,b)).join('')}
     </div>
   </div>`;
@@ -1207,7 +1211,7 @@ function renderBioItem(room, bio){
         </div>
       </div>
       <div class="bio-badges">
-        <span class="badge b-bio" style="font-size:9px">هدفه: ${PEST_DB.find(p=>p.id===bio.target)?.name||bio.target}</span>
+        <span class="badge b-bio" style="font-size:9px">${currentLang === 'ar' ? 'هدفه:' : 'Targets:'} ${PEST_DB.find(p=>p.id===bio.target)?.name||bio.target}</span>
         <span class="badge" style="background:rgba(255,255,255,.05);border-color:var(--line2);color:${statusColor};font-size:9px">${statusLabel}</span>
       </div>
       <div class="pest-expand">▶</div>
@@ -1242,7 +1246,7 @@ function renderBioItem(room, bio){
       ${last.notes?`<div class="note-box"><span class="note-icon">📌</span><span>${last.notes}</span></div>`:''}
       <div style="display:flex;gap:7px">
         <button class="history-btn" onclick="openHistory('${room.id}','bio','${bio.id}','${bio.arabic} — ${room.id}')">
-          📈 سجل التعداد (${hist.length} رصد)
+          📈 ${currentLang === 'ar' ? 'سجل التعداد' : 'Population Log'} (${hist.length} ${currentLang === 'ar' ? 'رصد' : 'surveys'})
         </button>
       </div>
     </div>
@@ -1272,24 +1276,24 @@ function renderRoomChem(room){
       <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
       <div>
         <div class="rc-id">${room.id}</div>
-        <div class="rc-variety">${room.variety}</div>
+        <div class="rc-variety">${currentLang === 'ar' ? room.variety : room.varietyEn}</div>
       </div>
       <div class="rc-badges">
-        <span class="badge b-chem">${apps.length} تطبيق</span>
-        ${!phiOk?`<span class="badge b-alert">⛔ في فترة الانتظار PHI</span>`:lastApp?`<span class="badge b-ok">✓ آمن للحصاد</span>`:''}
+        <span class="badge b-chem">${apps.length} ${currentLang === 'ar' ? 'تطبيق' : 'application'}</span>
+        ${!phiOk?`<span class="badge b-alert">⛔ ${currentLang === 'ar' ? 'في فترة الانتظار PHI' : 'PHI waiting period'}</span>`:lastApp?`<span class="badge b-ok">✓ ${currentLang === 'ar' ? 'آمن للحصاد' : 'Safe to harvest'}</span>`:''}
       </div>
       <div class="rc-expand">▶</div>
     </div>
     <div class="rc-scout-bar">
-      <span>آخر تطبيق:</span>
-      <span class="scout-date">${lastApp?lastApp.date:"لا يوجد"}</span>
+      <span data-ar="آخر تطبيق:" data-en="Last application:">${currentLang === 'ar' ? 'آخر تطبيق:' : 'Last application:'}</span>
+      <span class="scout-date">${lastApp?lastApp.date:(currentLang === 'ar' ? "لا يوجد" : "None")}</span>
       <span style="margin-right:auto">${lastApp?lastApp.chemName:""}</span>
     </div>
     <div class="rc-body">
-      <div class="section-hdr">🧪 سجل التطبيقات</div>
+      <div class="section-hdr">🧪 ${currentLang === 'ar' ? 'سجل التطبيقات' : 'Application Log'}</div>
       ${apps.map(a=>renderChemApp(a,room)).join('')}
-      <button class="history-btn" onclick="openHistory('${room.id}','chem','all','سجل المبيدات — ${room.id}')">
-        📋 الجدول الكامل للغرفة
+      <button class="history-btn" onclick="openHistory('${room.id}','chem','all','${currentLang === 'ar' ? 'سجل المبيدات' : 'Chemical Log'} — ${room.id}')">
+        📋 ${currentLang === 'ar' ? 'الجدول الكامل للغرفة' : 'Full Room Table'}
       </button>
     </div>
   </div>`;
@@ -1310,30 +1314,30 @@ function renderChemApp(app, room){
       </div>
       <div style="text-align:left">
         <div style="font-family:var(--mono);font-size:11px;color:var(--fog2)">${app.date}</div>
-        <div style="font-size:10px;color:var(--fog3);margin-top:1px">${daysSince} يوم مضى</div>
+        <div style="font-size:10px;color:var(--fog3);margin-top:1px">${daysSince} ${currentLang === 'ar' ? 'يوم مضى' : 'days ago'}</div>
       </div>
     </div>
     <div class="chem-grid">
       <div class="chem-cell">
-        <div class="dc-lbl">الجرعة</div>
-        <div class="dc-val" style="color:var(--chem)">${app.doseMlPerL} مل/لتر</div>
+        <div class="dc-lbl">${currentLang === 'ar' ? 'الجرعة' : 'Dose'}</div>
+        <div class="dc-val" style="color:var(--chem)">${app.doseMlPerL} ${currentLang === 'ar' ? 'مل/لتر' : 'ml/L'}</div>
       </div>
       <div class="chem-cell">
-        <div class="dc-lbl">كمية الماء</div>
-        <div class="dc-val" style="color:var(--fog)">${app.waterL} لتر</div>
+        <div class="dc-lbl">${currentLang === 'ar' ? 'كمية الماء' : 'Water Amount'}</div>
+        <div class="dc-val" style="color:var(--fog)">${app.waterL} ${currentLang === 'ar' ? 'لتر' : 'L'}</div>
       </div>
       <div class="chem-cell">
-        <div class="dc-lbl">إجمالي المادة</div>
-        <div class="dc-val" style="color:var(--chem)">${app.totalMl} مل</div>
+        <div class="dc-lbl">${currentLang === 'ar' ? 'إجمالي المادة' : 'Total Material'}</div>
+        <div class="dc-val" style="color:var(--chem)">${app.totalMl} ${currentLang === 'ar' ? 'مل' : 'ml'}</div>
       </div>
       <div class="chem-cell">
-        <div class="dc-lbl">الآفة المستهدفة</div>
+        <div class="dc-lbl">${currentLang === 'ar' ? 'الآفة المستهدفة' : 'Target Pest'}</div>
         <div class="dc-val" style="font-size:11px;color:var(--pest)">${targetPest?.name||app.targetPest}</div>
       </div>
     </div>
     ${app.notes?`<div class="note-box" style="margin-top:8px"><span class="note-icon">📌</span><span>${app.notes}</span></div>`:''}
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-      <span class="phi-badge">⏱ PHI: ${app.phi} يوم — ${phiPassed?'✓ انتهت':'⛔ لم تنته'}</span>
+      <span class="phi-badge">⏱ PHI: ${app.phi} ${currentLang === 'ar' ? 'يوم' : 'days'} — ${phiPassed?(currentLang === 'ar' ? '✓ انتهت' : '✓ Ended'):(currentLang === 'ar' ? '⛔ لم تنته' : '⛔ Not ended')}</span>
       <span class="ee-badge" style="background:rgba(34,217,138,.08);border:1px solid rgba(34,217,138,.2);color:var(--bio)">🐝 ${app.ee}</span>
       <span style="font-size:9px;color:var(--fog3);font-family:var(--mono);display:flex;align-items:center">MoA: ${app.moa}</span>
     </div>
@@ -1360,42 +1364,42 @@ function renderCharts(){
     <div class="charts-grid">
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">تطور تعداد البق الدقيقي</div><div class="chart-sub">Spider Mite count over time — all rooms</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'تطور تعداد البق الدقيقي' : 'Spider Mite Count Evolution'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Spider Mite count over time — all rooms' : 'Spider Mite count over time — all rooms'}</div></div>
           <span class="badge b-pest">MITE</span>
         </div>
         <div style="height:240px"><canvas id="c-mite"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">تطور تعداد التربس</div><div class="chart-sub">Thrips count over time — all rooms</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'تطور تعداد التربس' : 'Thrips Count Evolution'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Thrips count over time — all rooms' : 'Thrips count over time — all rooms'}</div></div>
           <span class="badge b-pest">THRIPS</span>
         </div>
         <div style="height:240px"><canvas id="c-thrips"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">تعداد Phytoseiulus vs البق الدقيقي</div><div class="chart-sub">Predator : Prey ratio — BB-01</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'تعداد Phytoseiulus vs البق الدقيقي' : 'Phytoseiulus vs Spider Mite Count'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Predator : Prey ratio — BB-01' : 'Predator : Prey ratio — BB-01'}</div></div>
           <span class="badge b-bio">BIO</span>
         </div>
         <div style="height:240px"><canvas id="c-preypred"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">خريطة حالة الآفات — كل الغرف</div><div class="chart-sub">Pest pressure heatmap</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'خريطة حالة الآفات — كل الغرف' : 'Pest Status Heatmap — All Rooms'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Pest pressure heatmap' : 'Pest pressure heatmap'}</div></div>
           <span class="badge b-warn">HEATMAP</span>
         </div>
         <div style="height:240px"><canvas id="c-heat"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">المبيدات المُطبَّقة — تسلسل زمني</div><div class="chart-sub">Pesticide applications timeline</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'المبيدات المُطبَّقة — تسلسل زمني' : 'Applied Pesticides — Timeline'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Pesticide applications timeline' : 'Pesticide applications timeline'}</div></div>
           <span class="badge b-chem">CHEM</span>
         </div>
         <div style="height:240px"><canvas id="c-chem"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-hdr">
-          <div><div class="chart-title">تغطية المفترسات البيولوجية</div><div class="chart-sub">Bio agent coverage % — current vs target</div></div>
+          <div><div class="chart-title">${currentLang === 'ar' ? 'تغطية المفترسات البيولوجية' : 'Biological Control Coverage'}</div><div class="chart-sub">${currentLang === 'ar' ? 'Bio agent coverage % — current vs target' : 'Bio agent coverage % — current vs target'}</div></div>
           <span class="badge b-bio">COVERAGE</span>
         </div>
         <div style="height:240px"><canvas id="c-bio-cov"></canvas></div>
@@ -1552,7 +1556,7 @@ function openHistory(roomId, category, targetId, label){
       <div class="hist-entry">
         <div class="hist-date">${e.date}</div>
         <div class="hist-val" style="color:${SEV_COLORS[sevLevel(e.count,pest.thresholdNum)]}">${e.count} ${pest.unit}
-          <span style="font-size:10px;font-family:var(--mono);color:${SEV_COLORS[sevLevel(e.count,pest.thresholdNum)]}"> — ${SEV_LABELS[sevLevel(e.count,pest.thresholdNum)]}</span>
+          <span style="font-size:10px;font-family:var(--mono);color:${SEV_COLORS[sevLevel(e.count,pest.thresholdNum)]}"> — ${getSevLabel(sevLevel(e.count,pest.thresholdNum))}</span>
         </div>
         ${e.notes?`<div class="hist-note">📌 ${e.notes}</div>`:''}
       </div>`);
@@ -1562,26 +1566,26 @@ function openHistory(roomId, category, targetId, label){
     entries=[...brd.history].reverse().map(e=>`
       <div class="hist-entry">
         <div class="hist-date">${e.date}</div>
-        <div class="hist-val" style="color:${e.perM2>=bio.ratio_min?'var(--bio)':'var(--warn)'}">${e.perM2} ${bio.unit} — إجمالي: ${e.totalEst.toLocaleString()} فرد</div>
+        <div class="hist-val" style="color:${e.perM2>=bio.ratio_min?'var(--bio)':'var(--warn)'}">${e.perM2} ${bio.unit} — ${currentLang === 'ar' ? 'إجمالي:' : 'Total:'} ${e.totalEst.toLocaleString()} ${currentLang === 'ar' ? 'فرد' : 'indiv.'}</div>
         ${e.notes?`<div class="hist-note">📌 ${e.notes}</div>`:''}
       </div>`);
     // add release note
-    entries.unshift(`<div class="note-box" style="margin-bottom:12px"><span class="note-icon">🚀</span><span>آخر إطلاق: <strong>${brd.lastRelease}</strong> بمعدل <strong>${brd.releaseRate} ${bio.unit}</strong></span></div>`);
+    entries.unshift(`<div class="note-box" style="margin-bottom:12px"><span class="note-icon">🚀</span><span>${currentLang === 'ar' ? 'آخر إطلاق:' : 'Last release:'} <strong>${brd.lastRelease}</strong> ${currentLang === 'ar' ? 'بمعدل' : 'at rate'} <strong>${brd.releaseRate} ${bio.unit}</strong></span></div>`);
   } else if(category==="chem"){
     const apps=ROOM_DATA[roomId].chemApps;
     entries=apps.map(a=>{
       const daysSince=Math.round((new Date()-new Date(a.date))/86400000);
       const phiPassed=daysSince>=a.phi;
       return `<div class="hist-entry">
-        <div class="hist-date">${a.date} — ${daysSince} يوم مضى</div>
-        <div class="hist-val" style="color:var(--chem)">${a.chemName} — ${a.doseMlPerL} مل/لتر × ${a.waterL} لتر ماء</div>
-        <div class="hist-note">AI: ${a.ai} · PHI: ${a.phi}ي ${phiPassed?'(✓ انتهت)':'(⛔ لم تنته)'} · ${a.ee}</div>
+        <div class="hist-date">${a.date} — ${daysSince} ${currentLang === 'ar' ? 'يوم مضى' : 'days ago'}</div>
+        <div class="hist-val" style="color:var(--chem)">${a.chemName} — ${a.doseMlPerL} ${currentLang === 'ar' ? 'مل/لتر' : 'ml/L'} × ${a.waterL} ${currentLang === 'ar' ? 'لتر ماء' : 'L water'}</div>
+        <div class="hist-note">AI: ${a.ai} · PHI: ${a.phi}${currentLang === 'ar' ? 'ي' : 'd'} ${phiPassed?(currentLang === 'ar' ? '(✓ انتهت)' : '(✓ ended)'):(currentLang === 'ar' ? '(⛔ لم تنته)' : '(⛔ not ended)')} · ${a.ee}</div>
         ${a.notes?`<div class="hist-note">📌 ${a.notes}</div>`:''}
       </div>`;
     });
   }
 
-  $('hist-body').innerHTML = entries.length?entries.join(''):'<div class="hist-empty">لا توجد بيانات مسجلة</div>';
+  $('hist-body').innerHTML = entries.length?entries.join(''):`<div class="hist-empty">${currentLang === 'ar' ? 'لا توجد بيانات مسجلة' : 'No recorded data'}</div>`;
   $('hist-overlay').classList.add('open');
 }
 function closeHistory(){ $('hist-overlay').classList.remove('open'); }
@@ -1602,9 +1606,14 @@ function setTab(tab){
 // ═══════════════════════════════════════════
 //  LANGUAGE TOGGLE
 // ═══════════════════════════════════════════
-let currentLang = 'ar';
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE (Shared across all pages)
+// ═══════════════════════════════════════════
+let currentLang = localStorage.getItem('appLanguage') || 'ar';
+
 function toggleLanguage(){
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('appLanguage', currentLang);
   const toggleBtn = document.getElementById('lang-toggle');
   const body = document.body;
   
@@ -1625,6 +1634,9 @@ function toggleLanguage(){
     const text = option.getAttribute(`data-${currentLang}`);
     if(text) option.textContent = text;
   });
+  
+  // Re-render all dynamic content
+  renderAll();
 }
 
 // ═══════════════════════════════════════════
@@ -1646,6 +1658,24 @@ function $(id){return document.getElementById(id)}
 // ═══════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════
+// Apply saved language on load
+const body = document.body;
+body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+const toggleBtn = document.getElementById('lang-toggle');
+if(toggleBtn) toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+
+// Update all elements with data attributes
+document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+  const text = el.getAttribute(`data-${currentLang}`);
+  if(text && el.tagName !== 'OPTION') el.textContent = text;
+});
+
+// Update select options
+document.querySelectorAll('option[data-ar]').forEach(option => {
+  const text = option.getAttribute(`data-${currentLang}`);
+  if(text) option.textContent = text;
+});
+
 initSelects();
 syncFilterGroups();
 renderAll();

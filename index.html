@@ -750,13 +750,14 @@ const STAGE_COLORS = {fullBloom:"#38bdf8",greenFruit:"#a3e635",coloring:"#818cf8
 let sidebarCollapsed = false;
 let currentRegFarm   = "F-01";
 let chartInst        = {};
-let currentLanguage  = 'ar'; // Default to Arabic
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE (Shared across all pages)
+// ═══════════════════════════════════════════
+let currentLanguage = localStorage.getItem('appLanguage') || 'ar';
 
-// ═══════════════════════════════════════════
-//  LANGUAGE TOGGLE
-// ═══════════════════════════════════════════
 function toggleLanguage(){
   currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('appLanguage', currentLanguage);
   applyLanguage();
 }
 
@@ -1028,11 +1029,11 @@ function renderDashboard(){
         <span class="fc-farm-name">${f.name}</span>
       </div>
       <div class="fc-body">
-        <div class="fc-location">📍 ${f.location} · منذ ${f.founded}</div>
+        <div class="fc-location">📍 ${f.location} · ${currentLanguage === 'ar' ? 'منذ' : 'Est.'} ${f.founded}</div>
         <div class="fc-stats">
-          <div class="fc-stat"><div class="fcs-num" style="color:${f.color}">${f.rooms.length}</div><div class="fcs-lbl">صوب</div></div>
-          <div class="fc-stat"><div class="fcs-num">${totalF.toLocaleString()}</div><div class="fcs-lbl">نبتة</div></div>
-          <div class="fc-stat"><div class="fcs-num">${f.area.toLocaleString()}</div><div class="fcs-lbl">م²</div></div>
+          <div class="fc-stat"><div class="fcs-num" style="color:${f.color}">${f.rooms.length}</div><div class="fcs-lbl">${currentLanguage === 'ar' ? 'صوب' : 'Rooms'}</div></div>
+          <div class="fc-stat"><div class="fcs-num">${totalF.toLocaleString()}</div><div class="fcs-lbl">${currentLanguage === 'ar' ? 'نبتة' : 'Plants'}</div></div>
+          <div class="fc-stat"><div class="fcs-num">${f.area.toLocaleString()}</div><div class="fcs-lbl">${currentLanguage === 'ar' ? 'م²' : 'm²'}</div></div>
         </div>
         <div class="fc-rooms" style="margin-bottom:10px">${roomPills}</div>
         <div class="fc-alerts">

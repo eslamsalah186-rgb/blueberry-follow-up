@@ -652,11 +652,11 @@ body::after {
 //  ROOMS
 // ═══════════════════════════════════════════
 const ROOMS = [
-  {id:"BB-01", name:"بيانكا",  plants:1200, area:600,  farmId:"F-01"},
-  {id:"BB-02", name:"اوني",    plants:800,  area:420,  farmId:"F-01"},
-  {id:"BB-03", name:"مِسي",    plants:950,  area:500,  farmId:"F-01"},
-  {id:"BB-04", name:"بيانكا",  plants:1100, area:580,  farmId:"F-02"},
-  {id:"BB-06", name:"بلوكروب", plants:1500, area:750,  farmId:"F-03"},
+  {id:"BB-01", name:"بيانكا",  nameEn:"Bianca",    plants:1200, area:600,  farmId:"F-01"},
+  {id:"BB-02", name:"اوني",    nameEn:"O'Neal",    plants:800,  area:420,  farmId:"F-01"},
+  {id:"BB-03", name:"مِسي",    nameEn:"Misty",     plants:950,  area:500,  farmId:"F-01"},
+  {id:"BB-04", name:"بيانكا",  nameEn:"Bianca",    plants:1100, area:580,  farmId:"F-02"},
+  {id:"BB-06", name:"بلوكروب", nameEn:"Bluecrop",  plants:1500, area:750,  farmId:"F-03"},
 ];
 let currentRoom = "BB-01";
 
@@ -848,7 +848,7 @@ function switchRoom(id){
   currentRoom=id;
   const r=ROOMS.find(x=>x.id===id);
   document.getElementById('hdr-room').textContent=id;
-  document.getElementById('hdr-name').textContent=`${r.name} · ${r.plants} نبتة · ${r.area} م²`;
+  document.getElementById('hdr-name').textContent=`${currentLang === 'ar' ? r.name : r.nameEn} · ${r.plants} ${currentLang === 'ar' ? 'نبتة' : 'plants'} · ${r.area} ${currentLang === 'ar' ? 'م²' : 'm²'}`;
   renderRoomPills();
   renderAll();
 }
@@ -1517,11 +1517,13 @@ function setTab(tab){
 }
 
 // ═══════════════════════════════════════════
-//  LANGUAGE TOGGLE
+//  LANGUAGE TOGGLE (Shared across all pages)
 // ═══════════════════════════════════════════
-let currentLang = 'ar';
+let currentLang = localStorage.getItem('appLanguage') || 'ar';
+
 function toggleLanguage(){
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('appLanguage', currentLang);
   const toggleBtn = document.getElementById('lang-toggle');
   const body = document.body;
   
@@ -1555,6 +1557,24 @@ if(typeof Chart === 'undefined'){
   console.error('Chart.js not loaded!');
 } else {
   console.log('Starting render...');
+  // Apply saved language on load
+  const body = document.body;
+  body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+  const toggleBtn = document.getElementById('lang-toggle');
+  if(toggleBtn) toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+  
+  // Update all elements with data attributes
+  document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if(text && el.tagName !== 'OPTION') el.textContent = text;
+  });
+  
+  // Update select options
+  document.querySelectorAll('option[data-ar]').forEach(option => {
+    const text = option.getAttribute(`data-${currentLang}`);
+    if(text) option.textContent = text;
+  });
+  
   renderRoomPills();
   renderSensors();
   renderClimateCharts();

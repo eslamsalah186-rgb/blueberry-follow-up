@@ -782,13 +782,13 @@ function ratioSt(val,tMin,tMax){
 //  RENDER CENSUS
 // ═══════════════════════════════
 function renderSampleList(){
-  document.getElementById('sn-count').textContent = samples.length+" نبتة";
-  document.getElementById('census-badge').textContent = samples.length+" عينة";
+  document.getElementById('sn-count').textContent = samples.length+(currentLang === 'ar' ? " نبتة" : " plants");
+  document.getElementById('census-badge').textContent = samples.length+(currentLang === 'ar' ? " عينة" : " samples");
   const el = document.getElementById('sample-list');
   el.innerHTML = samples.map((s,i)=>`
     <div class="s-row${i===activeSample?" on":''}" onclick="selectSample(${i})">
       <span class="s-num">#${i+1}</span>
-      <span class="s-label">نبتة ${i+1}</span>
+      <span class="s-label">${currentLang === 'ar' ? 'نبتة' : 'Plant'} ${i+1}</span>
       <span class="s-preview">${s.flowerBuds}F · ${s.greenFruit}G</span>
     </div>`).join('');
 }
@@ -837,7 +837,7 @@ function renderAverage(){
   document.getElementById('avg-stats').innerHTML = ALL_METRICS.map(m=>{
     const v=av[m.id]; const [mn,mx]=m.target;
     const vc=vColorPaper(v,mn,mx); const bw=mx?Math.min(100,(v/mx)*100):0;
-    const note=v>=mn&&v<=mx?"✓ ضمن":v<mn?"⬇ أقل":"⬆ أعلى";
+    const note=v>=mn&&v<=mx?(currentLang === 'ar' ? "✓ ضمن" : "✓ Within"):v<mn?(currentLang === 'ar' ? "⬇ أقل" : "⬇ Below"):(currentLang === 'ar' ? "⬆ أعلى" : "⬆ Above");
     return `<div class="avg-stat">
       <div class="as-label">${m.label.split(' ')[0]}</div>
       <div class="as-val" style="color:${vc}">${v>0?v.toFixed(1):"—"}</div>
@@ -849,7 +849,7 @@ function renderAverage(){
   // Overall status
   const bad = ALL_METRICS.filter(m=>{const v=av[m.id];const[mn,mx]=m.target;return v>0&&(v<mn||v>mx);}).length;
   const sBadge = document.getElementById('struct-status');
-  if(sBadge){ sBadge.textContent=bad===0?"✓ ضمن الهدف":`⚠ ${bad} خارج النطاق`; sBadge.style.color=bad===0?"var(--ok)":"var(--warn)"; }
+  if(sBadge){ sBadge.textContent=bad===0?(currentLang === 'ar' ? "✓ ضمن الهدف" : "✓ Within target"):`⚠ ${bad} ${currentLang === 'ar' ? 'خارج النطاق' : 'out of range'}`; sBadge.style.color=bad===0?"var(--ok)":"var(--warn)"; }
 
   // Ratios
   const rv={};
@@ -860,19 +860,19 @@ function renderAverage(){
       <div class="rc-label">${r.label}</div>
       <div class="rc-val" style="color:${st.color}">${val}<span class="rc-unit">${val!=="—"?r.unit:""}</span></div>
       <div class="rc-status" style="color:${st.color}">${st.label}</div>
-      <div class="rc-target">هدف: ${r.tMin}–${r.tMax}${r.unit}</div>
+      <div class="rc-target">${currentLang === 'ar' ? 'هدف:' : 'Target:'} ${r.tMin}–${r.tMax}${r.unit}</div>
     </div>`;
   }).join('');
 
   // Pruning recs
   const recs=[]; const fl=parseFloat(rv.fl); const np=parseFloat(rv.npc);
-  if(av.mainCanes>0&&av.mainCanes<5) recs.push({t:`الجذوع الرئيسية منخفضة (${av.mainCanes.toFixed(1)}) — اترك فروع شبابية لملء الهيكل`,c:"#8B2020",i:"✂"});
-  else if(av.mainCanes>8)            recs.push({t:`الجذوع كثيرة (${av.mainCanes.toFixed(1)}) — أزل الأضعف للوصول لـ 5–8`,c:"#A86B00",i:"✂"});
-  if(av.damaged>5)                   recs.push({t:`أجزاء تالفة مرتفعة (${av.damaged.toFixed(1)}) — تقليم صحي فوري`,c:"#8B2020",i:"⚠"});
-  if(!isNaN(fl)&&fl<1.2)             recs.push({t:`Flower:Leaf منخفضة (${fl}) — قلل النيتروجين لتشجيع البرعم الزهري`,c:"#A86B00",i:"⚡"});
-  if(!isNaN(fl)&&fl>2.0)             recs.push({t:`Flower:Leaf مرتفعة (${fl}) — خطر إرهاق الشجرة، تقليم تخفيفي`,c:"#8B2020",i:"⚠"});
-  if(!isNaN(np)&&np>22)              recs.push({t:`عقد كثيرة جداً/جذع (${np}) — تخفيف الأفرع الجانبية`,c:"#A86B00",i:"✂"});
-  if(recs.length===0)                recs.push({t:"Structure within target range — continue standard pruning regime.",c:"#2D7A4A",i:"✓"});
+  if(av.mainCanes>0&&av.mainCanes<5) recs.push({t:currentLang === 'ar' ? `الجذوع الرئيسية منخفضة (${av.mainCanes.toFixed(1)}) — اترك فروع شبابية لملء الهيكل` : `Main canes low (${av.mainCanes.toFixed(1)}) — Leave young shoots to fill structure`,c:"#8B2020",i:"✂"});
+  else if(av.mainCanes>8)            recs.push({t:currentLang === 'ar' ? `الجذوع كثيرة (${av.mainCanes.toFixed(1)}) — أزل الأضعف للوصول لـ 5–8` : `Too many canes (${av.mainCanes.toFixed(1)}) — Remove weakest to reach 5–8`,c:"#A86B00",i:"✂"});
+  if(av.damaged>5)                   recs.push({t:currentLang === 'ar' ? `أجزاء تالفة مرتفعة (${av.damaged.toFixed(1)}) — تقليم صحي فوري` : `High damaged parts (${av.damaged.toFixed(1)}) — Immediate sanitary pruning`,c:"#8B2020",i:"⚠"});
+  if(!isNaN(fl)&&fl<1.2)             recs.push({t:currentLang === 'ar' ? `Flower:Leaf منخفضة (${fl}) — قلل النيتروجين لتشجيع البرعم الزهري` : `Flower:Leaf low (${fl}) — Reduce nitrogen to encourage flower buds`,c:"#A86B00",i:"⚡"});
+  if(!isNaN(fl)&&fl>2.0)             recs.push({t:currentLang === 'ar' ? `Flower:Leaf مرتفعة (${fl}) — خطر إرهاق الشجرة، تقليم تخفيفي` : `Flower:Leaf high (${fl}) — Risk of exhaustion, thinning pruning`,c:"#8B2020",i:"⚠"});
+  if(!isNaN(np)&&np>22)              recs.push({t:currentLang === 'ar' ? `عقد كثيرة جداً/جذع (${np}) — تخفيف الأفرع الجانبية` : `Too many nodes/cane (${np}) — Thin lateral branches`,c:"#A86B00",i:"✂"});
+  if(recs.length===0)                recs.push({t:currentLang === 'ar' ? "الهيكل ضمن النطاق المستهدف — استمر في نظام التقليم القياسي" : "Structure within target range — continue standard pruning regime.",c:"#2D7A4A",i:"✓"});
   document.getElementById('pruning-recs').innerHTML = recs.map(r=>`
     <div class="pruning-box" style="border-right-color:${r.c}">
       <span class="pb-icon">${r.i}</span>
@@ -1173,9 +1173,14 @@ const $ = id => document.getElementById(id);
 // ═══════════════════════════════
 //  LANGUAGE TOGGLE
 // ═══════════════════════════════
-let currentLang = 'ar';
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE (Shared across all pages)
+// ═══════════════════════════════════════════
+let currentLang = localStorage.getItem('appLanguage') || 'ar';
+
 function toggleLanguage(){
   currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('appLanguage', currentLang);
   const toggleBtn = document.getElementById('lang-toggle');
   const body = document.body;
   
@@ -1204,6 +1209,24 @@ function toggleLanguage(){
 // ═══════════════════════════════
 //  BOOT
 // ═══════════════════════════════
+// Apply saved language on load
+const body = document.body;
+body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+const toggleBtn = document.getElementById('lang-toggle');
+if(toggleBtn) toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+
+// Update all elements with data attributes
+document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+  const text = el.getAttribute(`data-${currentLang}`);
+  if(text && el.tagName !== 'OPTION') el.textContent = text;
+});
+
+// Update select options
+document.querySelectorAll('option[data-ar]').forEach(option => {
+  const text = option.getAttribute(`data-${currentLang}`);
+  if(text) option.textContent = text;
+});
+
 renderSampleList();
 renderAllCounters();
 renderAverage();

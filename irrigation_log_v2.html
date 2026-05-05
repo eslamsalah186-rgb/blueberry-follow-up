@@ -423,8 +423,8 @@ canvas { max-width: 100%; }
 ══════════════════════════════════ -->
 <div class="section-title" style="margin-top:8px">
   <div>
-    <div class="section-title-text">جدول وسط النمو — Substrate / Media</div>
-    <div class="section-title-sub">رطوبة + EC + pH · قبل أول دورة ري وبعد آخر دورة</div>
+    <div class="section-title-text" data-ar="جدول وسط النمو — Substrate / Media" data-en="Substrate/Media Table">جدول وسط النمو — Substrate / Media</div>
+    <div class="section-title-sub" data-ar="رطوبة + EC + pH · قبل أول دورة ري وبعد آخر دورة" data-en="Moisture + EC + pH · Before first cycle and after last cycle">رطوبة + EC + pH · قبل أول دورة ري وبعد آخر دورة</div>
   </div>
   <div class="section-line"></div>
 </div>
@@ -435,33 +435,33 @@ canvas { max-width: 100%; }
       <thead>
         <tr>
           <th style="min-width:48px"></th>
-          <th style="min-width:140px;text-align:right">الغرفة / الصنف</th>
-          <th style="min-width:90px">التاريخ</th>
+          <th style="min-width:140px;text-align:right" data-ar="الغرفة / الصنف" data-en="Room / Variety">الغرفة / الصنف</th>
+          <th style="min-width:90px" data-ar="التاريخ" data-en="Date">التاريخ</th>
           <!-- WC% -->
           <th style="min-width:130px;padding:0">
             <div style="padding:6px 0;text-align:center;color:var(--skyl,#60a5fa);font-family:var(--mono);font-size:9px;font-weight:600;border-bottom:1px solid var(--line2)">💧 WATER CONTENT %</div>
             <div class="split-hdr">
-              <div class="split-am">☀ صباح (قبل الري)</div>
-              <div class="split-pm">🌙 مساء (بعد الري)</div>
+              <div class="split-am" data-ar="☀ صباح (قبل الري)" data-en="☀ Morning (before)">☀ صباح (قبل الري)</div>
+              <div class="split-pm" data-ar="🌙 مساء (بعد الري)" data-en="🌙 Evening (after)">🌙 مساء (بعد الري)</div>
             </div>
           </th>
           <!-- EC -->
           <th style="min-width:130px;padding:0">
             <div style="padding:6px 0;text-align:center;color:var(--amber);font-family:var(--mono);font-size:9px;font-weight:600;border-bottom:1px solid var(--line2)">⚡ EC (mS/cm)</div>
             <div class="split-hdr">
-              <div class="split-am">☀ صباح</div>
-              <div class="split-pm">🌙 مساء</div>
+              <div class="split-am" data-ar="☀ صباح" data-en="☀ Morning">☀ صباح</div>
+              <div class="split-pm" data-ar="🌙 مساء" data-en="🌙 Evening">🌙 مساء</div>
             </div>
           </th>
           <!-- pH -->
           <th style="min-width:130px;padding:0">
             <div style="padding:6px 0;text-align:center;color:var(--purple);font-family:var(--mono);font-size:9px;font-weight:600;border-bottom:1px solid var(--line2)">🧪 pH</div>
             <div class="split-hdr">
-              <div class="split-am">☀ صباح</div>
-              <div class="split-pm">🌙 مساء</div>
+              <div class="split-am" data-ar="☀ صباح" data-en="☀ Morning">☀ صباح</div>
+              <div class="split-pm" data-ar="🌙 مساء" data-en="🌙 Evening">🌙 مساء</div>
             </div>
           </th>
-          <th style="min-width:100px">حالة الوسط</th>
+          <th style="min-width:100px" data-ar="حالة الوسط" data-en="Substrate Status">حالة الوسط</th>
         </tr>
       </thead>
       <tbody id="media-tbody"></tbody>
@@ -474,8 +474,8 @@ canvas { max-width: 100%; }
 ══════════════════════════════════ -->
 <div class="section-title" style="margin-top:8px">
   <div>
-    <div class="section-title-text">تحليل بيانات الري — Analytics</div>
-    <div class="section-title-sub">مبني على البيانات المفلترة</div>
+    <div class="section-title-text" data-ar="تحليل بيانات الري — Analytics" data-en="Irrigation Data Analytics">تحليل بيانات الري — Analytics</div>
+    <div class="section-title-sub" data-ar="مبني على البيانات المفلترة" data-en="Based on filtered data">مبني على البيانات المفلترة</div>
   </div>
   <div class="section-line"></div>
 </div>
@@ -485,7 +485,7 @@ canvas { max-width: 100%; }
   <div class="chart-card">
     <div class="chart-hdr">
       <div>
-        <div class="chart-title">حجم الري vs الصرف</div>
+        <div class="chart-title" data-ar="حجم الري vs الصرف" data-en="Irrigation vs Drainage Volume">حجم الري vs الصرف</div>
         <div class="chart-sub">VOL IN vs DRAIN per cycle (mL/plant)</div>
       </div>
       <div class="chart-badge" style="color:var(--blue-l);border-color:rgba(26,111,255,.3);background:var(--blue-dim)">VOL</div>
@@ -497,7 +497,7 @@ canvas { max-width: 100%; }
   <div class="chart-card">
     <div class="chart-hdr">
       <div>
-        <div class="chart-title">EC الداخل vs الراجع</div>
+        <div class="chart-title" data-ar="EC الداخل vs الراجع" data-en="EC In vs Drain">EC الداخل vs الراجع</div>
         <div class="chart-sub">EC ratio — Nutrient uptake indicator</div>
       </div>
       <div class="chart-badge" style="color:var(--amber);border-color:rgba(245,158,11,.3);background:var(--amber-d)">EC</div>
@@ -509,7 +509,7 @@ canvas { max-width: 100%; }
   <div class="chart-card">
     <div class="chart-hdr">
       <div>
-        <div class="chart-title">pH الداخل vs الراجع</div>
+        <div class="chart-title" data-ar="pH الداخل vs الراجع" data-en="pH In vs Drain">pH الداخل vs الراجع</div>
         <div class="chart-sub">Daily pH — Target zone: 5.5–6.2</div>
       </div>
       <div class="chart-badge" style="color:var(--purple);border-color:rgba(168,85,247,.3);background:var(--purple-d)">pH</div>
@@ -521,7 +521,7 @@ canvas { max-width: 100%; }
   <div class="chart-card">
     <div class="chart-hdr">
       <div>
-        <div class="chart-title">رطوبة الوسط — صباح/مساء</div>
+        <div class="chart-title" data-ar="رطوبة الوسط — صباح/مساء" data-en="Substrate Moisture — Morning/Evening">رطوبة الوسط — صباح/مساء</div>
         <div class="chart-sub">Substrate WC% — Morning vs Evening</div>
       </div>
       <div class="chart-badge" style="color:var(--teal);border-color:rgba(0,212,170,.3);background:var(--teal-d)">WC%</div>
@@ -533,7 +533,7 @@ canvas { max-width: 100%; }
   <div class="chart-card">
     <div class="chart-hdr">
       <div>
-        <div class="chart-title">نسبة الصرف — Drain %</div>
+        <div class="chart-title" data-ar="نسبة الصرف — Drain %" data-en="Drainage Percentage — Drain %">نسبة الصرف — Drain %</div>
         <div class="chart-sub">Drain ÷ In × 100 · Target: 20–30%</div>
       </div>
       <div class="chart-badge" style="color:var(--green);border-color:rgba(34,197,94,.3);background:var(--green-d)">DRAIN%</div>
@@ -548,22 +548,22 @@ canvas { max-width: 100%; }
 ══════════════════════════════════ -->
 <div class="modal-overlay" id="export-modal" onclick="if(event.target===this)closeExport()">
   <div class="modal">
-    <div class="modal-title">تصدير البيانات</div>
+    <div class="modal-title" data-ar="تصدير البيانات" data-en="Export Data">تصدير البيانات</div>
     <div class="modal-row">
-      <div class="modal-lbl">اختار الجدول</div>
+      <div class="modal-lbl" data-ar="اختار الجدول" data-en="Select Table">اختار الجدول</div>
       <select class="sel" id="export-type" style="width:100%">
-        <option value="irrig">جدول دورات الري</option>
-        <option value="media">جدول وسط النمو</option>
-        <option value="both">الجدولان معاً</option>
+        <option value="irrig" data-ar="جدول دورات الري" data-en="Irrigation Cycles Table">جدول دورات الري</option>
+        <option value="media" data-ar="جدول وسط النمو" data-en="Substrate/Media Table">جدول وسط النمو</option>
+        <option value="both" data-ar="الجدولان معاً" data-en="Both Tables">الجدولان معاً</option>
       </select>
     </div>
     <div class="modal-row">
-      <div class="modal-lbl">الفلتر المطبق</div>
+      <div class="modal-lbl" data-ar="الفلتر المطبق" data-en="Applied Filter">الفلتر المطبق</div>
       <div style="background:var(--bg3);border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--fog2)" id="export-info"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-primary" onclick="doExport()">⬇ تحميل CSV</button>
-      <button class="btn" onclick="closeExport()">إلغاء</button>
+      <button class="btn btn-primary" onclick="doExport()" data-ar="⬇ تحميل CSV" data-en="⬇ Download CSV">⬇ تحميل CSV</button>
+      <button class="btn" onclick="closeExport()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
     </div>
   </div>
 </div>
@@ -576,19 +576,19 @@ canvas { max-width: 100%; }
 //  DATA
 // ═══════════════════════════════════
 const FARMS = [
-  { id:"F-01", name:"مزرعة الواحة",  color:"#1a6fff" },
-  { id:"F-02", name:"مزرعة الشمس",   color:"#f59e0b" },
-  { id:"F-03", name:"مزرعة النيل",   color:"#00d4aa" },
+  { id:"F-01", name:"مزرعة الواحة", nameEn:"Al-Waha Farm", color:"#1a6fff" },
+  { id:"F-02", name:"مزرعة الشمس", nameEn:"Al-Shams Farm", color:"#f59e0b" },
+  { id:"F-03", name:"مزرعة النيل", nameEn:"Al-Nile Farm", color:"#00d4aa" },
 ];
 
 const ROOMS = [
-  { id:"BB-01", farmId:"F-01", variety:"بيانكا",  plants:1200 },
-  { id:"BB-02", farmId:"F-01", variety:"اوني",     plants:800  },
-  { id:"BB-03", farmId:"F-01", variety:"مِسي",     plants:950  },
-  { id:"BB-04", farmId:"F-02", variety:"بيانكا",  plants:1100 },
-  { id:"BB-05", farmId:"F-02", variety:"دوك",      plants:700  },
-  { id:"BB-06", farmId:"F-03", variety:"بلوكروب", plants:1500 },
-  { id:"BB-07", farmId:"F-03", variety:"مِسي",     plants:600  },
+  { id:"BB-01", farmId:"F-01", variety:"بيانكا", varietyEn:"Bianca", plants:1200 },
+  { id:"BB-02", farmId:"F-01", variety:"اوني", varietyEn:"O'Neal", plants:800  },
+  { id:"BB-03", farmId:"F-01", variety:"مِسي", varietyEn:"Misty", plants:950  },
+  { id:"BB-04", farmId:"F-02", variety:"بيانكا", varietyEn:"Bianca", plants:1100 },
+  { id:"BB-05", farmId:"F-02", variety:"دوك", varietyEn:"Duke", plants:700  },
+  { id:"BB-06", farmId:"F-03", variety:"بلوكروب", varietyEn:"Bluecrop", plants:1500 },
+  { id:"BB-07", farmId:"F-03", variety:"مِسي", varietyEn:"Misty", plants:600  },
 ];
 
 // Generate realistic irrigation data
@@ -617,7 +617,19 @@ function genDay(dateStr) {
       const volOut  = Math.round(volIn * drainPct);
       const ecOut   = parseFloat((ecIn * rnd(1.0, 1.35)).toFixed(2));
       const phOut   = parseFloat((phIn + rnd(-0.3, 0.5)).toFixed(2));
-      rows.push({ date:dateStr, farmId:room.farmId, farmName:farm.name, farmColor:farm.color, roomId:room.id, variety:room.variety, cycle:c+1, time:`${hh}:${mm}`, volIn, ecIn, phIn, volOut, ecOut, phOut });
+      rows.push({ 
+        date:dateStr, 
+        farmId:room.farmId, 
+        farmName:farm.name, 
+        farmNameEn:farm.nameEn,
+        farmColor:farm.color, 
+        roomId:room.id, 
+        variety:room.variety, 
+        varietyEn:room.varietyEn,
+        cycle:c+1, 
+        time:`${hh}:${mm}`, 
+        volIn, ecIn, phIn, volOut, ecOut, phOut 
+      });
     }
   });
   return rows;
@@ -629,7 +641,14 @@ function genMedia(dateStr) {
     const wcPm = rnd(48, 68, 1);
     const ecAm = rnd(2.2, 3.2); const ecPm = rnd(1.6, 2.6);
     const phAm = rnd(5.4, 6.4); const phPm = rnd(5.3, 6.3);
-    return { date:dateStr, farmId:room.farmId, roomId:room.id, variety:room.variety, wcAm, wcPm, ecAm, ecPm, phAm, phPm };
+    return { 
+      date:dateStr, 
+      farmId:room.farmId, 
+      roomId:room.id, 
+      variety:room.variety, 
+      varietyEn:room.varietyEn,
+      wcAm, wcPm, ecAm, ecPm, phAm, phPm 
+    };
   });
 }
 
@@ -697,9 +716,25 @@ function resetFilters() {
 // ═══════════════════════════════════
 function initSelects() {
   const sf = document.getElementById('sel-farm');
-  FARMS.forEach(f=>{ const o=document.createElement('option'); o.value=f.id; o.textContent=f.name; sf.appendChild(o); });
+  FARMS.forEach(f=>{ 
+    const o=document.createElement('option'); 
+    o.value=f.id; 
+    o.setAttribute('data-ar', f.name);
+    o.setAttribute('data-en', f.nameEn);
+    o.textContent=currentLang === 'ar' ? f.name : f.nameEn; 
+    sf.appendChild(o); 
+  });
   const sr = document.getElementById('sel-room');
-  ROOMS.forEach(r=>{ const o=document.createElement('option'); o.value=r.id; o.textContent=`${r.id} — ${r.variety}`; sr.appendChild(o); });
+  ROOMS.forEach(r=>{ 
+    const o=document.createElement('option'); 
+    o.value=r.id; 
+    const textAr = `${r.id} — ${r.variety}`;
+    const textEn = `${r.id} — ${r.varietyEn}`;
+    o.setAttribute('data-ar', textAr);
+    o.setAttribute('data-en', textEn);
+    o.textContent=currentLang === 'ar' ? textAr : textEn; 
+    sr.appendChild(o); 
+  });
   // default date = today
   const td = today.toISOString().split('T')[0];
   document.getElementById('pick-date').value = td;
@@ -725,13 +760,27 @@ function sparkBar(v, min, max, color) {
 // ═══════════════════════════════════
 function renderIrrigTable(data) {
   const tbody = document.getElementById('irrig-tbody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state">لا توجد بيانات تطابق الفلتر المحدد</div></td></tr>`; return; }
+  if (!data.length) { 
+    const emptyMsg = currentLang === 'ar' ? 'لا توجد بيانات تطابق الفلتر المحدد' : 'No data matches the selected filter';
+    tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state">${emptyMsg}</div></td></tr>`; 
+    return; 
+  }
 
   // group by farm → room → date → cycle
   const groups = {};
   data.forEach(r => {
     const key = r.farmId+'/'+r.roomId+'/'+r.date;
-    if (!groups[key]) groups[key] = { farmId:r.farmId, farmName:r.farmName, farmColor:r.farmColor, roomId:r.roomId, variety:r.variety, date:r.date, cycles:[] };
+    if (!groups[key]) groups[key] = { 
+      farmId:r.farmId, 
+      farmName:r.farmName, 
+      farmNameEn:r.farmNameEn,
+      farmColor:r.farmColor, 
+      roomId:r.roomId, 
+      variety:r.variety, 
+      varietyEn:r.varietyEn,
+      date:r.date, 
+      cycles:[] 
+    };
     groups[key].cycles.push(r);
   });
 
@@ -746,11 +795,11 @@ function renderIrrigTable(data) {
       const sep = ci===0&&gi>0?'group-sep':'';
       html += `<tr class="${sep}">
         ${ci===0?`<td rowspan="${cycleCount}" style="padding:0;border-bottom:${ci===cycleCount-1?'1px solid var(--line)':'none'}">
-          <div class="farm-cell" style="border-left-color:${g.farmColor};color:${g.farmColor}">${g.farmName}</div>
+          <div class="farm-cell" style="border-left-color:${g.farmColor};color:${g.farmColor}">${currentLang === 'ar' ? g.farmName : g.farmNameEn}</div>
         </td>
         <td rowspan="${cycleCount}" class="td-fixed room-cell" style="border-left:1px solid var(--line2)">
           <div class="room-id">${g.roomId}</div>
-          <div class="room-variety">${g.variety}</div>
+          <div class="room-variety">${currentLang === 'ar' ? g.variety : g.varietyEn}</div>
           <div style="font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:3px">${g.date}</div>
         </td>`:''}
         <td class="td-fixed cycle-cell">
@@ -816,7 +865,11 @@ function renderIrrigTable(data) {
 // ═══════════════════════════════════
 function renderMediaTable(data) {
   const tbody = document.getElementById('media-tbody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state">لا توجد بيانات</div></td></tr>`; return; }
+  if (!data.length) { 
+    const emptyMsg = currentLang === 'ar' ? 'لا توجد بيانات' : 'No data available';
+    tbody.innerHTML=`<tr><td colspan="7"><div class="empty-state">${emptyMsg}</div></td></tr>`; 
+    return; 
+  }
 
   let html = '', prevFarm = null;
   data.forEach((r, i) => {
@@ -828,13 +881,15 @@ function renderMediaTable(data) {
     const phOk = r.phAm>=5.0 && r.phAm<=6.8;
     const overall = wcOk&&ecOk&&phOk;
     const sep = i>0&&r.farmId!==prevFarm?'group-sep':'';
+    const farmName = currentLang === 'ar' ? farm.name : farm.nameEn;
+    const varietyName = currentLang === 'ar' ? r.variety : r.varietyEn;
     html += `<tr class="${sep}">
       <td style="padding:0">
-        <div style="height:100%;border-right:3px solid ${farm.color};padding:10px 8px;writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-family:var(--mono);color:${farm.color};text-align:center;background:rgba(${hexToRgb(farm.color)},0.06)">${farm.name}</div>
+        <div style="height:100%;border-right:3px solid ${farm.color};padding:10px 8px;writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;font-family:var(--mono);color:${farm.color};text-align:center;background:rgba(${hexToRgb(farm.color)},0.06)">${farmName}</div>
       </td>
       <td class="td-fixed">
         <div class="room-id">${r.roomId}</div>
-        <div class="room-variety">${r.variety}</div>
+        <div class="room-variety">${varietyName}</div>
         <div style="font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:2px">${r.date}</div>
       </td>
       <td class="td-fixed">
@@ -881,7 +936,7 @@ function renderMediaTable(data) {
       <!-- Status -->
       <td class="td-inner">
         <span class="badge ${overall?'badge-ok':'badge-warn'}" style="background:${overall?'rgba(34,197,94,.1)':'rgba(245,158,11,.1)'};border:1px solid ${overall?'rgba(34,197,94,.3)':'rgba(245,158,11,.3)'};color:${overall?'var(--green)':'var(--amber)'}">
-          ${overall?'✓ مثالي':'⚠ مراجعة'}
+          ${overall?(currentLang==='ar'?'✓ مثالي':'✓ Ideal'):(currentLang==='ar'?'⚠ مراجعة':'⚠ Review')}
         </span>
       </td>
     </tr>`;
@@ -1000,7 +1055,9 @@ function renderCharts(irrigData, mediaData) {
 function renderAll() {
   const irrig = getFilteredIrrig();
   const media = getFilteredMedia();
-  document.getElementById('row-count').textContent = `${irrig.length} دورة · ${media.length} يوم/غرفة`;
+  const cycleText = currentLang === 'ar' ? 'دورة' : 'cycles';
+  const dayRoomText = currentLang === 'ar' ? 'يوم/غرفة' : 'day/room';
+  document.getElementById('row-count').textContent = `${irrig.length} ${cycleText} · ${media.length} ${dayRoomText}`;
   renderIrrigTable(irrig);
   renderMediaTable(media);
   renderCharts(irrig, media);
@@ -1010,13 +1067,25 @@ function renderAll() {
 //  EXPORT
 // ═══════════════════════════════════
 function openExport() {
+  const farmText = currentLang === 'ar' ? 'مزرعة' : 'Farm';
+  const allFarmsText = currentLang === 'ar' ? 'كل المزارع' : 'All Farms';
+  const roomText = currentLang === 'ar' ? 'غرفة' : 'Room';
+  const allRoomsText = currentLang === 'ar' ? 'كل الغرف' : 'All Rooms';
+  const dayText = currentLang === 'ar' ? 'يوم' : 'Day';
+  const fromText = currentLang === 'ar' ? 'من' : 'From';
+  const toText = currentLang === 'ar' ? 'إلى' : 'To';
+  const allDataText = currentLang === 'ar' ? 'كل البيانات' : 'All Data';
+  
+  const selectedFarm = FARMS.find(f=>f.id===selFarm);
+  const farmName = selectedFarm ? (currentLang === 'ar' ? selectedFarm.name : selectedFarm.nameEn) : '';
+  
   const info = [
-    selFarm!=="all"?`مزرعة: ${FARMS.find(f=>f.id===selFarm)?.name}`:'كل المزارع',
-    selRoom!=="all"?`غرفة: ${selRoom}`:'كل الغرف',
-    selDate?`يوم: ${selDate}`:'',
-    rangeFrom?`من: ${rangeFrom}`:'',
-    rangeTo?`إلى: ${rangeTo}`:'',
-  ].filter(Boolean).join(' · ') || 'كل البيانات';
+    selFarm!=="all"?`${farmText}: ${farmName}`:allFarmsText,
+    selRoom!=="all"?`${roomText}: ${selRoom}`:allRoomsText,
+    selDate?`${dayText}: ${selDate}`:'',
+    rangeFrom?`${fromText}: ${rangeFrom}`:'',
+    rangeTo?`${toText}: ${rangeTo}`:'',
+  ].filter(Boolean).join(' · ') || allDataText;
   document.getElementById('export-info').textContent = info;
   document.getElementById('export-modal').classList.add('open');
 }
@@ -1048,8 +1117,59 @@ const badge_warn  = 'background:rgba(245,158,11,.12);border:1px solid rgba(245,1
 const badge_alert = 'background:rgba(244,63,94,.12);border:1px solid rgba(244,63,94,.3);color:var(--rose)';
 
 // ═══════════════════════════════════
+//  LANGUAGE TOGGLE (Shared across all pages)
+// ═══════════════════════════════════
+let currentLang = localStorage.getItem('appLanguage') || 'ar';
+
+function toggleLanguage(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  localStorage.setItem('appLanguage', currentLang);
+  const toggleBtn = document.getElementById('lang-toggle');
+  const body = document.body;
+  
+  // Update button text
+  toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+  
+  // Toggle RTL/LTR
+  body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Update all elements with data attributes
+  document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if(text) {
+      if(el.tagName === 'OPTION') {
+        el.textContent = text;
+      } else {
+        el.textContent = text;
+      }
+    }
+  });
+  
+  // Re-render dynamic content
+  renderAll();
+}
+
+// ═══════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════
+// Apply saved language on load
+const body = document.body;
+body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+const toggleBtn = document.getElementById('lang-toggle');
+if(toggleBtn) toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+
+// Update all elements with data attributes
+document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+  const text = el.getAttribute(`data-${currentLang}`);
+  if(text && el.tagName !== 'OPTION') el.textContent = text;
+});
+
+// Update select options
+document.querySelectorAll('option[data-ar]').forEach(option => {
+  const text = option.getAttribute(`data-${currentLang}`);
+  if(text) option.textContent = text;
+});
+
 initSelects();
 renderAll();
 </script>
