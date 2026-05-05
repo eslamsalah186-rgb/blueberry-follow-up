@@ -1,10 +1,9 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="html-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Blueberry Field Ops</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Fira+Code:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Fira+Code:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 /* ══════════════════════════════════════════
@@ -495,45 +494,45 @@ body {
   <div class="sb-collapse-btn" onclick="toggleSidebar()" id="sb-collapse-btn" title="طي / فتح">◀</div>
 
   <div class="sb-nav">
-    <div class="sb-group-label">المزارع</div>
-    <a class="sb-item active" data-page="dashboard" data-tip="المزارع" onclick="navigate('dashboard',this)">
+    <div class="sb-group-label" data-ar="المزارع" data-en="Farms"></div>
+    <a class="sb-item active" data-page="dashboard" data-tip-ar="المزارع" data-tip-en="Farms" onclick="navigate('dashboard',this)">
       <span class="sb-item-icon">🏡</span>
-      <span class="sb-item-text">عرض المزارع</span>
+      <span class="sb-item-text" data-ar="عرض المزارع" data-en="Farm View"></span>
     </a>
-    <a class="sb-item" data-page="registration" data-tip="التسجيل" onclick="navigate('registration',this)">
+    <a class="sb-item" data-page="registration" data-tip-ar="التسجيل" data-tip-en="Registration" onclick="navigate('registration',this)">
       <span class="sb-item-icon">📝</span>
-      <span class="sb-item-text">تسجيل البيانات</span>
+      <span class="sb-item-text" data-ar="تسجيل البيانات" data-en="Data Registration"></span>
     </a>
 
-    <div class="sb-group-label" style="margin-top:8px">الإنتاج</div>
-    <a class="sb-item" data-page="growth" data-tip="النمو" data-src="census_v3.html" onclick="navigate('module',this)">
+    <div class="sb-group-label" style="margin-top:8px" data-ar="الإنتاج" data-en="Production"></div>
+    <a class="sb-item" data-page="growth" data-tip-ar="النمو" data-tip-en="Growth" data-src="census_v3.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">🌿</span>
-      <span class="sb-item-text">النمو والـ Census</span>
+      <span class="sb-item-text" data-ar="النمو والـ Census" data-en="Growth & Census"></span>
     </a>
-    <a class="sb-item" data-page="harvest" data-tip="الحصاد" data-src="census_v3.html#harvest" onclick="navigate('module',this)">
+    <a class="sb-item" data-page="harvest" data-tip-ar="الحصاد" data-tip-en="Harvest" data-src="census_v3.html#harvest" onclick="navigate('module',this)">
       <span class="sb-item-icon">🫐</span>
-      <span class="sb-item-text">الحصاد والجودة</span>
+      <span class="sb-item-text" data-ar="الحصاد والجودة" data-en="Harvest & Quality"></span>
     </a>
 
-    <div class="sb-group-label" style="margin-top:8px">البيئة</div>
-    <a class="sb-item" data-page="climate" data-tip="المناخ" data-src="climate_monitor_v3.html" onclick="navigate('module',this)">
+    <div class="sb-group-label" style="margin-top:8px" data-ar="البيئة" data-en="Environment"></div>
+    <a class="sb-item" data-page="climate" data-tip-ar="المناخ" data-tip-en="Climate" data-src="climate_monitor_v3.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">🌡</span>
-      <span class="sb-item-text">المناخ والتحكم</span>
+      <span class="sb-item-text" data-ar="المناخ والتحكم" data-en="Climate & Control"></span>
     </a>
-    <a class="sb-item" data-page="irrigation" data-tip="الري" data-src="irrigation_log_v2.html" onclick="navigate('module',this)">
+    <a class="sb-item" data-page="irrigation" data-tip-ar="الري" data-tip-en="Irrigation" data-src="irrigation_log_v2.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">💧</span>
-      <span class="sb-item-text">الري والتسميد</span>
+      <span class="sb-item-text" data-ar="الري والتسميد" data-en="Irrigation & Fertilization"></span>
     </a>
-    <a class="sb-item" data-page="ipm" data-tip="IPM" data-src="ipm_monitor_v2.html" onclick="navigate('module',this)">
+    <a class="sb-item" data-page="ipm" data-tip-ar="IPM" data-tip-en="IPM" data-src="ipm_monitor_v2.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">🔬</span>
-      <span class="sb-item-text">المكافحة المتكاملة</span>
+      <span class="sb-item-text" data-ar="المكافحة المتكاملة" data-en="Integrated Pest Management"></span>
       <span class="sb-item-badge">IPM</span>
     </a>
 
-    <div class="sb-group-label" style="margin-top:8px">البيانات</div>
-    <a class="sb-item" data-page="history" data-tip="السجل" onclick="navigate('history',this)">
+    <div class="sb-group-label" style="margin-top:8px" data-ar="البيانات" data-en="Data"></div>
+    <a class="sb-item" data-page="history" data-tip-ar="السجل" data-tip-en="History" onclick="navigate('history',this)">
       <span class="sb-item-icon">🗂</span>
-      <span class="sb-item-text">السجل التاريخي</span>
+      <span class="sb-item-text" data-ar="السجل التاريخي" data-en="Historical Records"></span>
     </a>
   </div>
 
@@ -556,12 +555,13 @@ body {
   <!-- TOP BAR -->
   <div class="topbar">
     <div>
-      <div class="topbar-title" id="tb-title">عرض المزارع</div>
-      <div class="topbar-breadcrumb" id="tb-crumb">BLUEBERRY FIELD OPS</div>
+      <div class="topbar-title" id="tb-title" data-ar="عرض المزارع" data-en="Farm Overview"></div>
+      <div class="topbar-breadcrumb" id="tb-crumb" data-ar="BLUEBERRY FIELD OPS" data-en="BLUEBERRY FIELD OPS"></div>
     </div>
     <div class="topbar-right">
       <span class="topbar-time" id="clock">--:--:--</span>
-      <span id="daynight-indicator" class="badge b-ok">☀ نهار</span>
+      <span id="daynight-indicator" class="badge b-ok" data-ar="☀ نهار" data-en="☀ Day"></span>
+      <button class="btn-outline-sm" id="lang-toggle" onclick="toggleLanguage()" style="margin-left:8px" data-ar="EN" data-en="عر">EN</button>
     </div>
   </div>
 
@@ -577,17 +577,17 @@ body {
           <div class="hero-main">
             <div class="hero-bg"></div>
             <div class="hero-overlay">
-              <div class="hero-tag">🫐 Blueberry Field Operations</div>
+              <div class="hero-tag" data-ar="🫐 Blueberry Field Operations" data-en="🫐 Blueberry Field Operations"></div>
               <div class="hero-headline">
-                <em>3</em> مزارع<br>
-                <em>7</em> صوب
+                <em data-ar="3" data-en="3"></em> <span data-ar="مزارع" data-en="Farms"></span><br>
+                <em data-ar="7" data-en="7"></em> <span data-ar="صوب" data-en="Greenhouses"></span>
               </div>
               <div class="hero-stats-row" id="hero-stats"></div>
             </div>
           </div>
           <div class="hero-side">
             <div class="alert-panel" id="global-alerts">
-              <div class="ap-title">تنبيهات فعّالة</div>
+              <div class="ap-title" data-ar="تنبيهات فعّالة" data-en="Active Alerts"></div>
               <div id="alerts-list"></div>
             </div>
             <div class="kpi-strip-mini" id="kpi-mini"></div>
@@ -595,30 +595,30 @@ body {
         </div>
 
         <!-- Farm cards -->
-        <div class="section-title">المزارع — <em>نظرة عامة</em></div>
+        <div class="section-title" data-ar="المزارع — نظرة عامة" data-en="Farms — Overview"></div>
         <div class="farms-grid" id="farms-grid"></div>
 
         <!-- Mini charts strip -->
-        <div class="section-title" style="font-size:22px">بيانات المزارع — <em>آخر 7 أيام</em></div>
+        <div class="section-title" style="font-size:22px" data-ar="بيانات المزارع — آخر 7 أيام" data-en="Farm Data — Last 7 Days"></div>
         <div class="charts-strip">
           <div class="strip-chart">
-            <div class="sc-title">متوسط الحرارة</div>
-            <div class="sc-sub">نهاراً — كل مزرعة</div>
+            <div class="sc-title" data-ar="متوسط الحرارة" data-en="Average Temperature"></div>
+            <div class="sc-sub" data-ar="نهاراً — كل مزرعة" data-en="Daytime — All Farms"></div>
             <div style="height:140px"><canvas id="ch-temp"></canvas></div>
           </div>
           <div class="strip-chart">
-            <div class="sc-title">إجمالي الحصاد (kg)</div>
-            <div class="sc-sub">تراكمي — هذا الموسم</div>
+            <div class="sc-title" data-ar="إجمالي الحصاد (kg)" data-en="Total Harvest (kg)"></div>
+            <div class="sc-sub" data-ar="تراكمي — هذا الموسم" data-en="Cumulative — This Season"></div>
             <div style="height:140px"><canvas id="ch-harvest"></canvas></div>
           </div>
           <div class="strip-chart">
-            <div class="sc-title">تنبيهات IPM</div>
-            <div class="sc-sub">عدد الآفات المرصودة</div>
+            <div class="sc-title" data-ar="تنبيهات IPM" data-en="IPM Alerts"></div>
+            <div class="sc-sub" data-ar="عدد الآفات المرصودة" data-en="Number of Detected Pests"></div>
             <div style="height:140px"><canvas id="ch-ipm"></canvas></div>
           </div>
           <div class="strip-chart">
-            <div class="sc-title">مستوى الري</div>
-            <div class="sc-sub">متوسط وسط النمو %</div>
+            <div class="sc-title" data-ar="مستوى الري" data-en="Irrigation Level"></div>
+            <div class="sc-sub" data-ar="متوسط وسط النمو %" data-en="Average in Growing Medium %"></div>
             <div style="height:140px"><canvas id="ch-irrig"></canvas></div>
           </div>
         </div>
@@ -629,17 +629,17 @@ body {
     <!-- ══ PAGE: REGISTRATION ══ -->
     <div class="page" id="page-registration">
       <div class="dashboard-scroll">
-        <div class="section-title" style="margin-bottom:18px">تسجيل بيانات المزارع — <em>إدارة الموارد</em></div>
+        <div class="section-title" style="margin-bottom:18px" data-ar="تسجيل بيانات المزارع — إدارة الموارد" data-en="Farm Data Registration — Resource Management"></div>
         <div class="reg-layout">
 
           <!-- Sidebar: Farm selector -->
           <div class="reg-sidebar">
             <div class="reg-sb-hdr">
-              <div class="reg-sb-title">المزارع المسجلة</div>
+              <div class="reg-sb-title" data-ar="المزارع المسجلة" data-en="Registered Farms"></div>
             </div>
             <div class="reg-sb-list" id="reg-farm-list"></div>
             <div class="reg-add-farm" onclick="addFarmPrompt()">
-              <span style="font-size:16px">+</span> إضافة مزرعة جديدة
+              <span style="font-size:16px">+</span> <span data-ar="إضافة مزرعة جديدة" data-en="Add New Farm"></span>
             </div>
           </div>
 
@@ -657,26 +657,26 @@ body {
     <!-- ══ HISTORY PAGE ══ -->
     <div class="page" id="page-history">
       <div class="dashboard-scroll">
-        <div class="section-title" style="margin-bottom:4px">السجل التاريخي — <em>كل البيانات</em></div>
-        <p style="font-size:12px;color:var(--ink5);font-family:var(--mono);margin-bottom:18px">ابحث عبر كل الأحداث: ري · مناخ · حصاد · آفات · census · تدخلات</p>
+        <div class="section-title" style="margin-bottom:4px" data-ar="السجل التاريخي — كل البيانات" data-en="Historical Records — All Data"></div>
+        <p style="font-size:12px;color:var(--ink5);font-family:var(--mono);margin-bottom:18px" data-ar="ابحث عبر كل الأحداث: ري · مناخ · حصاد · آفات · census · تدخلات" data-en="Search across all events: irrigation · climate · harvest · pests · census · interventions"></p>
 
         <!-- Search + filter bar -->
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--cream3);border-radius:10px;padding:12px 16px;margin-bottom:16px">
-          <input id="hist-search" type="text" placeholder="🔍 ابحث بالغرفة أو النوع أو التاريخ..." oninput="filterHistory()"
+          <input id="hist-search" type="text" data-placeholder-ar="🔍 ابحث بالغرفة أو النوع أو التاريخ..." data-placeholder-en="🔍 Search by room, type, or date..." oninput="filterHistory()"
             style="flex:1;min-width:200px;background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none">
           <select id="hist-cat" onchange="filterHistory()"
             style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none;cursor:pointer">
-            <option value="all">كل الأنواع</option>
-            <option value="irrig">💧 ري</option>
-            <option value="climate">🌡 مناخ</option>
-            <option value="census">🌿 Census</option>
-            <option value="harvest">🫐 حصاد</option>
-            <option value="ipm">🔬 IPM</option>
-            <option value="quality">⭐ جودة</option>
+            <option value="all" data-ar="كل الأنواع" data-en="All Types"></option>
+            <option value="irrig" data-ar="💧 ري" data-en="💧 Irrigation"></option>
+            <option value="climate" data-ar="🌡 مناخ" data-en="🌡 Climate"></option>
+            <option value="census" data-ar="🌿 Census" data-en="🌿 Census"></option>
+            <option value="harvest" data-ar="🫐 حصاد" data-en="🫐 Harvest"></option>
+            <option value="ipm" data-ar="🔬 IPM" data-en="🔬 IPM"></option>
+            <option value="quality" data-ar="⭐ جودة" data-en="⭐ Quality"></option>
           </select>
           <select id="hist-room" onchange="filterHistory()"
             style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none;cursor:pointer">
-            <option value="all">كل الغرف</option>
+            <option value="all" data-ar="كل الغرف" data-en="All Rooms"></option>
             <option value="BB-01">BB-01</option><option value="BB-02">BB-02</option>
             <option value="BB-03">BB-03</option><option value="BB-04">BB-04</option>
             <option value="BB-05">BB-05</option><option value="BB-06">BB-06</option>
@@ -736,12 +736,69 @@ const FARMS_DATA = [
   }
 ];
 
-const STAGE_LABELS = {fullBloom:"إزهار كامل",greenFruit:"ثمر أخضر",coloring:"تلوين",petalFall:"تساقط البتلات",earlyBloom:"بداية الإزهار",harvest25:"حصاد أول",harvest75:"حصاد رئيسي"};
+const STAGE_LABELS = {
+  fullBloom: {ar:"إزهار كامل", en:"Full Bloom"},
+  greenFruit: {ar:"ثمر أخضر", en:"Green Fruit"},
+  coloring: {ar:"تلوين", en:"Coloring"},
+  petalFall: {ar:"تساقط البتلات", en:"Petal Fall"},
+  earlyBloom: {ar:"بداية الإزهار", en:"Early Bloom"},
+  harvest25: {ar:"حصاد أول", en:"First Harvest"},
+  harvest75: {ar:"حصاد رئيسي", en:"Main Harvest"}
+};
 const STAGE_COLORS = {fullBloom:"#38bdf8",greenFruit:"#a3e635",coloring:"#818cf8",petalFall:"#86efac",earlyBloom:"#60a5fa",harvest25:"#6366f1",harvest75:"#7c5cfc"};
 
 let sidebarCollapsed = false;
 let currentRegFarm   = "F-01";
 let chartInst        = {};
+let currentLanguage  = 'ar'; // Default to Arabic
+
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════════════════
+function toggleLanguage(){
+  currentLanguage = currentLanguage === 'ar' ? 'en' : 'ar';
+  applyLanguage();
+}
+
+function applyLanguage(){
+  const html = document.getElementById('html-root');
+  const btn = document.getElementById('lang-toggle');
+  
+  if(currentLanguage === 'ar'){
+    html.setAttribute('lang', 'ar');
+    html.setAttribute('dir', 'rtl');
+    btn.textContent = 'EN';
+  } else {
+    html.setAttribute('lang', 'en');
+    html.setAttribute('dir', 'ltr');
+    btn.textContent = 'عر';
+  }
+  
+  // Update all translatable elements
+  document.querySelectorAll('[data-ar], [data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLanguage}`);
+    if(text !== null){
+      if(el.tagName === 'INPUT' && el.type === 'text'){
+        el.placeholder = el.getAttribute(`data-placeholder-${currentLanguage}`) || text;
+      } else if(el.tagName === 'OPTION'){
+        el.textContent = text;
+      } else {
+        el.textContent = text;
+      }
+    }
+  });
+  
+  // Update tooltips
+  document.querySelectorAll('[data-tip-ar], [data-tip-en]').forEach(el => {
+    const tip = el.getAttribute(`data-tip-${currentLanguage}`);
+    if(tip) el.setAttribute('data-tip', tip);
+  });
+  
+  // Re-render dynamic content
+  renderDashboard();
+  if(document.getElementById('page-registration').classList.contains('on')) renderRegistration();
+  if(document.getElementById('page-history').classList.contains('on')){ filterHistory(); renderHistoryTimeline(); }
+}
 
 // ═══════════════════════════════════════════
 //  CLOCK
@@ -763,10 +820,10 @@ setInterval(tick,1000); tick();
 //  NAVIGATION
 // ═══════════════════════════════════════════
 const PAGE_TITLES = {
-  dashboard:    {title:"عرض المزارع",          crumb:"BLUEBERRY FIELD OPS"},
-  registration: {title:"تسجيل البيانات",       crumb:"FARM MANAGEMENT"},
-  history:      {title:"السجل التاريخي",        crumb:"DATA HISTORY"},
-  module:       {title:"",                      crumb:""},
+  dashboard:    {title_ar:"عرض المزارع", title_en:"Farm Overview", crumb:"BLUEBERRY FIELD OPS"},
+  registration: {title_ar:"تسجيل البيانات", title_en:"Data Registration", crumb:"FARM MANAGEMENT"},
+  history:      {title_ar:"السجل التاريخي", title_en:"Historical Records", crumb:"DATA HISTORY"},
+  module:       {title:"", crumb:""},
 };
 
 // ═══════════════════════════════════════════
@@ -807,7 +864,14 @@ const HISTORY_EVENTS = [
   {id:"qua-2",cat:"quality",room:"BB-06",date:daysAgo(4),title:"قياس جودة A grade — BB-06",detail:"Brix 13.1° · وزن 1.91g · قطر 14.8mm · صلابة 1.9N · لون 5/5 · رفض 2.1%",icon:"⭐",color:"#A0394A"},
 ];
 
-const CAT_LABELS = {irrig:"💧 ري",climate:"🌡 مناخ",census:"🌿 Census",harvest:"🫐 حصاد",ipm:"🔬 IPM",quality:"⭐ جودة"};
+const CAT_LABELS = {
+  irrig: {ar:"💧 ري", en:"💧 Irrigation"},
+  climate: {ar:"🌡 مناخ", en:"🌡 Climate"},
+  census: {ar:"🌿 Census", en:"🌿 Census"},
+  harvest: {ar:"🫐 حصاد", en:"🫐 Harvest"},
+  ipm: {ar:"🔬 IPM", en:"🔬 IPM"},
+  quality: {ar:"⭐ جودة", en:"⭐ Quality"}
+};
 let histFiltered = [...HISTORY_EVENTS];
 
 function filterHistory(){
@@ -829,9 +893,9 @@ function filterHistory(){
 
 function renderHistoryTimeline(){
   const el=document.getElementById('hist-timeline'); if(!el) return;
-  document.getElementById('hist-count').textContent=histFiltered.length+' حدث';
+  document.getElementById('hist-count').textContent=histFiltered.length + ' ' + (currentLanguage === 'ar' ? 'حدث' : 'events');
   if(!histFiltered.length){
-    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--ink5);font-family:var(--mono);font-size:12px">لا توجد نتائج تطابق الفلتر</div>';
+    el.innerHTML=`<div style="text-align:center;padding:40px;color:var(--ink5);font-family:var(--mono);font-size:12px">${currentLanguage === 'ar' ? 'لا توجد نتائج تطابق الفلتر' : 'No results match the filter'}</div>`;
     return;
   }
   // Group by date
@@ -858,7 +922,7 @@ function renderHistoryTimeline(){
             <div style="flex:1;min-width:0">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
                 <span style="font-size:12px;font-weight:600;color:var(--ink)">${e.title}</span>
-                <span style="font-size:9px;font-family:var(--mono);border-radius:20px;padding:1px 8px;border:1px solid ${e.color}44;color:${e.color};background:${e.color}0f">${CAT_LABELS[e.cat]||e.cat}</span>
+                <span style="font-size:9px;font-family:var(--mono);border-radius:20px;padding:1px 8px;border:1px solid ${e.color}44;color:${e.color};background:${e.color}0f">${CAT_LABELS[e.cat]?.[currentLanguage]||e.cat}</span>
                 <span style="font-size:9px;font-family:var(--mono);color:var(--ink5);background:var(--cream);border-radius:4px;padding:1px 6px;border:1px solid var(--cream3)">${e.room}</span>
               </div>
               <div style="font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.5">${e.detail}</div>
@@ -868,10 +932,10 @@ function renderHistoryTimeline(){
     </div>`).join('');
 }
 const MODULE_TITLES = {
-  "census_v3.html":         {title:"النمو والـ Census",    crumb:"GROWTH · HARVEST · QUALITY"},
-  "climate_monitor_v3.html":{title:"المناخ والتحكم",       crumb:"CLIMATE CONTROL"},
-  "irrigation_log_v2.html": {title:"الري والتسميد",        crumb:"FERTIGATION LOG"},
-  "ipm_monitor_v2.html":    {title:"المكافحة المتكاملة",   crumb:"IPM MONITOR"},
+  "census_v3.html":         {title_ar:"النمو والـ Census", title_en:"Growth & Census", crumb:"GROWTH · HARVEST · QUALITY"},
+  "climate_monitor_v3.html":{title_ar:"المناخ والتحكم", title_en:"Climate & Control", crumb:"CLIMATE CONTROL"},
+  "irrigation_log_v2.html": {title_ar:"الري والتسميد", title_en:"Irrigation & Fertilization", crumb:"FERTIGATION LOG"},
+  "ipm_monitor_v2.html":    {title_ar:"المكافحة المتكاملة", title_en:"Integrated Pest Management", crumb:"IPM MONITOR"},
 };
 
 function navigate(type, el){
@@ -883,7 +947,7 @@ function navigate(type, el){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
     document.getElementById('page-'+type).classList.add('on');
     const info = PAGE_TITLES[type];
-    document.getElementById('tb-title').textContent = info.title;
+    document.getElementById('tb-title').textContent = info[`title_${currentLanguage}`] || info.title;
     document.getElementById('tb-crumb').textContent = info.crumb;
     if(type==='registration') renderRegistration();
     if(type==='history'){ filterHistory(); renderHistoryTimeline(); }
@@ -895,7 +959,7 @@ function navigate(type, el){
     document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
     document.getElementById('page-module').classList.add('on');
     const info = MODULE_TITLES[src] || {title:el.querySelector('.sb-item-text')?.textContent||'', crumb:'MODULE'};
-    document.getElementById('tb-title').textContent = info.title;
+    document.getElementById('tb-title').textContent = info[`title_${currentLanguage}`] || info.title;
     document.getElementById('tb-crumb').textContent = info.crumb;
   }
 }
@@ -919,11 +983,11 @@ function renderDashboard(){
 
   // Hero stats
   document.getElementById('hero-stats').innerHTML=[
-    {v:totalPlants.toLocaleString(), l:"نبتة"},
-    {v:totalRooms, l:"صوبة"},
-    {v:FARMS_DATA.reduce((a,f)=>a+f.area,0).toLocaleString()+" م²", l:"مساحة"},
-    {v:totalHarvest+" kg", l:"محصول الموسم"},
-  ].map(s=>`<div class="hero-stat"><div class="hs-num">${s.v}</div><div class="hs-lbl">${s.l}</div></div>`).join('');
+    {v:totalPlants.toLocaleString(), l_ar:"نبتة", l_en:"Plants"},
+    {v:totalRooms, l_ar:"صوبة", l_en:"Greenhouses"},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.area,0).toLocaleString()+" م²", l_ar:"مساحة", l_en:"Area"},
+    {v:totalHarvest+" kg", l_ar:"محصول الموسم", l_en:"Season Harvest"},
+  ].map(s=>`<div class="hero-stat"><div class="hs-num">${s.v}</div><div class="hs-lbl">${s[`l_${currentLanguage}`]}</div></div>`).join('');
 
   // Global alerts
   const allAlerts = FARMS_DATA.flatMap(f=>f.alerts);
@@ -931,15 +995,15 @@ function renderDashboard(){
     <div class="alert-item">
       <div class="ai-dot" style="background:${a.c}"></div>
       <span>${a.t}</span>
-    </div>`).join('') || '<div style="color:rgba(240,237,230,.4);font-size:11px;font-family:var(--mono)">✓ لا توجد تنبيهات</div>';
+    </div>`).join('') || `<div style="color:rgba(240,237,230,.4);font-size:11px;font-family:var(--mono)">✓ ${currentLanguage === 'ar' ? 'لا توجد تنبيهات' : 'No alerts'}</div>`;
 
   // KPI mini
   document.getElementById('kpi-mini').innerHTML=[
-    {v:alertCount, l:"تنبيهات",   c:alertCount>0?"var(--rose-l)":undefined},
-    {v:FARMS_DATA.length, l:"مزارع", c:undefined},
-    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>!r.waterOk&&r.waterPct<50).length,0), l:"ري متأخر", c:undefined},
-    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>r.pestOk&&r.disOk).length,0), l:"صوب سليمة", c:"#5abf7e"},
-  ].map(k=>`<div class="kpi-mini"><div class="km-num" ${k.c?`style="color:${k.c}"`:''}>${k.v}</div><div class="km-lbl">${k.l}</div></div>`).join('');
+    {v:alertCount, l_ar:"تنبيهات", l_en:"Alerts", c:alertCount>0?"var(--rose-l)":undefined},
+    {v:FARMS_DATA.length, l_ar:"مزارع", l_en:"Farms", c:undefined},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>!r.waterOk&&r.waterPct<50).length,0), l_ar:"ري متأخر", l_en:"Late Irrigation", c:undefined},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>r.pestOk&&r.disOk).length,0), l_ar:"صوب سليمة", l_en:"Healthy Rooms", c:"#5abf7e"},
+  ].map(k=>`<div class="kpi-mini"><div class="km-num" ${k.c?`style="color:${k.c}"`:''}>${k.v}</div><div class="km-lbl">${k[`l_${currentLanguage}`]}</div></div>`).join('');
 
   // Farm cards
   document.getElementById('farms-grid').innerHTML = FARMS_DATA.map(f=>{
@@ -972,7 +1036,7 @@ function renderDashboard(){
         </div>
         <div class="fc-rooms" style="margin-bottom:10px">${roomPills}</div>
         <div class="fc-alerts">
-          ${alertsOk?'<span class="badge b-ok">✓ جميع الصوب سليمة</span>':alertChips}
+          ${alertsOk?`<span class="badge b-ok">✓ ${currentLanguage === 'ar' ? 'جميع الصوب سليمة' : 'All rooms healthy'}</span>`:alertChips}
         </div>
       </div>
     </div>`;
@@ -1078,33 +1142,33 @@ function renderRegContent(){
     <div class="reg-card">
       <div class="reg-card-hdr">
         <div style="width:10px;height:10px;border-radius:50%;background:${f.color}"></div>
-        <div class="reg-card-title">بيانات المزرعة — ${f.name}</div>
+        <div class="reg-card-title">${currentLanguage === 'ar' ? 'بيانات المزرعة' : 'Farm Data'} — ${f.name}</div>
         <span class="badge b-info" style="margin-right:auto">ID: ${f.id}</span>
       </div>
       <div class="reg-card-body">
         <div class="form-grid">
           <div class="form-field">
-            <label class="form-label">اسم المزرعة</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'اسم المزرعة' : 'Farm Name'}</label>
             <input class="form-input" value="${f.name}" id="fi-name">
           </div>
           <div class="form-field">
-            <label class="form-label">الموقع / المحافظة</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'الموقع / المحافظة' : 'Location / Governorate'}</label>
             <input class="form-input" value="${f.location}" id="fi-loc">
           </div>
           <div class="form-field">
-            <label class="form-label">سنة التأسيس</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'سنة التأسيس' : 'Founded Year'}</label>
             <input class="form-input" value="${f.founded}" id="fi-year">
           </div>
           <div class="form-field">
-            <label class="form-label">المساحة الإجمالية (م²)</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'المساحة الإجمالية (م²)' : 'Total Area (m²)'}</label>
             <input class="form-input" type="number" value="${f.area}" id="fi-area">
           </div>
           <div class="form-field">
-            <label class="form-label">عدد الغرف / الصوب</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'عدد الغرف / الصوب' : 'Number of Rooms'}</label>
             <input class="form-input" type="number" value="${f.rooms.length}" readonly style="opacity:.6">
           </div>
           <div class="form-field">
-            <label class="form-label">إجمالي النباتات</label>
+            <label class="form-label">${currentLanguage === 'ar' ? 'إجمالي النباتات' : 'Total Plants'}</label>
             <input class="form-input" type="number" value="${totalPlants}" readonly style="opacity:.6">
           </div>
         </div>
@@ -1114,9 +1178,9 @@ function renderRegContent(){
     <!-- Workers -->
     <div class="reg-card">
       <div class="reg-card-hdr">
-        <div class="reg-card-title">العمال المسجلون</div>
-        <span class="badge b-ok">${allWorkers.length} عامل</span>
-        <button class="btn-outline-sm" style="margin-right:auto" onclick="addWorkerPrompt()">+ إضافة عامل</button>
+        <div class="reg-card-title">${currentLanguage === 'ar' ? 'العمال المسجلون' : 'Registered Workers'}</div>
+        <span class="badge b-ok">${allWorkers.length} ${currentLanguage === 'ar' ? 'عامل' : 'workers'}</span>
+        <button class="btn-outline-sm" style="margin-right:auto" onclick="addWorkerPrompt()">+ ${currentLanguage === 'ar' ? 'إضافة عامل' : 'Add Worker'}</button>
       </div>
       <div class="reg-card-body">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1132,24 +1196,24 @@ function renderRegContent(){
     <!-- Rooms table -->
     <div class="reg-card">
       <div class="reg-card-hdr">
-        <div class="reg-card-title">الغرف والصوب</div>
-        <span class="badge b-ok">${f.rooms.length} صوبة</span>
-        <button class="btn-outline-sm" style="margin-right:auto" onclick="addRoomPrompt()">+ إضافة غرفة</button>
+        <div class="reg-card-title">${currentLanguage === 'ar' ? 'الغرف والصوب' : 'Rooms & Greenhouses'}</div>
+        <span class="badge b-ok">${f.rooms.length} ${currentLanguage === 'ar' ? 'صوبة' : 'greenhouses'}</span>
+        <button class="btn-outline-sm" style="margin-right:auto" onclick="addRoomPrompt()">+ ${currentLanguage === 'ar' ? 'إضافة غرفة' : 'Add Room'}</button>
       </div>
       <div style="overflow-x:auto">
         <table class="room-reg-tbl">
           <thead>
             <tr>
-              <th>رقم الغرفة</th>
-              <th>الصنف</th>
-              <th>المساحة (م²)</th>
-              <th>الأبعاد</th>
-              <th>عدد النباتات</th>
-              <th>عمر النباتات</th>
-              <th>التجهيز</th>
-              <th>عدد عينات Census</th>
-              <th>العمال</th>
-              <th>المرحلة الحالية</th>
+              <th>${currentLanguage === 'ar' ? 'رقم الغرفة' : 'Room Number'}</th>
+              <th>${currentLanguage === 'ar' ? 'الصنف' : 'Variety'}</th>
+              <th>${currentLanguage === 'ar' ? 'المساحة (م²)' : 'Area (m²)'}</th>
+              <th>${currentLanguage === 'ar' ? 'الأبعاد' : 'Dimensions'}</th>
+              <th>${currentLanguage === 'ar' ? 'عدد النباتات' : 'Plant Count'}</th>
+              <th>${currentLanguage === 'ar' ? 'عمر النباتات' : 'Plant Age'}</th>
+              <th>${currentLanguage === 'ar' ? 'التجهيز' : 'Setup'}</th>
+              <th>${currentLanguage === 'ar' ? 'عدد عينات Census' : 'Census Samples'}</th>
+              <th>${currentLanguage === 'ar' ? 'العمال' : 'Workers'}</th>
+              <th>${currentLanguage === 'ar' ? 'المرحلة الحالية' : 'Current Stage'}</th>
             </tr>
           </thead>
           <tbody>
@@ -1165,7 +1229,7 @@ function renderRegContent(){
                 <td style="font-size:11px">${r.setup}</td>
                 <td class="td-mono" style="color:var(--berry2)">${r.samples} عينة</td>
                 <td>${r.workers.map(w=>`<span class="worker-pill">👤 ${w}</span>`).join('')}</td>
-                <td><span style="background:${stageColor}18;border:1px solid ${stageColor}44;color:${stageColor};border-radius:20px;padding:2px 9px;font-size:10px;font-family:var(--mono);font-weight:600">${STAGE_LABELS[r.stage]||r.stage}</span></td>
+                <td><span style="background:${stageColor}18;border:1px solid ${stageColor}44;color:${stageColor};border-radius:20px;padding:2px 9px;font-size:10px;font-family:var(--mono);font-weight:600">${STAGE_LABELS[r.stage]?.[currentLanguage]||r.stage}</span></td>
               </tr>`;
             }).join('')}
           </tbody>
@@ -1175,24 +1239,24 @@ function renderRegContent(){
 
     <!-- Save -->
     <div style="display:flex;gap:10px;justify-content:flex-end;padding-bottom:20px">
-      <button class="btn-outline-sm" onclick="renderRegContent()">↺ إعادة ضبط</button>
-      <button class="btn-save" onclick="saveReg()">💾 حفظ التغييرات</button>
+      <button class="btn-outline-sm" onclick="renderRegContent()">↺ ${currentLanguage === 'ar' ? 'إعادة ضبط' : 'Reset'}</button>
+      <button class="btn-save" onclick="saveReg()">💾 ${currentLanguage === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}</button>
     </div>
   `;
 }
 
 function addFarmPrompt(){
-  const name=prompt("اسم المزرعة الجديدة:");
+  const name=prompt(currentLanguage === 'ar' ? "اسم المزرعة الجديدة:" : "New farm name:");
   if(!name) return;
-  const loc=prompt("الموقع/المحافظة:");
+  const loc=prompt(currentLanguage === 'ar' ? "الموقع/المحافظة:" : "Location/Governorate:");
   FARMS_DATA.push({id:`F-0${FARMS_DATA.length+1}`,name,location:loc||"—",color:"#6B8FBF",founded:new Date().getFullYear().toString(),area:0,img:"https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?auto=format&fit=crop&w=800&q=80",rooms:[],totalHarvest:0,alerts:[]});
   currentRegFarm=FARMS_DATA[FARMS_DATA.length-1].id;
   renderRegistration();
 }
 
 function addWorkerPrompt(){
-  const name=prompt("اسم العامل:");
-  const room=prompt("رقم الغرفة:");
+  const name=prompt(currentLanguage === 'ar' ? "اسم العامل:" : "Worker name:");
+  const room=prompt(currentLanguage === 'ar' ? "رقم الغرفة:" : "Room number:");
   if(!name) return;
   const f=FARMS_DATA.find(x=>x.id===currentRegFarm);
   const r=f.rooms.find(x=>x.id===room);
@@ -1201,10 +1265,10 @@ function addWorkerPrompt(){
 }
 
 function addRoomPrompt(){
-  const id=prompt("رقم الغرفة (مثال: BB-08):");
+  const id=prompt(currentLanguage === 'ar' ? "رقم الغرفة (مثال: BB-08):" : "Room number (example: BB-08):");
   if(!id) return;
-  const variety=prompt("الصنف:");
-  const plants=parseInt(prompt("عدد النباتات:")||0);
+  const variety=prompt(currentLanguage === 'ar' ? "الصنف:" : "Variety:");
+  const plants=parseInt(prompt(currentLanguage === 'ar' ? "عدد النباتات:" : "Number of plants:")||0);
   const f=FARMS_DATA.find(x=>x.id===currentRegFarm);
   f.rooms.push({id,variety:variety||"—",area:0,dim:"—",plants,age:0,setup:"كوكوبيت",samples:5,workers:[],stage:"budding",waterPct:0,pestOk:true,disOk:true,tempIn:22});
   renderRegContent();
@@ -1217,8 +1281,9 @@ function saveReg(){
   const y=document.getElementById('fi-year')?.value; if(y) f.founded=y;
   const a=document.getElementById('fi-area')?.value; if(a) f.area=parseInt(a);
   const btn=document.querySelector('.btn-save');
-  btn.textContent="✓ تم الحفظ"; btn.style.background="var(--leaf2)";
-  setTimeout(()=>{ btn.textContent="💾 حفظ التغييرات"; btn.style.background=""; },2200);
+  btn.textContent="✓ " + (currentLanguage === 'ar' ? "تم الحفظ" : "Saved");
+  btn.style.background="var(--leaf2)";
+  setTimeout(()=>{ btn.textContent="💾 " + (currentLanguage === 'ar' ? "حفظ التغييرات" : "Save Changes"); btn.style.background=""; },2200);
   renderDashboard();
 }
 
@@ -1236,6 +1301,7 @@ function openRoomDetail(id){
 //  BOOT
 // ═══════════════════════════════════════════
 renderDashboard();
+applyLanguage(); // Initialize language display
 </script>
 </body>
 </html>
