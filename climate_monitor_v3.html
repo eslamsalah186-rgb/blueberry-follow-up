@@ -395,7 +395,7 @@ body::after {
 <div class="hdr">
   <div>
     <div class="hdr-id" id="hdr-room">BB-01</div>
-    <div class="hdr-name" id="hdr-name">بيانكا · 1200 نبتة · 600 م²</div>
+    <div class="hdr-name" id="hdr-name" data-ar="بيانكا · 1200 نبتة · 600 م²" data-en="Bianca · 1200 plants · 600 m²">بيانكا · 1200 نبتة · 600 م²</div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:flex-end">
     <div class="hdr-time" id="live-time">--:--:--</div>
@@ -404,14 +404,15 @@ body::after {
   <div id="daynight-chip"></div>
   <div class="room-pills" id="room-pills"></div>
   <div class="alert-strip" id="alert-strip"></div>
+  <button class="btn lang-toggle" id="lang-toggle" onclick="toggleLanguage()" data-ar="EN" data-en="عر" style="margin-left:8px;padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;transition:.15s">EN</button>
 </div>
 
 <!-- TABS -->
 <div class="main-tabs">
-  <button class="mtab on" id="tab-monitor"  onclick="setTab('monitor')">🌡 المراقبة</button>
-  <button class="mtab"    id="tab-compare"  onclick="setTab('compare')">📊 المقارنة</button>
-  <button class="mtab"    id="tab-control"  onclick="setTab('control')">⚙ التحكم</button>
-  <button class="mtab"    id="tab-history"  onclick="setTab('history')">📋 السجل</button>
+  <button class="mtab on" id="tab-monitor"  onclick="setTab('monitor')" data-ar="🌡 المراقبة" data-en="🌡 Monitor">🌡 المراقبة</button>
+  <button class="mtab"    id="tab-compare"  onclick="setTab('compare')" data-ar="📊 المقارنة" data-en="📊 Compare">📊 المقارنة</button>
+  <button class="mtab"    id="tab-control"  onclick="setTab('control')" data-ar="⚙ التحكم" data-en="⚙ Control">⚙ التحكم</button>
+  <button class="mtab"    id="tab-history"  onclick="setTab('history')" data-ar="📋 السجل" data-en="📋 Log">📋 السجل</button>
 </div>
 
 <!-- ══════ TAB: MONITOR ══════ -->
@@ -426,8 +427,8 @@ body::after {
     <div class="chart-card">
       <div class="cc-hdr">
         <div>
-          <div class="cc-title">درجة الحرارة — 24 ساعة</div>
-          <div class="cc-sub">داخل الصوبة vs الخارج · خط ليل/نهار واضح</div>
+          <div class="cc-title" data-ar="درجة الحرارة — 24 ساعة" data-en="Temperature — 24 hours">درجة الحرارة — 24 ساعة</div>
+          <div class="cc-sub" data-ar="داخل الصوبة vs الخارج · خط ليل/نهار واضح" data-en="Greenhouse vs outdoors · Day/night line clear">داخل الصوبة vs الخارج · خط ليل/نهار واضح</div>
         </div>
         <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">°C</span>
       </div>
@@ -437,7 +438,7 @@ body::after {
     <div class="chart-card">
       <div class="cc-hdr">
         <div>
-          <div class="cc-title">الرطوبة و VPD</div>
+          <div class="cc-title" data-ar="الرطوبة و VPD" data-en="Humidity & VPD">الرطوبة و VPD</div>
           <div class="cc-sub">Relative Humidity % · VPD kPa</div>
         </div>
         <span class="cc-badge" style="color:var(--sky);border-color:rgba(64,196,255,.3)">RH/VPD</span>
@@ -448,8 +449,8 @@ body::after {
     <div class="chart-card">
       <div class="cc-hdr">
         <div>
-          <div class="cc-title">الإشعاع الشمسي</div>
-          <div class="cc-sub">W/m² · صفر تماماً من 18:00 حتى 06:00</div>
+          <div class="cc-title" data-ar="الإشعاع الشمسي" data-en="Solar Radiation">الإشعاع الشمسي</div>
+          <div class="cc-sub" data-ar="W/m² · صفر تماماً من 18:00 حتى 06:00" data-en="W/m² · Zero from 18:00 to 06:00">W/m² · صفر تماماً من 18:00 حتى 06:00</div>
         </div>
         <span class="cc-badge" style="color:var(--rad);border-color:rgba(224,64,251,.3)">W/m²</span>
       </div>
@@ -459,8 +460,8 @@ body::after {
     <div class="chart-card">
       <div class="cc-hdr">
         <div>
-          <div class="cc-title">داخل vs خارج — الآن</div>
-          <div class="cc-sub">مقارنة فورية بين بيئة الصوبة والجو الخارجي</div>
+          <div class="cc-title" data-ar="داخل vs خارج — الآن" data-en="Inside vs Outside — Now">داخل vs خارج — الآن</div>
+          <div class="cc-sub" data-ar="مقارنة فورية بين بيئة الصوبة والجو الخارجي" data-en="Real-time comparison between greenhouse and outdoor">مقارنة فورية بين بيئة الصوبة والجو الخارجي</div>
         </div>
         <span class="cc-badge" style="color:var(--ph);border-color:rgba(0,230,118,.3)">LIVE</span>
       </div>
@@ -477,11 +478,11 @@ body::after {
 
     <!-- Period filter -->
     <div class="cmp-group">
-      <span class="cmp-lbl-hdr">الفترة</span>
+      <span class="cmp-lbl-hdr" data-ar="الفترة" data-en="Period">الفترة</span>
       <div class="period-pills">
-        <button class="period-pill on" id="pp-all"   onclick="setPeriod('all')">24 ساعة</button>
-        <button class="period-pill"    id="pp-day"   onclick="setPeriod('day')">☀ نهار (6–18)</button>
-        <button class="period-pill"    id="pp-night" onclick="setPeriod('night')">🌙 ليل (18–6)</button>
+        <button class="period-pill on" id="pp-all"   onclick="setPeriod('all')" data-ar="24 ساعة" data-en="24 hours">24 ساعة</button>
+        <button class="period-pill"    id="pp-day"   onclick="setPeriod('day')" data-ar="☀ نهار (6–18)" data-en="☀ Day (6–18)">☀ نهار (6–18)</button>
+        <button class="period-pill"    id="pp-night" onclick="setPeriod('night')" data-ar="🌙 ليل (18–6)" data-en="🌙 Night (18–6)">🌙 ليل (18–6)</button>
       </div>
     </div>
 
@@ -489,13 +490,13 @@ body::after {
 
     <!-- Room multi-selector -->
     <div class="cmp-group" style="flex:1;min-width:0">
-      <span class="cmp-lbl-hdr">الغرف</span>
+      <span class="cmp-lbl-hdr" data-ar="الغرف" data-en="Rooms">الغرف</span>
       <div class="room-multi-grid" id="room-multi-grid"></div>
     </div>
 
     <div style="margin-right:auto"></div>
-    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="selectAllRooms()">كل الغرف</button>
-    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="clearRooms()">مسح</button>
+    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="selectAllRooms()" data-ar="كل الغرف" data-en="All Rooms">كل الغرف</button>
+    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="clearRooms()" data-ar="مسح" data-en="Clear">مسح</button>
   </div>
 
   <!-- 4 comparison charts stacked -->
@@ -557,24 +558,24 @@ body::after {
   <div class="control-layout">
 
     <!-- Actuator cards -->
-    <div class="section-rule">الأجهزة والمشغّلات</div>
+    <div class="section-rule" data-ar="الأجهزة والمشغّلات" data-en="Actuators & Equipment">الأجهزة والمشغّلات</div>
     <div class="actuator-grid" id="actuator-grid"></div>
 
     <!-- Daily schedule table -->
-    <div class="section-rule" style="margin-top:4px">جدول الخطة اليومية — Logic Schedule</div>
+    <div class="section-rule" style="margin-top:4px" data-ar="جدول الخطة اليومية — Logic Schedule" data-en="Daily Schedule — Logic Schedule">جدول الخطة اليومية — Logic Schedule</div>
     <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:10px;overflow:hidden">
       <div style="overflow-x:auto">
         <table class="sched-tbl" id="sched-tbl">
           <thead>
             <tr>
-              <th>الوقت</th>
-              <th>الجهاز</th>
-              <th>الحالة</th>
-              <th>الشرط / السبب</th>
-              <th>المستوى / السرعة</th>
-              <th>درجة الحرارة عند التدخل</th>
-              <th>الرطوبة عند التدخل</th>
-              <th>النتيجة بعد 30 د</th>
+              <th data-ar="الوقت" data-en="Time">الوقت</th>
+              <th data-ar="الجهاز" data-en="Device">الجهاز</th>
+              <th data-ar="الحالة" data-en="Status">الحالة</th>
+              <th data-ar="الشرط / السبب" data-en="Condition / Reason">الشرط / السبب</th>
+              <th data-ar="المستوى / السرعة" data-en="Level / Speed">المستوى / السرعة</th>
+              <th data-ar="درجة الحرارة عند التدخل" data-en="Temp at Intervention">درجة الحرارة عند التدخل</th>
+              <th data-ar="الرطوبة عند التدخل" data-en="RH at Intervention">الرطوبة عند التدخل</th>
+              <th data-ar="النتيجة بعد 30 د" data-en="Result after 30min">النتيجة بعد 30 د</th>
             </tr>
           </thead>
           <tbody id="sched-tbody"></tbody>
@@ -586,8 +587,8 @@ body::after {
     <div class="intervention-chart">
       <div class="cc-hdr">
         <div>
-          <div class="cc-title">تأثير التدخلات على المناخ — 24 ساعة</div>
-          <div class="cc-sub">تظهر أيقونة الجهاز عند نقطة التشغيل · الخط المنقط = هدف الضبط</div>
+          <div class="cc-title" data-ar="تأثير التدخلات على المناخ — 24 ساعة" data-en="Effect of Interventions on Climate — 24h">تأثير التدخلات على المناخ — 24 ساعة</div>
+          <div class="cc-sub" data-ar="تظهر أيقونة الجهاز عند نقطة التشغيل · الخط المنقط = هدف الضبط" data-en="Device icon shown at activation point · Dashed line = setpoint">تظهر أيقونة الجهاز عند نقطة التشغيل · الخط المنقط = هدف الضبط</div>
         </div>
         <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">INTERVENTION</span>
       </div>
@@ -595,7 +596,7 @@ body::after {
     </div>
 
     <!-- Auto logic rules -->
-    <div class="section-rule" style="margin-top:4px">قواعد التشغيل التلقائي</div>
+    <div class="section-rule" style="margin-top:4px" data-ar="قواعد التشغيل التلقائي" data-en="Auto Logic Rules">قواعد التشغيل التلقائي</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px" id="logic-rules"></div>
 
   </div>
@@ -604,21 +605,21 @@ body::after {
 <!-- ══════ TAB: HISTORY ══════ -->
 <div class="page" id="page-history">
   <div style="display:flex;flex-direction:column;gap:14px">
-    <div class="section-rule">سجل 7 أيام — Daily Log</div>
+    <div class="section-rule" data-ar="سجل 7 أيام — Daily Log" data-en="7-Day Log — Daily Log">سجل 7 أيام — Daily Log</div>
     <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:10px;overflow:hidden">
       <div style="overflow-x:auto">
         <table class="sched-tbl" id="history-tbl">
           <thead>
             <tr>
-              <th>التاريخ</th>
-              <th>متوسط °C نهار</th>
-              <th>متوسط °C ليل</th>
-              <th>RH% متوسط</th>
-              <th>VPD kPa</th>
-              <th>إشعاع max W/m²</th>
-              <th>تدخلات المراوح</th>
-              <th>تدخلات التبريد</th>
-              <th>تنبيهات</th>
+              <th data-ar="التاريخ" data-en="Date">التاريخ</th>
+              <th data-ar="متوسط °C نهار" data-en="Avg °C Day">متوسط °C نهار</th>
+              <th data-ar="متوسط °C ليل" data-en="Avg °C Night">متوسط °C ليل</th>
+              <th data-ar="RH% متوسط" data-en="Avg RH%">RH% متوسط</th>
+              <th data-ar="VPD kPa" data-en="VPD kPa">VPD kPa</th>
+              <th data-ar="إشعاع max W/m²" data-en="Max Radiation W/m²">إشعاع max W/m²</th>
+              <th data-ar="تدخلات المراوح" data-en="Fan Interventions">تدخلات المراوح</th>
+              <th data-ar="تدخلات التبريد" data-en="Cooling Acts">تدخلات التبريد</th>
+              <th data-ar="تنبيهات" data-en="Alerts">تنبيهات</th>
             </tr>
           </thead>
           <tbody id="history-tbody"></tbody>
@@ -628,14 +629,14 @@ body::after {
     <div class="chart-grid">
       <div class="chart-card">
         <div class="cc-hdr">
-          <div><div class="cc-title">متوسط الحرارة — 7 أيام</div><div class="cc-sub">نهاراً vs ليلاً</div></div>
+          <div><div class="cc-title" data-ar="متوسط الحرارة — 7 أيام" data-en="Avg Temperature — 7 Days">متوسط الحرارة — 7 أيام</div><div class="cc-sub" data-ar="نهاراً vs ليلاً" data-en="Day vs Night">نهاراً vs ليلاً</div></div>
           <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">DAILY AVG</span>
         </div>
         <div style="height:200px"><canvas id="c-hist-temp"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="cc-hdr">
-          <div><div class="cc-title">تكرار التدخلات — 7 أيام</div><div class="cc-sub">عدد مرات تشغيل كل جهاز يومياً</div></div>
+          <div><div class="cc-title" data-ar="تكرار التدخلات — 7 أيام" data-en="Intervention Count — 7 Days">تكرار التدخلات — 7 أيام</div><div class="cc-sub" data-ar="عدد مرات تشغيل كل جهاز يومياً" data-en="Daily activation count per device">عدد مرات تشغيل كل جهاز يومياً</div></div>
           <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">ACT COUNT</span>
         </div>
         <div style="height:200px"><canvas id="c-hist-act"></canvas></div>
@@ -1513,6 +1514,28 @@ function setTab(tab){
   if(tab==='compare'){ renderRoomMultiGrid(); renderCompare(); }
   if(tab==='control') renderControl();
   if(tab==='history') renderHistory();
+}
+
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════════════════
+let currentLang = 'ar';
+function toggleLanguage(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  const toggleBtn = document.getElementById('lang-toggle');
+  const body = document.body;
+  
+  // Update button text
+  toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+  
+  // Toggle RTL/LTR
+  body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Update all elements with data attributes
+  document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if(text) el.textContent = text;
+  });
 }
 
 function renderAll(){

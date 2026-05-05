@@ -339,44 +339,45 @@ canvas { max-width: 100%; }
     <div class="page-icon">💧</div>
     <div>
       <div class="page-title">Irrigation Log</div>
-      <div class="page-subtitle">BLUEBERRY FIELD OPS — DAILY FERTIGATION RECORD</div>
+      <div class="page-subtitle" data-ar="عمليات حقول التوت البري — سجل الري اليومي" data-en="BLUEBERRY FIELD OPS — DAILY FERTIGATION RECORD">BLUEBERRY FIELD OPS — DAILY FERTIGATION RECORD</div>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <div class="live-chip"><div class="live-dot"></div>LIVE DATA</div>
-    <button class="btn" onclick="openExport()">⬇ تصدير CSV</button>
+    <button class="btn" onclick="openExport()" data-ar="⬇ تصدير CSV" data-en="⬇ Export CSV">⬇ تصدير CSV</button>
+    <button class="btn lang-toggle" id="lang-toggle" onclick="toggleLanguage()" data-ar="EN" data-en="عر" style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--fog3);cursor:pointer;transition:.15s">EN</button>
   </div>
 </div>
 
 <!-- ── CONTROLS ── -->
 <div class="ctrl-bar">
   <div class="ctrl-grp">
-    <span class="ctrl-lbl">المزرعة</span>
+    <span class="ctrl-lbl" data-ar="المزرعة" data-en="Farm">المزرعة</span>
     <select class="sel" id="sel-farm" onchange="applyFilters()">
-      <option value="all">كل المزارع</option>
+      <option value="all" data-ar="كل المزارع" data-en="All Farms">كل المزارع</option>
     </select>
   </div>
   <div class="ctrl-sep"></div>
   <div class="ctrl-grp">
-    <span class="ctrl-lbl">الغرفة</span>
+    <span class="ctrl-lbl" data-ar="الغرفة" data-en="Room">الغرفة</span>
     <select class="sel" id="sel-room" onchange="applyFilters()">
-      <option value="all">كل الغرف</option>
+      <option value="all" data-ar="كل الغرف" data-en="All Rooms">كل الغرف</option>
     </select>
   </div>
   <div class="ctrl-sep"></div>
   <div class="ctrl-grp">
-    <span class="ctrl-lbl">التاريخ</span>
+    <span class="ctrl-lbl" data-ar="التاريخ" data-en="Date">التاريخ</span>
     <input type="date" class="date-inp" id="pick-date" onchange="applyFilters()">
   </div>
   <div class="ctrl-sep"></div>
   <div class="ctrl-grp">
-    <span class="ctrl-lbl">نطاق زمني</span>
+    <span class="ctrl-lbl" data-ar="نطاق زمني" data-en="Date Range">نطاق زمني</span>
     <input type="date" class="date-inp" id="range-from" onchange="applyFilters()">
     <span style="color:var(--fog3);font-size:11px">—</span>
     <input type="date" class="date-inp" id="range-to" onchange="applyFilters()">
   </div>
-  <span class="counter-badge" id="row-count">0 دورة</span>
-  <button class="btn btn-primary" onclick="resetFilters()">↺ إعادة</button>
+  <span class="counter-badge" id="row-count" data-ar="0 دورة" data-en="0 cycles">0 دورة</span>
+  <button class="btn btn-primary" onclick="resetFilters()" data-ar="↺ إعادة" data-en="↺ Reset">↺ إعادة</button>
 </div>
 
 <!-- ══════════════════════════════════
@@ -384,8 +385,8 @@ canvas { max-width: 100%; }
 ══════════════════════════════════ -->
 <div class="section-title">
   <div>
-    <div class="section-title-text">جدول دورات الري — Fertigation Cycles</div>
-    <div class="section-title-sub">كل صف = دورة ري واحدة · يومياً</div>
+    <div class="section-title-text" data-ar="جدول دورات الري — Fertigation Cycles" data-en="Irrigation Cycles Table — Fertigation Cycles">جدول دورات الري — Fertigation Cycles</div>
+    <div class="section-title-sub" data-ar="كل صف = دورة ري واحدة · يومياً" data-en="Each row = one irrigation cycle · Daily">كل صف = دورة ري واحدة · يومياً</div>
   </div>
   <div class="section-line"></div>
 </div>
@@ -396,20 +397,20 @@ canvas { max-width: 100%; }
       <thead>
         <!-- Super-header -->
         <tr class="super-hdr">
-          <th rowspan="2" style="min-width:48px;border-left:none"><div class="sh-cell" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;padding:12px 6px;color:var(--fog3)">المزرعة</div></th>
-          <th rowspan="2" style="min-width:140px"><div class="sh-cell" style="text-align:right">الغرفة / الصنف</div></th>
-          <th rowspan="2" style="min-width:90px"><div class="sh-cell">دورة الري</div></th>
-          <th colspan="3" class="sh-in"><div class="sh-cell" style="border-left:1px solid var(--line2)">↓ IN — الماء الداخل</div></th>
-          <th colspan="3" class="sh-out"><div class="sh-cell" style="border-left:1px solid rgba(0,212,170,.2)">↑ DRAIN — الماء الراجع</div></th>
+          <th rowspan="2" style="min-width:48px;border-left:none"><div class="sh-cell" style="writing-mode:vertical-rl;transform:rotate(180deg);font-size:9px;padding:12px 6px;color:var(--fog3)" data-ar="المزرعة" data-en="Farm">المزرعة</div></th>
+          <th rowspan="2" style="min-width:140px"><div class="sh-cell" style="text-align:right" data-ar="الغرفة / الصنف" data-en="Room / Variety">الغرفة / الصنف</div></th>
+          <th rowspan="2" style="min-width:90px"><div class="sh-cell" data-ar="دورة الري" data-en="Cycle #">دورة الري</div></th>
+          <th colspan="3" class="sh-in"><div class="sh-cell" style="border-left:1px solid var(--line2)" data-ar="↓ IN — الماء الداخل" data-en="↓ IN — Water In">↓ IN — الماء الداخل</div></th>
+          <th colspan="3" class="sh-out"><div class="sh-cell" style="border-left:1px solid rgba(0,212,170,.2)" data-ar="↑ DRAIN — الماء الراجع" data-en="↑ DRAIN — Drainage Out">↑ DRAIN — الماء الراجع</div></th>
         </tr>
         <!-- Sub-header -->
         <tr class="sub-hdr">
-          <th class="th-val col-in" style="border-left:1px solid var(--line2)">VOL (mL/plant)</th>
-          <th class="th-val col-in">EC (mS/cm)</th>
-          <th class="th-val col-in border-in-out">pH</th>
-          <th class="th-val col-out">VOL (mL/plant)</th>
-          <th class="th-val col-out">EC (mS/cm)</th>
-          <th class="th-val col-out">pH</th>
+          <th class="th-val col-in" style="border-left:1px solid var(--line2)" data-ar="VOL (mL/plant)" data-en="VOL (mL/plant)">VOL (mL/plant)</th>
+          <th class="th-val col-in" data-ar="EC (mS/cm)" data-en="EC (mS/cm)">EC (mS/cm)</th>
+          <th class="th-val col-in border-in-out" data-ar="pH" data-en="pH">pH</th>
+          <th class="th-val col-out" data-ar="VOL (mL/plant)" data-en="VOL (mL/plant)">VOL (mL/plant)</th>
+          <th class="th-val col-out" data-ar="EC (mS/cm)" data-en="EC (mS/cm)">EC (mS/cm)</th>
+          <th class="th-val col-out" data-ar="pH" data-en="pH">pH</th>
         </tr>
       </thead>
       <tbody id="irrig-tbody"></tbody>

@@ -302,80 +302,81 @@ body::before{
     <div class="hdr-icon">🔬</div>
     <div>
       <div class="page-title">IPM Monitor</div>
-      <div class="page-sub">INTEGRATED PEST MANAGEMENT — BLUEBERRY FIELD OPS</div>
+      <div class="page-sub" data-ar="إدارة الآفات المتكاملة — عمليات حقول التوت البري" data-en="INTEGRATED PEST MANAGEMENT — BLUEBERRY FIELD OPS">INTEGRATED PEST MANAGEMENT — BLUEBERRY FIELD OPS</div>
     </div>
   </div>
   <div class="threat-legend">
-    <div class="leg-chip"><div class="leg-dot" style="background:var(--pest)"></div>حشرات وآفات</div>
-    <div class="leg-chip"><div class="leg-dot" style="background:var(--dis)"></div>أمراض</div>
-    <div class="leg-chip"><div class="leg-dot" style="background:var(--bio)"></div>مفترسات وطفيليات</div>
-    <div class="leg-chip"><div class="leg-dot" style="background:var(--chem)"></div>مبيدات</div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--pest)"></div><span data-ar="حشرات وآفات" data-en="Insects & Pests">حشرات وآفات</span></div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--dis)"></div><span data-ar="أمراض" data-en="Diseases">أمراض</span></div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--bio)"></div><span data-ar="مفترسات وطفيليات" data-en="Predators & Parasitoids">مفترسات وطفيليات</span></div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--chem)"></div><span data-ar="مبيدات" data-en="Chemicals">مبيدات</span></div>
   </div>
+  <button class="btn lang-toggle" id="lang-toggle" onclick="toggleLanguage()" data-ar="EN" data-en="عر" style="margin-right:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;font-family:var(--mono);font-size:10px;font-weight:600;color:var(--fog3);cursor:pointer;transition:.15s">EN</button>
 </div>
 
 <!-- CONTROLS -->
 <div class="ctrl-bar">
   <div style="display:flex;align-items:center;gap:7px">
-    <span class="ctrl-lbl">المزرعة</span>
+    <span class="ctrl-lbl" data-ar="المزرعة" data-en="Farm">المزرعة</span>
     <select class="sel" id="sel-farm" onchange="applyFilters()"></select>
   </div>
   <div class="ctrl-sep"></div>
   <div style="display:flex;align-items:center;gap:7px">
-    <span class="ctrl-lbl">الغرفة</span>
+    <span class="ctrl-lbl" data-ar="الغرفة" data-en="Room">الغرفة</span>
     <select class="sel" id="sel-room" onchange="applyFilters()"></select>
   </div>
   <div class="ctrl-sep"></div>
   <!-- THREATS-only filters (shown when tab=threats) -->
   <div id="flt-threats-group" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:7px">
-      <span class="ctrl-lbl">النوع</span>
+      <span class="ctrl-lbl" data-ar="النوع" data-en="Type">النوع</span>
       <select class="sel" id="sel-type" onchange="applyFilters()">
-        <option value="all">الكل</option>
-        <option value="pest">حشرات</option>
-        <option value="disease">أمراض</option>
+        <option value="all" data-ar="الكل" data-en="All">الكل</option>
+        <option value="pest" data-ar="حشرات" data-en="Insects">حشرات</option>
+        <option value="disease" data-ar="أمراض" data-en="Diseases">أمراض</option>
       </select>
     </div>
     <div class="ctrl-sep"></div>
     <div style="display:flex;align-items:center;gap:7px">
-      <span class="ctrl-lbl" style="color:var(--pest)">🦗 الآفة</span>
+      <span class="ctrl-lbl" style="color:var(--pest)" data-ar="🦗 الآفة" data-en="🦗 Pest">🦗 الآفة</span>
       <select class="sel" id="sel-pest" onchange="applyFilters()" style="border-color:rgba(255,107,53,.3)">
-        <option value="all">كل الآفات</option>
+        <option value="all" data-ar="كل الآفات" data-en="All Pests">كل الآفات</option>
       </select>
     </div>
     <div style="display:flex;align-items:center;gap:7px">
-      <span class="ctrl-lbl" style="color:var(--dis)">🍄 المرض</span>
+      <span class="ctrl-lbl" style="color:var(--dis)" data-ar="🍄 المرض" data-en="🍄 Disease">🍄 المرض</span>
       <select class="sel" id="sel-disease" onchange="applyFilters()" style="border-color:rgba(180,79,219,.3)">
-        <option value="all">كل الأمراض</option>
+        <option value="all" data-ar="كل الأمراض" data-en="All Diseases">كل الأمراض</option>
       </select>
     </div>
   </div>
   <!-- BIO-only filters (shown when tab=bio) -->
   <div id="flt-bio-group" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:7px">
-      <span class="ctrl-lbl" style="color:var(--bio)">🌿 العامل البيولوجي</span>
+      <span class="ctrl-lbl" style="color:var(--bio)" data-ar="🌿 العامل البيولوجي" data-en="🌿 Biocontrol Agent">🌿 العامل البيولوجي</span>
       <select class="sel" id="sel-bio" onchange="applyFilters()" style="border-color:rgba(34,217,138,.3)">
-        <option value="all">كل العوامل</option>
+        <option value="all" data-ar="كل العوامل" data-en="All Agents">كل العوامل</option>
       </select>
     </div>
     <div class="ctrl-sep"></div>
     <div style="display:flex;align-items:center;gap:7px">
-      <span class="ctrl-lbl">عرض</span>
+      <span class="ctrl-lbl" data-ar="عرض" data-en="View">عرض</span>
       <div style="display:flex;gap:2px;background:var(--bg3);padding:2px;border-radius:7px;border:1px solid var(--line2)">
-        <button id="vbio-cards" class="vt-btn on" onclick="setBioView('cards')">📦 كروت</button>
-        <button id="vbio-map"   class="vt-btn"    onclick="setBioView('map')">🗺 خريطة</button>
+        <button id="vbio-cards" class="vt-btn on" onclick="setBioView('cards')" data-ar="📦 كروت" data-en="📦 Cards">📦 كروت</button>
+        <button id="vbio-map"   class="vt-btn"    onclick="setBioView('map')" data-ar="🗺 خريطة" data-en="🗺 Map">🗺 خريطة</button>
       </div>
     </div>
   </div>
   <div class="status-count" id="status-counts"></div>
-  <button class="btn" onclick="resetFilters()">↺ إعادة</button>
+  <button class="btn" onclick="resetFilters()" data-ar="↺ إعادة" data-en="↺ Reset">↺ إعادة</button>
 </div>
 
 <!-- MAIN TABS -->
 <div class="main-tabs">
-  <button class="main-tab on t-pest" onclick="setTab('threats')" id="tab-threats">
+  <button class="main-tab on t-pest" onclick="setTab('threats')" id="tab-threats" data-ar="الآفات والأمراض" data-en="Pests & Diseases">
     <span class="tab-dot"></span>الآفات والأمراض
   </button>
-  <button class="main-tab t-bio" onclick="setTab('bio')" id="tab-bio">
+  <button class="main-tab t-bio" onclick="setTab('bio')" id="tab-bio" data-ar="المفترسات والطفيليات" data-en="Predators & Parasitoids">
     <span class="tab-dot"></span>المفترسات والطفيليات
   </button>
   <button class="main-tab t-chem" onclick="setTab('chem')" id="tab-chem">
@@ -1596,6 +1597,34 @@ function setTab(tab){
   });
   syncFilterGroups();
   if(tab==="charts") renderCharts();
+}
+
+// ═══════════════════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════════════════
+let currentLang = 'ar';
+function toggleLanguage(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  const toggleBtn = document.getElementById('lang-toggle');
+  const body = document.body;
+  
+  // Update button text
+  toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+  
+  // Toggle RTL/LTR
+  body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Update all elements with data attributes
+  document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if(text && el.tagName !== 'OPTION') el.textContent = text;
+  });
+  
+  // Update select options
+  document.querySelectorAll('option[data-ar]').forEach(option => {
+    const text = option.getAttribute(`data-${currentLang}`);
+    if(text) option.textContent = text;
+  });
 }
 
 // ═══════════════════════════════════════════

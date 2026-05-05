@@ -131,6 +131,7 @@ body::after {
   display: flex; align-items: center; gap: 5px;
 }
 .btn:hover { border-color: var(--fog2); color: var(--fog); background: var(--ink2); }
+.lang-toggle { min-width: 40px; font-family: var(--mono); font-weight: 700; }
 
 /* ══════════════════════════════════════════
    MAIN TABS — 3 distinct personalities
@@ -403,25 +404,26 @@ body::after {
   <div class="topbar-left">
     <div class="tb-icon">🫐</div>
     <div>
-      <div class="tb-title">Field Assessment</div>
-      <div class="tb-sub">NODE CENSUS · HARVEST · QUALITY</div>
+      <div class="tb-title" data-ar="تقييم الميداني" data-en="Field Assessment">Field Assessment</div>
+      <div class="tb-sub" data-ar="تعداد العقد · الحصاد · جودة الثمرة" data-en="NODE CENSUS · HARVEST · QUALITY">NODE CENSUS · HARVEST · QUALITY</div>
     </div>
   </div>
   <div class="topbar-controls">
     <select class="sel" id="sel-room" onchange="switchRoom()">
-      <option value="BB-01">BB-01 — بيانكا</option>
-      <option value="BB-02">BB-02 — اوني</option>
-      <option value="BB-03">BB-03 — مِسي</option>
-      <option value="BB-06">BB-06 — بلوكروب</option>
+      <option value="BB-01" data-ar="BB-01 — بيانكا" data-en="BB-01 — Bianca">BB-01 — بيانكا</option>
+      <option value="BB-02" data-ar="BB-02 — اوني" data-en="BB-02 — O'Neal">BB-02 — اوني</option>
+      <option value="BB-03" data-ar="BB-03 — مِسي" data-en="BB-03 — Misty">BB-03 — مِسي</option>
+      <option value="BB-06" data-ar="BB-06 — بلوكروب" data-en="BB-06 — Bluecrop">BB-06 — بلوكروب</option>
     </select>
     <select class="sel" id="sel-stage">
-      <option value="fullBloom">إزهار كامل</option>
-      <option value="greenFruit">ثمر أخضر</option>
-      <option value="petalFall">تساقط البتلات</option>
-      <option value="coloring">تلوين</option>
-      <option value="harvest75">حصاد رئيسي</option>
+      <option value="fullBloom" data-ar="إزهار كامل" data-en="Full Bloom">إزهار كامل</option>
+      <option value="greenFruit" data-ar="ثمر أخضر" data-en="Green Fruit">ثمر أخضر</option>
+      <option value="petalFall" data-ar="تساقط البتلات" data-en="Petal Fall">تساقط البتلات</option>
+      <option value="coloring" data-ar="تلوين" data-en="Coloring">تلوين</option>
+      <option value="harvest75" data-ar="حصاد رئيسي" data-en="Main Harvest">حصاد رئيسي</option>
     </select>
-    <button class="btn" onclick="saveAll()">💾 حفظ</button>
+    <button class="btn lang-toggle" id="lang-toggle" onclick="toggleLanguage()" data-ar="EN" data-en="عر">EN</button>
+    <button class="btn" onclick="saveAll()" data-ar="💾 حفظ" data-en="💾 Save">💾 حفظ</button>
   </div>
 </div>
 
@@ -429,15 +431,15 @@ body::after {
 <div class="main-tabs">
   <button class="mtab on t-census"  id="tab-census"  onclick="setTab('census')">
     <span class="mtab-dot"></span>Node Census
-    <span class="mtab-badge" id="census-badge"  style="color:var(--census-l);border-color:rgba(74,111,165,.35)">0 عينة</span>
+    <span class="mtab-badge" id="census-badge"  style="color:var(--census-l);border-color:rgba(74,111,165,.35)" data-ar="0 عينة" data-en="0 samples">0 عينة</span>
   </button>
   <button class="mtab t-harvest" id="tab-harvest" onclick="setTab('harvest')">
-    <span class="mtab-dot"></span>الحصاد
-    <span class="mtab-badge" id="harvest-badge" style="color:var(--harvest-l);border-color:rgba(192,137,64,.35)">0 جولة</span>
+    <span class="mtab-dot"></span><span data-ar="الحصاد" data-en="Harvest">الحصاد</span>
+    <span class="mtab-badge" id="harvest-badge" style="color:var(--harvest-l);border-color:rgba(192,137,64,.35)" data-ar="0 جولة" data-en="0 rounds">0 جولة</span>
   </button>
   <button class="mtab t-quality" id="tab-quality" onclick="setTab('quality')">
-    <span class="mtab-dot"></span>جودة الثمرة
-    <span class="mtab-badge" id="quality-badge" style="color:var(--quality-l);border-color:rgba(160,57,74,.35)">0 قراءة</span>
+    <span class="mtab-dot"></span><span data-ar="جودة الثمرة" data-en="Fruit Quality">جودة الثمرة</span>
+    <span class="mtab-badge" id="quality-badge" style="color:var(--quality-l);border-color:rgba(160,57,74,.35)" data-ar="0 قراءة" data-en="0 readings">0 قراءة</span>
   </button>
 </div>
 
@@ -451,26 +453,26 @@ body::after {
       <!-- Sample nav -->
       <div class="sample-nav">
         <div class="sn-hdr">
-          <span class="sn-title">العينات</span>
-          <span class="sn-count" id="sn-count">5 نبتة</span>
+          <span class="sn-title" data-ar="العينات" data-en="Samples">العينات</span>
+          <span class="sn-count" id="sn-count" data-ar="5 نبتة" data-en="5 plants">5 نبتة</span>
         </div>
         <div class="sample-list" id="sample-list"></div>
-        <button class="add-btn" onclick="addSample()">+ نبتة جديدة</button>
+        <button class="add-btn" onclick="addSample()" data-ar="+ نبتة جديدة" data-en="+ New Plant">+ نبتة جديدة</button>
       </div>
 
       <!-- Counters -->
       <div>
-        <div class="section-rule">📋 إدخال العد</div>
+        <div class="section-rule" data-ar="📋 إدخال العد" data-en="📋 Count Entry">📋 إدخال العد</div>
         <div class="counter-section">
-          <div class="cs-label">الهيكل الرئيسي</div>
+          <div class="cs-label" data-ar="الهيكل الرئيسي" data-en="Main Structure">الهيكل الرئيسي</div>
           <div class="counter-grid" id="ctr-struct"></div>
         </div>
         <div class="counter-section">
-          <div class="cs-label">البراعم</div>
+          <div class="cs-label" data-ar="البراعم" data-en="Buds">البراعم</div>
           <div class="counter-grid" id="ctr-buds"></div>
         </div>
         <div class="counter-section">
-          <div class="cs-label">الثمار والتلف</div>
+          <div class="cs-label" data-ar="الثمار والتلف" data-en="Fruit & Damage">الثمار والتلف</div>
           <div class="counter-grid" id="ctr-fruit"></div>
         </div>
       </div>
@@ -484,10 +486,10 @@ body::after {
         <div class="paper-hdr">
           <div>
             <div class="paper-title">Sample Average</div>
-            <div class="paper-sub" id="avg-sub">Across 5 plants · BB-01</div>
+            <div class="paper-sub" id="avg-sub" data-ar="عبر 5 نباتات · BB-01" data-en="Across 5 plants · BB-01">Across 5 plants · BB-01</div>
           </div>
           <div style="margin-right:auto"></div>
-          <span id="struct-status" style="font-size:11px;font-family:var(--mono);font-weight:600;color:var(--ok)">✓ ضمن الهدف</span>
+          <span id="struct-status" style="font-size:11px;font-family:var(--mono);font-weight:600;color:var(--ok)" data-ar="✓ ضمن الهدف" data-en="✓ Within Target">✓ ضمن الهدف</span>
         </div>
         <div class="paper-body">
           <div class="avg-stat-grid" id="avg-stats"></div>
@@ -498,23 +500,23 @@ body::after {
       <div class="paper">
         <div class="paper-hdr">
           <div class="paper-title">Structure Ratios</div>
-          <div class="paper-sub">النسب الهيكلية · من الصورة: 1.42 : 18.2 : 3.4 : 3.4</div>
+          <div class="paper-sub" data-ar="النسب الهيكلية · من الصورة: 1.42 : 18.2 : 3.4 : 3.4" data-en="Structural ratios · From image: 1.42 : 18.2 : 3.4 : 3.4">النسب الهيكلية · من الصورة: 1.42 : 18.2 : 3.4 : 3.4</div>
         </div>
         <div class="paper-body">
           <div class="ratio-grid" id="ratio-grid"></div>
-          <div class="section-rule" style="margin-top:4px">✂ توصيات التقليم</div>
+          <div class="section-rule" style="margin-top:4px" data-ar="✂ توصيات التقليم" data-en="✂ Pruning Recommendations">✂ توصيات التقليم</div>
           <div id="pruning-recs"></div>
         </div>
       </div>
 
       <!-- Yield Estimate — PAPER -->
       <div class="yield-card">
-        <div class="yc-label">Estimated Yield — <span id="yc-room">BB-01</span></div>
+        <div class="yc-label" data-ar="تقدير الإنتاجية —" data-en="Estimated Yield —">Estimated Yield — <span id="yc-room">BB-01</span></div>
         <div style="display:flex;align-items:flex-end;gap:5px;margin-bottom:5px">
           <span class="yc-num" id="yc-num">—</span>
           <span class="yc-unit" id="yc-unit"></span>
         </div>
-        <div class="yc-formula" id="yc-formula">أدخل بيانات للحساب</div>
+        <div class="yc-formula" id="yc-formula" data-ar="أدخل بيانات للحساب" data-en="Enter data to calculate">أدخل بيانات للحساب</div>
         <div class="yc-pills" id="yc-pills"></div>
       </div>
 
@@ -524,7 +526,7 @@ body::after {
       <div class="charts-2col">
         <div class="chart-paper">
           <div class="cp-title">Structural Balance</div>
-          <div class="cp-sub">الأعداد الفعلية vs النطاق المستهدف</div>
+          <div class="cp-sub" data-ar="الأعداد الفعلية vs النطاق المستهدف" data-en="Actual counts vs target range">الأعداد الفعلية vs النطاق المستهدف</div>
           <div style="height:200px"><canvas id="c-balance"></canvas></div>
         </div>
         <div class="chart-paper">
@@ -534,12 +536,12 @@ body::after {
         </div>
         <div class="chart-paper">
           <div class="cp-title">Within-Session Variance</div>
-          <div class="cp-sub">تباين القراءات بين النباتات</div>
+          <div class="cp-sub" data-ar="تباين القراءات بين النباتات" data-en="Variance in readings between plants">تباين القراءات بين النباتات</div>
           <div style="height:200px"><canvas id="c-variance"></canvas></div>
         </div>
         <div class="chart-paper">
           <div class="cp-title">Fertility & Fruit Set %</div>
-          <div class="cp-sub">معدلات الخصوبة والإنجاز عبر الموسم</div>
+          <div class="cp-sub" data-ar="معدلات الخصوبة والإنجاز عبر الموسم" data-en="Fertility and fruit set rates across season">معدلات الخصوبة والإنجاز عبر الموسم</div>
           <div style="height:200px"><canvas id="c-fertility"></canvas></div>
         </div>
       </div>
@@ -560,39 +562,39 @@ body::after {
       <table class="htbl" id="harvest-tbl">
         <thead>
           <tr>
-            <th>التاريخ</th>
-            <th>الغرفة</th>
-            <th>الجولة</th>
-            <th>الوزن الكلي (kg)</th>
-            <th>عدد العمال</th>
-            <th>ساعات العمل</th>
-            <th>kg/عامل/ساعة</th>
-            <th>نسبة الرفض %</th>
-            <th>الملاحظات</th>
+            <th data-ar="التاريخ" data-en="Date">التاريخ</th>
+            <th data-ar="الغرفة" data-en="Room">الغرفة</th>
+            <th data-ar="الجولة" data-en="Round">الجولة</th>
+            <th data-ar="الوزن الكلي (kg)" data-en="Total Weight (kg)">الوزن الكلي (kg)</th>
+            <th data-ar="عدد العمال" data-en="Workers">عدد العمال</th>
+            <th data-ar="ساعات العمل" data-en="Hours">ساعات العمل</th>
+            <th data-ar="kg/عامل/ساعة" data-en="kg/worker/hour">kg/عامل/ساعة</th>
+            <th data-ar="نسبة الرفض %" data-en="Reject %">نسبة الرفض %</th>
+            <th data-ar="الملاحظات" data-en="Notes">الملاحظات</th>
           </tr>
         </thead>
         <tbody id="harvest-tbody"></tbody>
       </table>
       <div class="add-harvest-row">
         <input class="h-inp" id="h-date"    type="date" style="width:130px">
-        <input class="h-inp" id="h-weight"  type="number" placeholder="وزن kg" style="width:90px">
-        <input class="h-inp" id="h-workers" type="number" placeholder="عمال"   style="width:70px">
-        <input class="h-inp" id="h-hours"   type="number" placeholder="ساعات"  style="width:70px">
-        <input class="h-inp" id="h-reject"  type="number" placeholder="رفض %"  style="width:70px">
-        <input class="h-inp" id="h-notes"   type="text"   placeholder="ملاحظة" style="flex:1;min-width:120px">
-        <button class="btn-harvest" onclick="addHarvest()">+ إضافة</button>
+        <input class="h-inp" id="h-weight"  type="number" placeholder="وزن kg" data-ar-placeholder="وزن kg" data-en-placeholder="Weight kg" style="width:90px">
+        <input class="h-inp" id="h-workers" type="number" placeholder="عمال" data-ar-placeholder="عمال" data-en-placeholder="Workers" style="width:70px">
+        <input class="h-inp" id="h-hours"   type="number" placeholder="ساعات" data-ar-placeholder="ساعات" data-en-placeholder="Hours" style="width:70px">
+        <input class="h-inp" id="h-reject"  type="number" placeholder="رفض %" data-ar-placeholder="رفض %" data-en-placeholder="Reject %" style="width:70px">
+        <input class="h-inp" id="h-notes"   type="text"   placeholder="ملاحظة" data-ar-placeholder="ملاحظة" data-en-placeholder="Note" style="flex:1;min-width:120px">
+        <button class="btn-harvest" onclick="addHarvest()" data-ar="+ إضافة" data-en="+ Add">+ إضافة</button>
       </div>
     </div>
 
     <!-- Harvest charts -->
     <div class="charts-2col">
       <div class="chart-paper">
-        <div class="cp-title">إجمالي الحصاد — يومي (kg)</div>
+        <div class="cp-title" data-ar="إجمالي الحصاد — يومي (kg)" data-en="Total Harvest — Daily (kg)">إجمالي الحصاد — يومي (kg)</div>
         <div class="cp-sub">Daily harvest weight across rounds</div>
         <div style="height:200px"><canvas id="c-harvest-daily"></canvas></div>
       </div>
       <div class="chart-paper">
-        <div class="cp-title">كفاءة العمال (kg/عامل/ساعة)</div>
+        <div class="cp-title" data-ar="كفاءة العمال (kg/عامل/ساعة)" data-en="Worker Efficiency (kg/worker/hour)">كفاءة العمال (kg/عامل/ساعة)</div>
         <div class="cp-sub">Labour efficiency per round</div>
         <div style="height:200px"><canvas id="c-harvest-eff"></canvas></div>
       </div>
@@ -610,44 +612,44 @@ body::after {
     <!-- Entry form -->
     <div class="paper">
       <div class="paper-hdr">
-        <div class="paper-title">تسجيل قراءة جديدة</div>
-        <div class="paper-sub">اختر الدرجة ثم أدخل القياسات</div>
+        <div class="paper-title" data-ar="تسجيل قراءة جديدة" data-en="Record New Reading">تسجيل قراءة جديدة</div>
+        <div class="paper-sub" data-ar="اختر الدرجة ثم أدخل القياسات" data-en="Select grade then enter measurements">اختر الدرجة ثم أدخل القياسات</div>
       </div>
       <div class="paper-body" style="display:flex;flex-direction:column;gap:14px">
         <!-- Grade selector -->
         <div>
-          <div class="section-rule" style="margin-bottom:8px">درجة الجودة</div>
+          <div class="section-rule" style="margin-bottom:8px" data-ar="درجة الجودة" data-en="Quality Grade">درجة الجودة</div>
           <div class="grade-selector" id="grade-selector"></div>
         </div>
         <!-- Measurements -->
         <div>
-          <div class="section-rule" style="margin-bottom:8px">القياسات</div>
+          <div class="section-rule" style="margin-bottom:8px" data-ar="القياسات" data-en="Measurements">القياسات</div>
           <div class="q-form" id="q-form"></div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input class="q-inp" id="q-notes" type="text" placeholder="ملاحظات اختيارية..." style="flex:1;min-width:160px">
-          <button style="padding:8px 20px;border-radius:7px;border:none;background:var(--quality-c);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onclick="addQuality()" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">تسجيل ✓</button>
+          <input class="q-inp" id="q-notes" type="text" placeholder="ملاحظات اختيارية..." data-ar-placeholder="ملاحظات اختيارية..." data-en-placeholder="Optional notes..." style="flex:1;min-width:160px">
+          <button style="padding:8px 20px;border-radius:7px;border:none;background:var(--quality-c);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onclick="addQuality()" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'" data-ar="تسجيل ✓" data-en="Record ✓">تسجيل ✓</button>
         </div>
       </div>
     </div>
 
     <!-- History table -->
     <div class="paper" style="overflow:hidden">
-      <div class="paper-hdr"><div class="paper-title">سجل القراءات</div></div>
+      <div class="paper-hdr"><div class="paper-title" data-ar="سجل القراءات" data-en="Reading History">سجل القراءات</div></div>
       <div style="overflow-x:auto">
         <table class="qtbl" id="quality-tbl">
           <thead>
             <tr>
-              <th>التاريخ</th>
-              <th>الغرفة</th>
-              <th>الدرجة</th>
-              <th>وزن الحبة (g)</th>
-              <th>Brix °</th>
-              <th>قطر (mm)</th>
-              <th>صلابة (N)</th>
-              <th>لون (1-5)</th>
-              <th>رفض %</th>
-              <th>ملاحظة</th>
+              <th data-ar="التاريخ" data-en="Date">التاريخ</th>
+              <th data-ar="الغرفة" data-en="Room">الغرفة</th>
+              <th data-ar="الدرجة" data-en="Grade">الدرجة</th>
+              <th data-ar="وزن الحبة (g)" data-en="Berry Weight (g)">وزن الحبة (g)</th>
+              <th data-ar="Brix °" data-en="Brix °">Brix °</th>
+              <th data-ar="قطر (mm)" data-en="Diameter (mm)">قطر (mm)</th>
+              <th data-ar="صلابة (N)" data-en="Firmness (N)">صلابة (N)</th>
+              <th data-ar="لون (1-5)" data-en="Color (1-5)">لون (1-5)</th>
+              <th data-ar="رفض %" data-en="Reject %">رفض %</th>
+              <th data-ar="ملاحظة" data-en="Note">ملاحظة</th>
             </tr>
           </thead>
           <tbody id="quality-tbody"></tbody>
@@ -658,23 +660,23 @@ body::after {
     <!-- Quality charts -->
     <div class="charts-2col">
       <div class="chart-paper">
-        <div class="cp-title">Brix° — تطور الحلاوة</div>
+        <div class="cp-title" data-ar="Brix° — تطور الحلاوة" data-en="Brix° — Sweetness Development">Brix° — تطور الحلاوة</div>
         <div class="cp-sub">Sugar content trend over harvest rounds</div>
         <div style="height:200px"><canvas id="c-brix"></canvas></div>
       </div>
       <div class="chart-paper">
         <div class="cp-title">Berry Size Distribution</div>
-        <div class="cp-sub">وزن الحبة ومتوسط القطر</div>
+        <div class="cp-sub" data-ar="وزن الحبة ومتوسط القطر" data-en="Berry weight and average diameter">وزن الحبة ومتوسط القطر</div>
         <div style="height:200px"><canvas id="c-size"></canvas></div>
       </div>
       <div class="chart-paper">
-        <div class="cp-title">نسبة الرفض vs الدرجة</div>
+        <div class="cp-title" data-ar="نسبة الرفض vs الدرجة" data-en="Reject Rate vs Grade">نسبة الرفض vs الدرجة</div>
         <div class="cp-sub">Reject rate by grade over time</div>
         <div style="height:200px"><canvas id="c-reject"></canvas></div>
       </div>
       <div class="chart-paper">
         <div class="cp-title">Firmness & Color Score</div>
-        <div class="cp-sub">صلابة الثمرة + نقاط اللون</div>
+        <div class="cp-sub" data-ar="صلابة الثمرة + نقاط اللون" data-en="Fruit firmness + color points">صلابة الثمرة + نقاط اللون</div>
         <div style="height:200px"><canvas id="c-firm"></canvas></div>
       </div>
     </div>
@@ -1167,6 +1169,37 @@ function setTab(tab){
 }
 function saveAll(){ const btn=document.querySelector('[onclick="saveAll()"]'); btn.textContent="✓ تم"; setTimeout(()=>btn.textContent="💾 حفظ",2000); }
 const $ = id => document.getElementById(id);
+
+// ═══════════════════════════════
+//  LANGUAGE TOGGLE
+// ═══════════════════════════════
+let currentLang = 'ar';
+function toggleLanguage(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  const toggleBtn = document.getElementById('lang-toggle');
+  const body = document.body;
+  
+  // Update button text
+  toggleBtn.textContent = currentLang === 'ar' ? 'EN' : 'عر';
+  
+  // Toggle RTL/LTR
+  body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+  
+  // Update all elements with data attributes
+  document.querySelectorAll('[data-ar],[data-en]').forEach(el => {
+    const text = el.getAttribute(`data-${currentLang}`);
+    if(text) el.textContent = text;
+  });
+  
+  // Update placeholders
+  document.querySelectorAll('input[placeholder]').forEach(input => {
+    const arPlaceholder = input.getAttribute('data-ar-placeholder');
+    const enPlaceholder = input.getAttribute('data-en-placeholder');
+    if(arPlaceholder && enPlaceholder) {
+      input.placeholder = currentLang === 'ar' ? arPlaceholder : enPlaceholder;
+    }
+  });
+}
 
 // ═══════════════════════════════
 //  BOOT
