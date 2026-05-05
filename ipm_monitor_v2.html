@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPM Monitor — Blueberry Field Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ════════════════════════════════════
+   DESIGN DIRECTION:
+   Lab notebook meets war room.
+   Dark military-green base, neon accent
+   colors per threat category, monospaced
+   data density, clinical precision.
+════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:     #080c0a;
+  --bg2:    #0d120f;
+  --bg3:    #131a15;
+  --bg4:    #192010;
+  --line:   #1e2820;
+  --line2:  #28362a;
+  --fog:    #dde8dc;
+  --fog2:   #a8bda8;
+  --fog3:   #607060;
+  --fog4:   #364036;
+  /* threat colors */
+  --pest:   #ff6b35;   /* orange — insects */
+  --dis:    #b44fdb;   /* purple — disease */
+  --bio:    #22d98a;   /* green — beneficials */
+  --chem:   #fbbf24;   /* amber — chemicals */
+  --alert:  #f43f5e;   /* red — critical */
+  --ok:     #22c55e;
+  --warn:   #f59e0b;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'IBM Plex Sans Arabic', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+body{background:var(--bg);color:var(--fog);font-family:var(--sans);font-size:13px;line-height:1.5;min-height:100vh}
+
+/* hex grid bg texture */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(34,217,138,.03) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+.wrap{position:relative;z-index:1;max-width:1700px;margin:0 auto;padding:24px 22px}
+
+/* ── PAGE HEADER ── */
+.page-hdr{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:22px;padding-bottom:18px;
+  border-bottom:1px solid var(--line2);gap:14px;flex-wrap:wrap;
+}
+.hdr-left{display:flex;align-items:flex-end;gap:14px}
+.hdr-icon{
+  width:46px;height:46px;border-radius:10px;
+  background:linear-gradient(135deg,#1a3320,#2d5a3a);
+  border:1px solid rgba(34,217,138,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+  box-shadow:0 0 24px rgba(34,217,138,.15);
+}
+.page-title{font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-1px;line-height:1}
+.page-sub{font-size:10px;color:var(--fog3);font-family:var(--mono);margin-top:4px;letter-spacing:.5px}
+.threat-legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.leg-chip{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--fog2)}
+.leg-dot{width:7px;height:7px;border-radius:50%}
+
+/* ── CONTROLS ── */
+.ctrl-bar{
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+  background:var(--bg2);border:1px solid var(--line);
+  border-radius:10px;padding:11px 16px;margin-bottom:18px;
+}
+.ctrl-lbl{font-size:10px;color:var(--fog3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.sel{
+  background:var(--bg3);border:1px solid var(--line2);color:var(--fog);
+  border-radius:7px;padding:6px 28px 6px 10px;font-family:var(--mono);font-size:11px;
+  outline:none;appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23607060' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 8px center;
+  transition:border-color .15s;
+}
+.sel:focus,.sel:hover{border-color:var(--bio)}
+.ctrl-sep{width:1px;height:22px;background:var(--line2);flex-shrink:0}
+.btn{padding:7px 14px;border-radius:7px;border:1px solid var(--line2);background:transparent;color:var(--fog2);font-family:var(--mono);font-size:11px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn:hover{border-color:var(--fog2);color:var(--fog);background:var(--bg3)}
+.btn-bio{background:rgba(34,217,138,.12);border-color:rgba(34,217,138,.3);color:var(--bio)}
+.btn-bio:hover{background:rgba(34,217,138,.2)}
+.status-count{margin-right:auto;display:flex;gap:8px;flex-wrap:wrap}
+.sc-chip{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);border-radius:20px;padding:3px 10px;border:1px solid}
+
+/* ── TABS ── */
+.main-tabs{display:flex;gap:2px;background:var(--bg3);padding:3px;border-radius:10px;margin-bottom:18px;border:1px solid var(--line)}
+.main-tab{flex:1;padding:9px 16px;border-radius:8px;border:none;background:transparent;font-family:var(--display);font-size:12px;font-weight:600;color:var(--fog3);cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.3px}
+.main-tab:hover{color:var(--fog);background:rgba(255,255,255,.03)}
+.main-tab.on{color:var(--fog);background:var(--bg2);box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.main-tab.on.t-pest{color:var(--pest)}
+.main-tab.on.t-bio{color:var(--bio)}
+.main-tab.on.t-chem{color:var(--chem)}
+.main-tab.on.t-chart{color:#60a5fa}
+.tab-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* ── ROOM GRID ── */
+.rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
+
+/* ── ROOM CARD ── */
+.room-card{
+  background:var(--bg2);border:1px solid var(--line2);border-radius:12px;
+  overflow:hidden;transition:border-color .2s,box-shadow .2s;
+}
+.room-card:hover{border-color:var(--line2);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.room-card.alert-room{border-color:rgba(244,63,94,.3);box-shadow:0 0 16px rgba(244,63,94,.08)}
+.rc-head{
+  display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid var(--line);cursor:pointer;
+  transition:background .15s;
+}
+.rc-head:hover{background:rgba(255,255,255,.02)}
+.rc-id{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:-.5px}
+.rc-variety{font-size:10px;color:var(--fog3);font-family:var(--mono);margin-top:1px}
+.rc-badges{display:flex;gap:5px;flex-wrap:wrap;margin-right:auto}
+.rc-expand{font-size:10px;color:var(--fog3);transition:transform .2s;flex-shrink:0}
+.room-card.open .rc-expand{transform:rotate(90deg)}
+.rc-scout-bar{
+  display:flex;align-items:center;gap:8px;padding:6px 14px;
+  background:var(--bg3);border-bottom:1px solid var(--line);
+  font-size:10px;color:var(--fog3);font-family:var(--mono);
+}
+.scout-date{color:var(--bio);font-weight:600}
+.rc-body{padding:12px 14px;display:none;flex-direction:column;gap:10px}
+.room-card.open .rc-body{display:flex}
+
+/* ── PEST ITEM ── */
+.pest-item{
+  background:var(--bg3);border-radius:8px;border:1px solid var(--line);
+  overflow:hidden;transition:border-color .15s;
+}
+.pest-item:hover{border-color:var(--line2)}
+.pest-head{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s}
+.pest-head:hover{background:rgba(255,255,255,.025)}
+.pest-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.pest-name{font-size:12px;font-weight:600;line-height:1.3}
+.pest-latin{font-size:9px;color:var(--fog3);font-family:var(--mono);font-style:italic;margin-top:1px}
+.pest-meta{display:flex;gap:6px;margin-right:auto;flex-wrap:wrap;align-items:flex-start;flex-shrink:0}
+.sev-badge{border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;border:1px solid;white-space:nowrap}
+.pest-expand{font-size:9px;color:var(--fog3);transition:transform .2s;margin-top:2px}
+.pest-item.open .pest-expand{transform:rotate(90deg)}
+
+/* ── PEST DETAIL ── */
+.pest-detail{display:none;padding:0 12px 12px;border-top:1px solid var(--line);flex-direction:column;gap:8px}
+.pest-item.open .pest-detail{display:flex}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.detail-cell{background:var(--bg4);border-radius:6px;padding:8px 10px;border:1px solid var(--line)}
+.dc-lbl{font-size:9px;color:var(--fog3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.dc-val{font-size:13px;font-weight:600;font-family:var(--mono)}
+.dc-sub{font-size:9px;color:var(--fog3);margin-top:2px}
+.note-box{
+  background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);
+  border-radius:6px;padding:8px 10px;font-size:11px;color:var(--fog);line-height:1.6;
+  display:flex;gap:7px;align-items:flex-start;
+}
+.note-icon{flex-shrink:0;font-size:13px;margin-top:1px}
+.history-btn{
+  display:flex;align-items:center;gap:5px;font-size:10px;color:var(--fog3);
+  font-family:var(--mono);cursor:pointer;border:1px solid var(--line2);
+  background:transparent;border-radius:5px;padding:4px 9px;transition:.12s;
+}
+.history-btn:hover{border-color:var(--fog3);color:var(--fog)}
+.count-bar-wrap{display:flex;align-items:center;gap:7px;margin-top:4px}
+.count-bar-track{flex:1;height:5px;background:var(--line2);border-radius:3px;overflow:hidden}
+.count-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.threshold-mark{font-size:9px;font-family:var(--mono);color:var(--alert);white-space:nowrap}
+
+/* ── BIO ITEM ── */
+.bio-item{
+  background:var(--bg3);border-radius:8px;border:1px solid var(--line);
+  overflow:hidden;transition:border-color .15s;
+}
+.bio-item:hover{border-color:rgba(34,217,138,.2)}
+.bio-head{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;transition:background .12s}
+.bio-head:hover{background:rgba(255,255,255,.02)}
+.bio-icon{width:30px;height:30px;border-radius:7px;background:rgba(34,217,138,.1);border:1px solid rgba(34,217,138,.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.bio-name{font-size:12px;font-weight:600;line-height:1.3}
+.bio-latin{font-size:9px;color:var(--fog3);font-family:var(--mono);font-style:italic;margin-top:1px}
+.bio-badges{display:flex;gap:5px;margin-right:auto;align-items:flex-start;flex-wrap:wrap}
+.pop-gauge{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono)}
+.pop-bar-track{width:60px;height:4px;background:var(--line2);border-radius:2px;overflow:hidden}
+.pop-bar-fill{height:100%;border-radius:2px;transition:width .5s}
+
+/* ── PESTICIDE ITEM ── */
+.chem-item{
+  background:var(--bg3);border-radius:8px;border:1px solid var(--line);
+  padding:12px 14px;transition:border-color .15s;
+}
+.chem-item:hover{border-color:rgba(251,191,36,.2)}
+.chem-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.chem-icon{width:30px;height:30px;border-radius:7px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.chem-name{font-size:12px;font-weight:600}
+.chem-ai{font-size:10px;color:var(--fog3);font-family:var(--mono);margin-top:1px}
+.chem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.chem-cell{background:var(--bg4);border-radius:6px;padding:7px 9px;border:1px solid var(--line)}
+.phi-badge{
+  display:inline-flex;align-items:center;gap:4px;background:rgba(244,63,94,.1);
+  border:1px solid rgba(244,63,94,.25);border-radius:20px;padding:2px 8px;
+  font-size:9px;font-family:var(--mono);color:var(--alert);margin-top:6px;
+}
+.ee-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:20px;padding:2px 8px;font-size:9px;font-family:var(--mono);margin-top:4px;
+}
+
+/* ── CHARTS TAB ── */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px}
+.chart-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;transition:border-color .2s}
+.chart-card:hover{border-color:var(--line2)}
+.chart-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;gap:8px}
+.chart-title{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:-.2px}
+.chart-sub{font-size:9px;color:var(--fog3);margin-top:3px;font-family:var(--mono)}
+
+/* ── HISTORY PANEL (slide-in) ── */
+.hist-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;
+  display:none;backdrop-filter:blur(3px);
+}
+.hist-overlay.open{display:block}
+.hist-panel{
+  position:fixed;left:0;top:0;bottom:0;width:min(520px,100vw);
+  background:var(--bg2);border-right:1px solid var(--line2);
+  z-index:401;overflow-y:auto;padding:24px 20px;
+  animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+.hist-close{position:sticky;top:0;background:var(--bg2);padding-bottom:12px;display:flex;align-items:center;justify-content:space-between;z-index:1}
+.hist-title{font-family:var(--display);font-size:16px;font-weight:800}
+.hist-entry{
+  border-right:2px solid var(--line2);padding:10px 12px 10px 0;margin-bottom:2px;
+  transition:border-color .15s;
+}
+.hist-entry:hover{border-color:var(--bio)}
+.hist-date{font-family:var(--mono);font-size:10px;color:var(--fog3);margin-bottom:4px}
+.hist-val{font-family:var(--mono);font-size:13px;font-weight:600}
+.hist-note{font-size:11px;color:var(--fog2);margin-top:3px;line-height:1.5}
+.hist-empty{padding:30px;text-align:center;color:var(--fog3);font-family:var(--mono);font-size:12px}
+
+/* ── MISC ── */
+.badge{display:inline-flex;align-items:center;gap:3px;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;white-space:nowrap}
+.b-ok   {background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--ok)}
+.b-warn {background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--warn)}
+.b-alert{background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);color:var(--alert)}
+.b-pest {background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.3);color:var(--pest)}
+.b-dis  {background:rgba(180,79,219,.1);border:1px solid rgba(180,79,219,.3);color:var(--dis)}
+.b-bio  {background:rgba(34,217,138,.1);border:1px solid rgba(34,217,138,.3);color:var(--bio)}
+.b-chem {background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:var(--chem)}
+.section-hdr{font-size:10px;font-weight:700;color:var(--fog3);font-family:var(--mono);letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp .2s ease both}
+.vt-btn{padding:5px 12px;border-radius:5px;border:none;background:transparent;font-family:var(--mono);font-size:10px;color:var(--fog3);cursor:pointer;transition:.12s}
+.vt-btn.on{background:var(--bg2);color:var(--fog)}
+.vt-btn:hover:not(.on){color:var(--fog)}
+.bio-map-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.bio-map-room{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:border-color .18s,transform .15s;cursor:default}
+.bio-map-room:hover{transform:translateY(-2px)}
+.bmr-id{font-family:var(--display);font-size:13px;font-weight:800;letter-spacing:-.3px}
+.bmr-var{font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:1px;margin-bottom:8px}
+.bmr-agents{display:flex;flex-direction:column;gap:4px}
+.bmr-agent{display:flex;align-items:center;gap:6px;padding:3px 6px;border-radius:5px;font-size:10px}
+.bmr-agent-bar{flex:1;height:4px;background:var(--line2);border-radius:2px;overflow:hidden;min-width:28px}
+.bmr-agent-fill{height:100%;border-radius:2px;transition:width .5s}
+.heatmap-wrap{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;overflow-x:auto}
+.heatmap-tbl{border-collapse:collapse;min-width:560px;width:100%}
+.heatmap-tbl th{padding:7px 10px;font-family:var(--mono);font-size:9px;color:var(--fog3);font-weight:600;text-align:center;white-space:nowrap}
+.heatmap-tbl th:first-child{text-align:right;min-width:90px}
+.heatmap-tbl td{padding:4px 3px;text-align:center}
+.hm-cell{display:flex;align-items:center;justify-content:center;flex-direction:column;width:100%;min-width:62px;border-radius:6px;padding:6px 4px;font-family:var(--mono);font-size:11px;font-weight:600;transition:transform .15s;cursor:default}
+.hm-cell:hover{transform:scale(1.06);z-index:2;position:relative}
+.hm-sub{font-size:8px;opacity:.65;margin-top:1px}
+.hm-room-lbl{font-family:var(--display);font-size:11px;font-weight:700;padding:5px 8px;text-align:right}
+.rc-bio-section{background:rgba(34,217,138,.04);border-radius:8px;border:1px solid rgba(34,217,138,.15);padding:10px 12px;margin-top:4px}
+.rc-bio-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.bio-strip-pill{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--line2);border-radius:20px;padding:3px 10px;font-size:10px;cursor:pointer;transition:.15s;border-left:none;border-right:none}
+.bio-strip-pill:hover{border-color:var(--bio);background:rgba(34,217,138,.06)}
+.bio-strip-pill.ok{border-color:rgba(34,217,138,.35);color:var(--bio)}
+.bio-strip-pill.low{border-color:rgba(245,158,11,.35);color:var(--warn)}
+.bio-strip-pill.empty{border-color:rgba(244,63,94,.25);color:var(--alert)}
+.bsp-dot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.bsp-name{font-family:var(--mono);font-size:9px}
+.bsp-val{font-family:var(--mono);font-size:9px;opacity:.7}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- PAGE HEADER -->
+<div class="page-hdr">
+  <div class="hdr-left">
+    <div class="hdr-icon">🔬</div>
+    <div>
+      <div class="page-title">IPM Monitor</div>
+      <div class="page-sub">INTEGRATED PEST MANAGEMENT — BLUEBERRY FIELD OPS</div>
+    </div>
+  </div>
+  <div class="threat-legend">
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--pest)"></div>حشرات وآفات</div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--dis)"></div>أمراض</div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--bio)"></div>مفترسات وطفيليات</div>
+    <div class="leg-chip"><div class="leg-dot" style="background:var(--chem)"></div>مبيدات</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="ctrl-bar">
+  <div style="display:flex;align-items:center;gap:7px">
+    <span class="ctrl-lbl">المزرعة</span>
+    <select class="sel" id="sel-farm" onchange="applyFilters()"></select>
+  </div>
+  <div class="ctrl-sep"></div>
+  <div style="display:flex;align-items:center;gap:7px">
+    <span class="ctrl-lbl">الغرفة</span>
+    <select class="sel" id="sel-room" onchange="applyFilters()"></select>
+  </div>
+  <div class="ctrl-sep"></div>
+  <!-- THREATS-only filters (shown when tab=threats) -->
+  <div id="flt-threats-group" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ctrl-lbl">النوع</span>
+      <select class="sel" id="sel-type" onchange="applyFilters()">
+        <option value="all">الكل</option>
+        <option value="pest">حشرات</option>
+        <option value="disease">أمراض</option>
+      </select>
+    </div>
+    <div class="ctrl-sep"></div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ctrl-lbl" style="color:var(--pest)">🦗 الآفة</span>
+      <select class="sel" id="sel-pest" onchange="applyFilters()" style="border-color:rgba(255,107,53,.3)">
+        <option value="all">كل الآفات</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ctrl-lbl" style="color:var(--dis)">🍄 المرض</span>
+      <select class="sel" id="sel-disease" onchange="applyFilters()" style="border-color:rgba(180,79,219,.3)">
+        <option value="all">كل الأمراض</option>
+      </select>
+    </div>
+  </div>
+  <!-- BIO-only filters (shown when tab=bio) -->
+  <div id="flt-bio-group" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ctrl-lbl" style="color:var(--bio)">🌿 العامل البيولوجي</span>
+      <select class="sel" id="sel-bio" onchange="applyFilters()" style="border-color:rgba(34,217,138,.3)">
+        <option value="all">كل العوامل</option>
+      </select>
+    </div>
+    <div class="ctrl-sep"></div>
+    <div style="display:flex;align-items:center;gap:7px">
+      <span class="ctrl-lbl">عرض</span>
+      <div style="display:flex;gap:2px;background:var(--bg3);padding:2px;border-radius:7px;border:1px solid var(--line2)">
+        <button id="vbio-cards" class="vt-btn on" onclick="setBioView('cards')">📦 كروت</button>
+        <button id="vbio-map"   class="vt-btn"    onclick="setBioView('map')">🗺 خريطة</button>
+      </div>
+    </div>
+  </div>
+  <div class="status-count" id="status-counts"></div>
+  <button class="btn" onclick="resetFilters()">↺ إعادة</button>
+</div>
+
+<!-- MAIN TABS -->
+<div class="main-tabs">
+  <button class="main-tab on t-pest" onclick="setTab('threats')" id="tab-threats">
+    <span class="tab-dot"></span>الآفات والأمراض
+  </button>
+  <button class="main-tab t-bio" onclick="setTab('bio')" id="tab-bio">
+    <span class="tab-dot"></span>المفترسات والطفيليات
+  </button>
+  <button class="main-tab t-chem" onclick="setTab('chem')" id="tab-chem">
+    <span class="tab-dot"></span>المبيدات المُطبَّقة
+  </button>
+  <button class="main-tab t-chart" onclick="setTab('charts')" id="tab-charts">
+    <span class="tab-dot"></span>التحليل والشارتات
+  </button>
+</div>
+
+<!-- TAB CONTENTS -->
+<div id="view-threats" class="fade-in"></div>
+<div id="view-bio"     class="fade-in" style="display:none"></div>
+<div id="view-chem"   class="fade-in" style="display:none"></div>
+<div id="view-charts" class="fade-in" style="display:none"></div>
+
+<!-- HISTORY SLIDE PANEL -->
+<div class="hist-overlay" id="hist-overlay" onclick="closeHistory()">
+  <div class="hist-panel" onclick="event.stopPropagation()">
+    <div class="hist-close">
+      <div class="hist-title" id="hist-title">السجل التاريخي</div>
+      <button class="btn" onclick="closeHistory()">✕ إغلاق</button>
+    </div>
+    <div id="hist-body"></div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════════════════════
+//  KNOWLEDGE BASE — Blueberry IPM
+// ═══════════════════════════════════════════
+const PEST_DB = [
+  // ── INSECTS / MITES ──
+  { id:"thrips",   type:"pest", icon:"🦗", name:"التربس",           latin:"Frankliniella occidentalis",
+    threshold:"5 أفراد/وردة",  thresholdNum:5, unit:"فرد/وردة",
+    color:["255,107,53"], action:"رش سبينوساد أو أباميكتين — التطبيق فجراً أو مساءً",
+    target_bio:["amb","ori"]
+  },
+  { id:"spider_mite",type:"pest",icon:"🕷",name:"البق الدقيقي العنكبوتي",latin:"Tetranychus urticae",
+    threshold:"15 بيضة/ورقة", thresholdNum:15, unit:"بيضة/ورقة",
+    color:["255,107,53"], action:"زيت نيم 3% أو أكاريسيد — رطوبة أعلى من 70% تُضعف التكاثر",
+    target_bio:["phyto","galend"]
+  },
+  { id:"mealybug",  type:"pest",icon:"🤍",name:"الدقيق الحقيقي",    latin:"Planococcus citri",
+    threshold:"3 مستعمرات/نبتة",thresholdNum:3,unit:"مستعمرة/نبتة",
+    color:["255,107,53"], action:"زيت صويا 2% + صابون بوتاسي — تجنب الإجهاد المائي",
+    target_bio:["cryptolaemus"]
+  },
+  { id:"aphid",     type:"pest",icon:"🐜",name:"المن / العفن اللزج", latin:"Macrosiphum euphorbiae",
+    threshold:"10 أفراد/طرف",  thresholdNum:10,unit:"فرد/طرف",
+    color:["255,107,53"], action:"صابون حشري 1.5% أو بيريثرين — راقب النمل",
+    target_bio:["aph","galend"]
+  },
+  { id:"whitefly",  type:"pest",icon:"🦋",name:"الذبابة البيضاء",   latin:"Trialeurodes vaporariorum",
+    threshold:"6 أفراد/ورقة",  thresholdNum:6, unit:"فرد/ورقة",
+    color:["255,107,53"], action:"أصفر لاصق + إنتوموباثوجينك Beauveria bassiana",
+    target_bio:["encarsia","amb"]
+  },
+  { id:"leafroller", type:"pest",icon:"🌿",name:"لفافة الأوراق",    latin:"Choristoneura rosaceana",
+    threshold:"1 يرقة/غصن",    thresholdNum:1, unit:"يرقة/غصن",
+    color:["255,107,53"], action:"Bt (Bacillus thuringiensis) — آمن للنحل تماماً",
+    target_bio:["trich"]
+  },
+  // ── DISEASES ──
+  { id:"botrytis",  type:"disease",icon:"🍄",name:"العفن الرمادي",  latin:"Botrytis cinerea",
+    threshold:"أي ظهور على الأزهار",thresholdNum:1,unit:"بؤرة إصابة",
+    color:["180,79,219"], action:"تحسين التهوية — إزالة فورية للأجزاء المصابة — Fenhexamid",
+    target_bio:[]
+  },
+  { id:"mildew",    type:"disease",icon:"⬜",name:"البياض الدقيقي",latin:"Erysiphe necator",
+    threshold:"5% إصابة في الورقة",thresholdNum:5,unit:"% ورقة مصابة",
+    color:["180,79,219"], action:"كبريت قابل للبلل أو بيكربونات البوتاسيوم — تهوية جيدة",
+    target_bio:[]
+  },
+  { id:"anthracnose",type:"disease",icon:"🔴",name:"اللفحة / الأنثراكنوز",latin:"Colletotrichum acutatum",
+    threshold:"أي ظهور على الثمار",thresholdNum:1,unit:"بؤرة إصابة",
+    color:["180,79,219"], action:"نحاس هيدروكسيد — تجنب إصابات جرح وإجهاد",
+    target_bio:[]
+  },
+  { id:"phytoph",   type:"disease",icon:"🌊",name:"اللفحة الجذرية",latin:"Phytophthora cinnamomi",
+    threshold:"أي أعراض ذبول",  thresholdNum:1,unit:"نبتة مصابة",
+    color:["180,79,219"], action:"تحسين الصرف — فوسفونات البوتاسيوم وقائياً",
+    target_bio:[]
+  },
+];
+
+const BIO_DB = [
+  { id:"phyto",    icon:"🕸", name:"Phytoseiulus persimilis",    type:"predatory_mite",  arabic:"أكاروس مفترس",
+    target:"spider_mite", ratio_min:5, ratio_max:15, unit:"فرد/م²",
+    color:"34,217,138"
+  },
+  { id:"galend",   icon:"🐛", name:"Galendromus occidentalis",   type:"predatory_mite",  arabic:"أكاروس مفترس (تحمل حراري)",
+    target:"spider_mite", ratio_min:3, ratio_max:8,  unit:"فرد/م²",
+    color:"34,217,138"
+  },
+  { id:"encarsia", icon:"🪲", name:"Encarsia formosa",           type:"parasitoid_wasp", arabic:"دبور طفيلي",
+    target:"whitefly", ratio_min:2, ratio_max:5, unit:"بالغ/م²",
+    color:"34,217,138"
+  },
+  { id:"amb",      icon:"🐛", name:"Amblyseius cucumeris",       type:"predatory_mite",  arabic:"أكاروس مفترس — تربس + بيض",
+    target:"thrips", ratio_min:25, ratio_max:50, unit:"فرد/م²",
+    color:"34,217,138"
+  },
+  { id:"ori",      icon:"🦟", name:"Orius insidiosus",           type:"predatory_bug",   arabic:"أبو العيد المفترس",
+    target:"thrips", ratio_min:1, ratio_max:3, unit:"فرد/م²",
+    color:"34,217,138"
+  },
+  { id:"aph",      icon:"🪲", name:"Aphidius colemani",          type:"parasitoid_wasp", arabic:"دبور طفيلي للمن",
+    target:"aphid", ratio_min:0.5, ratio_max:2, unit:"بالغ/م²",
+    color:"34,217,138"
+  },
+  { id:"cryptolaemus",icon:"🐞",name:"Cryptolaemus montrouzieri",type:"predatory_beetle",arabic:"خنفساء مفترسة — دقيق حقيقي",
+    target:"mealybug", ratio_min:0.5, ratio_max:1, unit:"فرد/م²",
+    color:"34,217,138"
+  },
+  { id:"trich",    icon:"🪲", name:"Trichogramma spp.",          type:"egg_parasitoid",  arabic:"طفيلي بيض",
+    target:"leafroller", ratio_min:500, ratio_max:2000, unit:"بيضة/م²",
+    color:"34,217,138"
+  },
+];
+
+const CHEM_DB = [
+  { id:"spinosad",  name:"سبينوساد",        ai:"Spinosad",        group:"IRAC 5",  phi:3,  ee:"آمن للنحل بعد الجفاف",   moa:"تأثير عصبي — ناقل كوليني", color:"251,191,36", targets:["thrips","leafroller"] },
+  { id:"abamectin", name:"أباميكتين",       ai:"Abamectin",       group:"IRAC 6",  phi:7,  ee:"ضار للنحل رطباً",         moa:"قنوات كلوريد — شلل", color:"251,191,36", targets:["thrips","spider_mite"] },
+  { id:"neem",      name:"زيت النيم",        ai:"Azadirachtin",    group:"IRAC 18B",phi:0,  ee:"آمن نسبياً",              moa:"هرمون الانسلاخ", color:"251,191,36", targets:["spider_mite","whitefly","aphid"] },
+  { id:"sulfur",    name:"كبريت قابل بلل",   ai:"Sulfur",          group:"IRAC M2", phi:0,  ee:"آمن للنحل",               moa:"تداخل أيضي", color:"251,191,36", targets:["mildew"] },
+  { id:"copper",    name:"نحاس هيدروكسيد",   ai:"Copper hydroxide",group:"FRAC M1", phi:0,  ee:"آمن للنحل",               moa:"تغيير بروتيني شامل", color:"251,191,36", targets:["anthracnose","phytoph"] },
+  { id:"fenhex",    name:"فنهكساميد",         ai:"Fenhexamid",      group:"FRAC 17", phi:3,  ee:"آمن للنحل",               moa:"تثبيط إنزيم الكيتين", color:"251,191,36", targets:["botrytis"] },
+  { id:"beauveria", name:"بوفيريا باسيانا",   ai:"Beauveria bassiana",group:"Bio",  phi:0,  ee:"آمن للنحل",               moa:"عدو حيوي — فطر", color:"251,191,36", targets:["whitefly","thrips"] },
+];
+
+// ═══════════════════════════════════════════
+//  ROOMS & FARMS
+// ═══════════════════════════════════════════
+const FARMS = [
+  {id:"F-01",name:"مزرعة الواحة",color:"#1a6fff"},
+  {id:"F-02",name:"مزرعة الشمس",color:"#f59e0b"},
+  {id:"F-03",name:"مزرعة النيل",color:"#00d4aa"},
+];
+const ROOMS = [
+  {id:"BB-01",farmId:"F-01",variety:"بيانكا",area:600},
+  {id:"BB-02",farmId:"F-01",variety:"اوني",area:420},
+  {id:"BB-03",farmId:"F-01",variety:"مِسي",area:500},
+  {id:"BB-04",farmId:"F-02",variety:"بيانكا",area:580},
+  {id:"BB-05",farmId:"F-02",variety:"دوك",area:380},
+  {id:"BB-06",farmId:"F-03",variety:"بلوكروب",area:750},
+  {id:"BB-07",farmId:"F-03",variety:"مِسي",area:320},
+];
+
+// ═══════════════════════════════════════════
+//  GENERATE SCOUTING DATA
+// ═══════════════════════════════════════════
+function rnd(a,b,d=1){ return parseFloat((Math.random()*(b-a)+a).toFixed(d)); }
+function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; }
+
+// For each room: pest observations + bio populations + pesticide applications
+const ROOM_DATA = {};
+ROOMS.forEach(room => {
+  // ── Pest scouting records ──
+  const pestRecords = {};
+  PEST_DB.forEach(pest => {
+    // 5–8 scouting entries going back 30 days
+    const entries = [];
+    const nEntries = Math.floor(Math.random()*4)+5;
+    for(let i=nEntries-1;i>=0;i--){
+      const dayOff = i*Math.floor(30/nEntries) + Math.floor(Math.random()*3);
+      const base = pest.type==="disease" ? rnd(0,3,0) : rnd(0, pest.thresholdNum*1.8, 1);
+      const notes = pest.id==="thrips" && Math.random()>.6 ? "إناث بالغة داخل الأزهار — راقب" :
+                    pest.id==="botrytis"&&Math.random()>.7 ? "بداية ظهور على البتلات الميتة" :
+                    pest.id==="spider_mite"&&base>pest.thresholdNum*0.8 ? "تراكيز عالية على الأوراق السفلى" :
+                    null;
+      entries.push({ date:daysAgo(dayOff), count:base, notes });
+    }
+    entries.sort((a,b)=>a.date.localeCompare(b.date));
+    pestRecords[pest.id] = entries;
+  });
+
+  // ── Bio populations ──
+  const bioRecords = {};
+  BIO_DB.forEach(bio => {
+    const entries = [];
+    const nEntries = Math.floor(Math.random()*3)+3;
+    const area = room.area;
+    for(let i=nEntries-1;i>=0;i--){
+      const dayOff = i*8 + Math.floor(Math.random()*3);
+      const perM2 = rnd(bio.ratio_min*0.3, bio.ratio_max*1.2);
+      const notes = perM2<bio.ratio_min ? "أعداد أقل من المطلوب — يُنصح بإعادة إطلاق" :
+                    perM2>bio.ratio_max*0.9 ? "أعداد ممتازة — تكاثر ذاتي ملحوظ" : null;
+      entries.push({ date:daysAgo(dayOff), perM2, totalEst:Math.round(perM2*area), notes });
+    }
+    const lastRelease = daysAgo(Math.floor(Math.random()*14)+3);
+    const releaseRate = parseFloat((bio.ratio_min + rnd(0,5)).toFixed(1));
+    entries.sort((a,b)=>a.date.localeCompare(b.date));
+    bioRecords[bio.id] = { history:entries, lastRelease, releaseRate, releaseUnit:bio.unit };
+  });
+
+  // ── Pesticide applications ──
+  const chemApps = [];
+  CHEM_DB.forEach(chem => {
+    const nApps = Math.floor(Math.random()*2)+1;
+    for(let i=0;i<nApps;i++){
+      const dayOff = Math.floor(Math.random()*28)+2;
+      chemApps.push({
+        date:daysAgo(dayOff),
+        chemId:chem.id,
+        chemName:chem.name,
+        targetPest:chem.targets[0],
+        doseMlPerL: rnd(0.5,3.0),
+        waterL: rnd(100,600,0),
+        totalMl: null, // computed
+        notes: Math.random()>.6 ? "تطبيق وقائي قبل الإزهار" : null,
+        phi:chem.phi,
+        ee:chem.ee,
+        color:chem.color,
+        ai:chem.ai,
+        moa:chem.moa,
+      });
+    }
+  });
+  chemApps.forEach(a=>{ a.totalMl = parseFloat((a.doseMlPerL * a.waterL).toFixed(1)); });
+  chemApps.sort((a,b)=>b.date.localeCompare(a.date));
+
+  ROOM_DATA[room.id] = { pestRecords, bioRecords, chemApps,
+    lastScout:daysAgo(Math.floor(Math.random()*3)),
+    nextScout:daysAgo(-Math.floor(Math.random()*3)-1),
+  };
+});
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let selFarm="all", selRoom="all", selType="all";
+let selPest="all", selDisease="all", selBio="all";
+let activeTab="threats", bioViewMode="cards";
+let chartInstances = {};
+
+// ═══════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════
+function initSelects(){
+  // farm
+  const sf=$('sel-farm'); sf.innerHTML='<option value="all">كل المزارع</option>';
+  FARMS.forEach(f=>{const o=document.createElement('option');o.value=f.id;o.textContent=f.name;sf.appendChild(o);});
+  // room
+  const sr=$('sel-room'); sr.innerHTML='<option value="all">كل الغرف</option>';
+  ROOMS.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=`${r.id} — ${r.variety}`;sr.appendChild(o);});
+  // pest filter
+  const sp=$('sel-pest');
+  PEST_DB.filter(p=>p.type==="pest").forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.icon} ${p.name}`;sp.appendChild(o);});
+  // disease filter
+  const sd=$('sel-disease');
+  PEST_DB.filter(p=>p.type==="disease").forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.icon} ${p.name}`;sd.appendChild(o);});
+  // bio filter
+  const sb=$('sel-bio');
+  BIO_DB.forEach(b=>{const o=document.createElement('option');o.value=b.id;o.textContent=`${b.icon} ${b.arabic}`;sb.appendChild(o);});
+}
+
+function applyFilters(){
+  selFarm=$('sel-farm').value;
+  selRoom=$('sel-room').value;
+  selType=$('sel-type').value;
+  selPest=$('sel-pest').value;
+  selDisease=$('sel-disease').value;
+  selBio=$('sel-bio').value;
+  renderAll();
+}
+
+function resetFilters(){
+  selFarm=selRoom="all"; selType="all"; selPest="all"; selDisease="all"; selBio="all";
+  $('sel-farm').value="all"; $('sel-room').value="all";
+  $('sel-type').value="all"; $('sel-pest').value="all";
+  $('sel-disease').value="all"; $('sel-bio').value="all";
+  renderAll();
+}
+
+function filteredRooms(){
+  return ROOMS.filter(r=>{
+    if(selFarm!=="all"&&r.farmId!==selFarm) return false;
+    if(selRoom!=="all"&&r.id!==selRoom) return false;
+    return true;
+  });
+}
+
+// show/hide context-sensitive filter groups
+function syncFilterGroups(){
+  const tg=$('flt-threats-group'), bg=$('flt-bio-group');
+  if(tg) tg.style.display=(activeTab==="threats")?"flex":"none";
+  if(bg) bg.style.display=(activeTab==="bio")?"flex":"none";
+}
+
+function setBioView(mode){
+  bioViewMode=mode;
+  $('vbio-cards').classList.toggle('on',mode==="cards");
+  $('vbio-map').classList.toggle('on',mode==="map");
+  renderBio();
+}
+
+// ═══════════════════════════════════════════
+//  SEVERITY HELPERS
+// ═══════════════════════════════════════════
+function lastCount(roomId, pestId){
+  const recs = ROOM_DATA[roomId]?.pestRecords[pestId];
+  if(!recs||!recs.length) return null;
+  return recs[recs.length-1];
+}
+function sevLevel(count, threshold){
+  if(count===0) return "clear";
+  const ratio = count/threshold;
+  if(ratio<0.3) return "trace";
+  if(ratio<0.7) return "low";
+  if(ratio<1.0) return "near";
+  if(ratio<1.5) return "over";
+  return "critical";
+}
+const SEV_LABELS = {clear:"غير موجود",trace:"أثر",low:"منخفض",near:"قريب من العتبة",over:"تجاوز العتبة",critical:"⚠ حرج"};
+const SEV_COLORS = {clear:"var(--fog3)",trace:"var(--ok)",low:"var(--ok)",near:"var(--warn)",over:"var(--pest)",critical:"var(--alert)"};
+const SEV_BG    = {clear:"var(--bg4)",trace:"rgba(34,197,94,.08)",low:"rgba(34,197,94,.08)",near:"rgba(245,158,11,.08)",over:"rgba(255,107,53,.1)",critical:"rgba(244,63,94,.12)"};
+const SEV_BORDER= {clear:"var(--line)",trace:"rgba(34,197,94,.2)",low:"rgba(34,197,94,.2)",near:"rgba(245,158,11,.25)",over:"rgba(255,107,53,.3)",critical:"rgba(244,63,94,.35)"};
+
+// Bio population status
+function bioStatus(roomId, bioId){
+  const d = ROOM_DATA[roomId]?.bioRecords[bioId];
+  if(!d||!d.history.length) return null;
+  const last = d.history[d.history.length-1];
+  const bio = BIO_DB.find(b=>b.id===bioId);
+  const ratio = last.perM2/bio.ratio_min;
+  return { perM2:last.perM2, ratio, ok:ratio>=0.8, date:last.date, notes:last.notes };
+}
+
+// ═══════════════════════════════════════════
+//  STATUS COUNTS
+// ═══════════════════════════════════════════
+function renderStatusCounts(){
+  const rooms = filteredRooms();
+  let overThreshold=0, critical=0, clear=0;
+  rooms.forEach(r=>{
+    PEST_DB.forEach(p=>{
+      const last=lastCount(r.id,p.id); if(!last) return;
+      const sev=sevLevel(last.count,p.thresholdNum);
+      if(sev==="critical") critical++;
+      else if(sev==="over"||sev==="near") overThreshold++;
+      else if(sev==="clear"||sev==="trace") clear++;
+    });
+  });
+  $('status-counts').innerHTML=`
+    <div class="sc-chip b-alert" style="border-color:rgba(244,63,94,.35)">🚨 ${critical} حرج</div>
+    <div class="sc-chip b-warn" style="border-color:rgba(245,158,11,.3)">⚠ ${overThreshold} تحذير</div>
+    <div class="sc-chip b-ok" style="border-color:rgba(34,197,94,.3)">✓ ${clear} سليم</div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER THREATS TAB  (FIX: pest filter + bio section inside room)
+// ═══════════════════════════════════════════
+function renderThreats(){
+  const rooms=filteredRooms();
+  // Determine which pests/diseases to show
+  let pests;
+  if(selPest!=="all"){
+    pests = PEST_DB.filter(p=>p.id===selPest);
+  } else if(selDisease!=="all"){
+    pests = PEST_DB.filter(p=>p.id===selDisease);
+  } else {
+    pests = PEST_DB.filter(p=>selType==="all"||(selType==="pest"&&p.type==="pest")||(selType==="disease"&&p.type==="disease"));
+  }
+
+  if(!rooms.length){$('view-threats').innerHTML='<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">لا توجد غرف</div>';return;}
+
+  // If single pest selected → cross-room view
+  if(selPest!=="all"||selDisease!=="all"){
+    const pest=pests[0];
+    if(!pest){$('view-threats').innerHTML='';return;}
+    $('view-threats').innerHTML=renderCrossRoomView(rooms, pest);
+    attachToggles();
+    return;
+  }
+
+  $('view-threats').innerHTML=`<div class="rooms-grid">${rooms.map(r=>renderRoomThreats(r,pests)).join('')}</div>`;
+  attachToggles();
+}
+
+// Cross-room view: one pest across all rooms as a heatmap table
+function renderCrossRoomView(rooms, pest){
+  const isDisease = pest.type==="disease";
+  const themeColor = isDisease?"var(--dis)":"var(--pest)";
+  const sevOrder=["clear","trace","low","near","over","critical"];
+
+  const rows = rooms.map(r=>{
+    const last=lastCount(r.id,pest.id);
+    const sev=last?sevLevel(last.count,pest.thresholdNum):"clear";
+    const farm=FARMS.find(f=>f.id===r.farmId);
+    return {room:r,farm,last,sev};
+  }).sort((a,b)=>sevOrder.indexOf(b.sev)-sevOrder.indexOf(a.sev));
+
+  const cards = rows.map(({room,farm,last,sev})=>{
+    if(!last) return '';
+    const sevColor=SEV_COLORS[sev], sevBg=SEV_BG[sev], sevBorder=SEV_BORDER[sev];
+    const barW=pest.thresholdNum>0?Math.min(100,(last.count/pest.thresholdNum)*100):0;
+    const history=ROOM_DATA[room.id].pestRecords[pest.id];
+    // Bio defenders for this pest
+    const defenders = BIO_DB.filter(b=>pest.target_bio&&pest.target_bio.includes(b.id));
+
+    return `
+    <div class="pest-item" style="background:var(--bg2);border-radius:10px;border:1px solid ${sevBorder}">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)">
+        <div style="width:6px;height:36px;border-radius:3px;background:${farm.color};flex-shrink:0"></div>
+        <div>
+          <div style="font-family:var(--display);font-weight:800;font-size:14px">${room.id}</div>
+          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${room.variety} · ${farm.name}</div>
+        </div>
+        <div style="margin-right:auto;display:flex;gap:6px;align-items:center">
+          <div class="sev-badge" style="background:${sevBg};border-color:${sevBorder};color:${sevColor}">${SEV_LABELS[sev]}</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:${sevColor}">${last.count} ${pest.unit}</div>
+      </div>
+      <div style="padding:10px 14px">
+        <div class="count-bar-wrap" style="margin-bottom:8px">
+          <div class="count-bar-track" style="height:6px">
+            <div class="count-bar-fill" style="width:${barW}%;background:${sevColor}"></div>
+          </div>
+          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono);white-space:nowrap">عتبة: ${pest.thresholdNum}</span>
+        </div>
+        ${last.notes?`<div style="font-size:11px;color:var(--warn);background:rgba(245,158,11,.07);border-radius:5px;padding:5px 8px;margin-bottom:7px">📌 ${last.notes}</div>`:''}
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono)">آخر فحص: ${last.date}</span>
+          <button class="history-btn" onclick="openHistory('${room.id}','pest','${pest.id}','${pest.name} — ${room.id}')">📈 السجل</button>
+          ${defenders.length?`<div style="display:flex;gap:4px;flex-wrap:wrap">
+            ${defenders.map(b=>{
+              const st=bioStatus(room.id,b.id);
+              const pill_cls=!st?'empty':st.ok?'ok':'low';
+              return `<span class="bio-strip-pill ${pill_cls}" onclick="openHistory('${room.id}','bio','${b.id}','${b.arabic} — ${room.id}')">
+                <span class="bsp-dot"></span>
+                <span class="bsp-name">${b.name.split(' ')[0]}</span>
+                <span class="bsp-val">${st?st.perM2+' '+b.unit:'غير مُطلق'}</span>
+              </span>`;
+            }).join('')}
+          </div>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:var(--bg2);border:1px solid ${isDisease?'rgba(180,79,219,.3)':'rgba(255,107,53,.3)'};border-radius:10px">
+      <div style="font-size:24px">${pest.icon}</div>
+      <div>
+        <div style="font-family:var(--display);font-weight:800;font-size:16px;color:${themeColor}">${pest.name}</div>
+        <div style="font-size:10px;color:var(--fog3);font-family:var(--mono);font-style:italic">${pest.latin}</div>
+      </div>
+      <div style="margin-right:auto;font-family:var(--mono);font-size:11px;color:var(--fog2)">العتبة: <span style="color:var(--alert)">${pest.threshold}</span></div>
+      <div style="font-size:11px;color:var(--fog)">${rooms.length} غرفة</div>
+    </div>
+    <div class="rooms-grid">${cards}</div>`;
+}
+
+function attachToggles(){
+  document.querySelectorAll('.rc-head').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.room-card').classList.toggle('open'));
+  });
+  document.querySelectorAll('.pest-head').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.pest-item').classList.toggle('open'));
+  });
+}
+
+function renderRoomThreats(room, pests){
+  const rd = ROOM_DATA[room.id];
+  const farm = FARMS.find(f=>f.id===room.farmId);
+  const sevOrder = ["clear","trace","low","near","over","critical"];
+  let worstSev = "clear";
+  pests.forEach(p=>{
+    const last=lastCount(room.id,p.id); if(!last) return;
+    const sev=sevLevel(last.count,p.thresholdNum);
+    if(sevOrder.indexOf(sev)>sevOrder.indexOf(worstSev)) worstSev=sev;
+  });
+  const isAlert = worstSev==="critical"||worstSev==="over";
+  const alertCount = pests.filter(p=>{const l=lastCount(room.id,p.id);return l&&sevOrder.indexOf(sevLevel(l.count,p.thresholdNum))>=3;}).length;
+
+  // Build bio defenders section for this room
+  const bioSection = renderRoomBioStrip(room);
+
+  return `
+  <div class="room-card${isAlert?' alert-room':''}" id="rc-${room.id}">
+    <div class="rc-head">
+      <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
+      <div>
+        <div class="rc-id">${room.id}</div>
+        <div class="rc-variety">${room.variety} · ${room.area} م²</div>
+      </div>
+      <div class="rc-badges">
+        ${isAlert?`<span class="badge b-alert">⚠ ${alertCount} تنبيه</span>`:'<span class="badge b-ok">✓ سليم</span>'}
+        <span class="badge" style="background:rgba(255,255,255,.05);border-color:var(--line2);color:var(--fog3)">${farm.name}</span>
+      </div>
+      <div class="rc-expand">▶</div>
+    </div>
+    <div class="rc-scout-bar">
+      <span>آخر فحص:</span><span class="scout-date">${rd.lastScout}</span>
+      <span style="margin-right:auto">الفحص القادم:</span><span style="color:var(--warn)">${rd.nextScout}</span>
+    </div>
+    <div class="rc-body">
+      ${pests.filter(p=>p.type==="pest").length?`
+        <div class="section-hdr">🦗 الحشرات والآفات</div>
+        ${pests.filter(p=>p.type==="pest").map(p=>renderPestItem(room,p,"pest")).join('')}
+      `:''}
+      ${pests.filter(p=>p.type==="disease").length?`
+        <div class="section-hdr" style="margin-top:6px">🍄 الأمراض</div>
+        ${pests.filter(p=>p.type==="disease").map(p=>renderPestItem(room,p,"disease")).join('')}
+      `:''}
+      ${bioSection}
+    </div>
+  </div>`;
+}
+
+// ── BIO STRIP inside threats room card (FIX #3) ──
+function renderRoomBioStrip(room){
+  const pills = BIO_DB.map(b=>{
+    const st = bioStatus(room.id, b.id);
+    const pill_cls = !st?'empty':st.ok?'ok':'low';
+    const label = !st?'غير مُطلق':`${st.perM2} ${b.unit}`;
+    const targetPest = PEST_DB.find(p=>p.id===b.target);
+    return `<span class="bio-strip-pill ${pill_cls}"
+      onclick="openHistory('${room.id}','bio','${b.id}','${b.arabic} — ${room.id}')"
+      title="${b.name}">
+      <span class="bsp-dot"></span>
+      <span class="bsp-name">${b.arabic.split(' ').slice(0,2).join(' ')}</span>
+      <span class="bsp-val">${label}</span>
+    </span>`;
+  }).join('');
+
+  const activeCount = BIO_DB.filter(b=>{const st=bioStatus(room.id,b.id);return st&&st.ok;}).length;
+  const lowCount    = BIO_DB.filter(b=>{const st=bioStatus(room.id,b.id);return st&&!st.ok;}).length;
+  const noneCount   = BIO_DB.filter(b=>!bioStatus(room.id,b.id)).length;
+
+  return `
+  <div class="rc-bio-section">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
+      <div class="section-hdr" style="border:none;margin:0;padding:0">🌿 المفترسات والطفيليات</div>
+      <span class="badge b-bio" style="font-size:9px">✓ ${activeCount} نشط</span>
+      ${lowCount?`<span class="badge b-warn" style="font-size:9px">⚠ ${lowCount} ضعيف</span>`:''}
+      ${noneCount?`<span class="badge" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2);color:var(--alert);font-size:9px">○ ${noneCount} غير مُطلق</span>`:''}
+    </div>
+    <div class="rc-bio-strip">${pills}</div>
+    <div style="font-size:9px;color:var(--fog3);font-family:var(--mono);margin-top:5px">اضغط على أي عامل لعرض سجله التاريخي</div>
+  </div>`;
+}
+
+function renderPestItem(room, pest, type){
+  const last = lastCount(room.id, pest.id);
+  if(!last) return '';
+  const sev = sevLevel(last.count, pest.thresholdNum);
+  const sevColor = SEV_COLORS[sev];
+  const barW = pest.thresholdNum>0?Math.min(120,(last.count/pest.thresholdNum)*100):0;
+  const barColor = sev==="critical"?"var(--alert)":sev==="over"?"var(--pest)":sev==="near"?"var(--warn)":"var(--ok)";
+  const iconBg = type==="pest"?"rgba(255,107,53,.1)":"rgba(180,79,219,.1)";
+  const iconBorder = type==="pest"?"rgba(255,107,53,.25)":"rgba(180,79,219,.25)";
+  const history = ROOM_DATA[room.id].pestRecords[pest.id];
+  const prevCount = history.length>1?history[history.length-2].count:null;
+  const delta = prevCount!==null?last.count-prevCount:null;
+
+  return `
+  <div class="pest-item" id="pi-${room.id}-${pest.id}">
+    <div class="pest-head">
+      <div class="pest-icon" style="background:${iconBg};border:1px solid ${iconBorder}">${pest.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="pest-name">${pest.name}</div>
+        <div class="pest-latin">${pest.latin}</div>
+        <div class="count-bar-wrap">
+          <div class="count-bar-track">
+            <div class="count-bar-fill" style="width:${Math.min(100,barW)}%;background:${barColor}"></div>
+          </div>
+          <div style="font-size:10px;font-family:var(--mono);color:${sevColor};white-space:nowrap">${last.count} ${pest.unit}</div>
+          ${delta!==null?`<span style="font-size:9px;color:${delta>0?'var(--alert)':delta<0?'var(--ok)':'var(--fog3)'}">${delta>0?'▲':'▼'}${Math.abs(delta).toFixed(1)}</span>`:''}
+        </div>
+      </div>
+      <div class="pest-meta">
+        <div class="sev-badge" style="background:${SEV_BG[sev]};border-color:${SEV_BORDER[sev]};color:${sevColor}">${SEV_LABELS[sev]}</div>
+        ${last.notes?'<span style="font-size:9px;color:var(--warn)">📌</span>':''}
+      </div>
+      <div class="pest-expand">▶</div>
+    </div>
+    <div class="pest-detail">
+      <div class="detail-grid">
+        <div class="detail-cell">
+          <div class="dc-lbl">آخر فحص</div>
+          <div class="dc-val" style="color:var(--bio)">${last.date}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">العدد المرصود</div>
+          <div class="dc-val" style="color:${sevColor}">${last.count} ${pest.unit}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">عتبة التدخل</div>
+          <div class="dc-val" style="color:var(--alert)">${pest.threshold}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">حالة التعداد</div>
+          <div class="dc-val" style="color:${sevColor};font-size:11px">${SEV_LABELS[sev]}</div>
+        </div>
+      </div>
+      ${last.notes?`<div class="note-box"><span class="note-icon">📌</span><span>${last.notes}</span></div>`:''}
+      <div class="detail-cell" style="padding:8px 10px">
+        <div class="dc-lbl">الإجراء الموصى به</div>
+        <div style="font-size:11px;color:var(--fog);margin-top:4px;line-height:1.6">💊 ${pest.action}</div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="history-btn" onclick="openHistory('${room.id}','pest','${pest.id}','${pest.name}')">
+          📈 السجل التاريخي (${history.length} فحص)
+        </button>
+        ${pest.target_bio&&pest.target_bio.length?`<div style="font-size:10px;color:var(--bio);font-family:var(--mono);display:flex;align-items:center;gap:4px">
+          🌿 المفترس: ${pest.target_bio.map(b=>{const bb=BIO_DB.find(x=>x.id===b);return bb?bb.name.split(' ')[0]:b}).join(', ')}
+        </div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER BIO TAB  (FIX: bio filter + map view)
+// ═══════════════════════════════════════════
+function renderBio(){
+  const rooms = filteredRooms();
+  if(!rooms.length){$('view-bio').innerHTML='<div style="padding:40px;text-align:center;color:var(--fog3);font-family:var(--mono)">لا توجد غرف</div>';return;}
+
+  const bios = selBio==="all" ? BIO_DB : BIO_DB.filter(b=>b.id===selBio);
+
+  if(bioViewMode==="map"){
+    $('view-bio').innerHTML = renderBioHeatmap(rooms, bios);
+    return;
+  }
+
+  // Cards view — with optional single-bio cross-room view
+  if(selBio!=="all"){
+    const bio = bios[0]; if(!bio){ $('view-bio').innerHTML=''; return; }
+    $('view-bio').innerHTML = renderBioCrossRoom(rooms, bio);
+    attachBioToggles();
+    return;
+  }
+
+  $('view-bio').innerHTML=`<div class="rooms-grid">${rooms.map(r=>renderRoomBio(r,bios)).join('')}</div>`;
+  attachBioToggles();
+}
+
+function attachBioToggles(){
+  document.querySelectorAll('.rc-head').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.room-card').classList.toggle('open'));
+  });
+  document.querySelectorAll('.bio-head,.pest-head').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.bio-item,.pest-item')?.classList.toggle('open'));
+  });
+}
+
+// ── Cross-room view for a single bio agent ──
+function renderBioCrossRoom(rooms, bio){
+  const targetPest = PEST_DB.find(p=>p.id===bio.target);
+  const cards = rooms.map(r=>{
+    const rd = ROOM_DATA[r.id].bioRecords[bio.id];
+    const farm = FARMS.find(f=>f.id===r.farmId);
+    const hist = rd.history;
+    const last = hist[hist.length-1];
+    const st = bioStatus(r.id, bio.id);
+    const popPct = Math.min(100,(last.perM2/bio.ratio_max)*100);
+    const statusColor = st&&st.ok?'var(--bio)':'var(--warn)';
+
+    return `
+    <div style="background:var(--bg2);border:1px solid ${st&&st.ok?'rgba(34,217,138,.3)':'rgba(245,158,11,.3)'};border-radius:10px;padding:12px 14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:6px;height:36px;border-radius:3px;background:${farm.color};flex-shrink:0"></div>
+        <div>
+          <div style="font-family:var(--display);font-weight:800;font-size:14px">${r.id}</div>
+          <div style="font-size:10px;color:var(--fog3);font-family:var(--mono)">${r.variety} · ${farm.name}</div>
+        </div>
+        <div style="margin-right:auto;font-family:var(--mono);font-size:13px;font-weight:600;color:${statusColor}">${last.perM2} ${bio.unit}</div>
+        <span class="badge ${st&&st.ok?'b-bio':'b-warn'}" style="font-size:9px">${st&&st.ok?'✓ كافٍ':'⚠ ضعيف'}</span>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:7px">
+          <div class="count-bar-track" style="flex:1;height:6px">
+            <div class="count-bar-fill" style="width:${popPct}%;background:${statusColor}"></div>
+          </div>
+          <span style="font-size:9px;color:var(--fog3);font-family:var(--mono)">${bio.ratio_min}–${bio.ratio_max}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
+        <div class="detail-cell"><div class="dc-lbl">آخر إطلاق</div><div class="dc-val" style="color:var(--bio);font-size:11px">${rd.lastRelease}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">معدل الإطلاق</div><div class="dc-val" style="font-size:11px">${rd.releaseRate} ${bio.unit}</div></div>
+        <div class="detail-cell"><div class="dc-lbl">الإجمالي المقدّر</div><div class="dc-val" style="font-size:11px">${last.totalEst.toLocaleString()} فرد</div></div>
+        <div class="detail-cell"><div class="dc-lbl">آخر رصد</div><div class="dc-val" style="font-size:11px;color:var(--fog2)">${last.date}</div></div>
+      </div>
+      ${last.notes?`<div style="font-size:10px;color:var(--warn);background:rgba(245,158,11,.07);border-radius:5px;padding:4px 8px;margin-bottom:5px">📌 ${last.notes}</div>`:''}
+      <button class="history-btn" onclick="openHistory('${r.id}','bio','${bio.id}','${bio.arabic} — ${r.id}')">📈 السجل التاريخي (${hist.length} رصد)</button>
+    </div>`;
+  }).join('');
+
+  return `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px 16px;background:var(--bg2);border:1px solid rgba(34,217,138,.3);border-radius:10px">
+      <div style="font-size:24px">${bio.icon}</div>
+      <div>
+        <div style="font-family:var(--display);font-weight:800;font-size:16px;color:var(--bio)">${bio.arabic}</div>
+        <div style="font-size:10px;color:var(--fog3);font-family:var(--mono);font-style:italic">${bio.name}</div>
+      </div>
+      <div style="margin-right:auto;font-size:11px;color:var(--fog2)">هدفه: <span style="color:var(--pest)">${targetPest?.name||bio.target}</span></div>
+      <div style="font-family:var(--mono);font-size:11px">هدف: ${bio.ratio_min}–${bio.ratio_max} ${bio.unit}</div>
+    </div>
+    <div class="rooms-grid">${cards}</div>`;
+}
+
+// ── Heatmap view: rooms × bio agents ──
+function renderBioHeatmap(rooms, bios){
+  const headerCells = bios.map(b=>`<th><div style="font-size:9px;color:var(--bio)">${b.icon}</div><div style="font-size:8px;margin-top:2px">${b.arabic.split(' ').slice(0,2).join(' ')}</div></th>`).join('');
+
+  const rows = rooms.map(r=>{
+    const farm=FARMS.find(f=>f.id===r.farmId);
+    const cells = bios.map(b=>{
+      const st=bioStatus(r.id,b.id);
+      const rd=ROOM_DATA[r.id].bioRecords[b.id];
+      const last=rd.history[rd.history.length-1];
+      if(!st){ return `<td><div class="hm-cell" style="background:rgba(244,63,94,.07);color:rgba(244,63,94,.5)" title="${b.name}">○<div class="hm-sub">غير مطلق</div></div></td>`; }
+      const pct=Math.min(100,Math.round(st.ratio*100));
+      const bg=st.ok?`rgba(34,217,138,${Math.min(.7,pct/200+.15)})`:`rgba(245,158,11,${Math.min(.6,pct/200+.1)})`;
+      const fg=st.ok?'#22d98a':'#f59e0b';
+      return `<td><div class="hm-cell" style="background:${bg};color:${fg}" title="${b.name}: ${last.perM2} ${b.unit}">${last.perM2}<div class="hm-sub">${b.unit}</div></div></td>`;
+    }).join('');
+
+    return `<tr>
+      <td><div class="hm-room-lbl" style="color:${farm.color}">${r.id}<div style="font-size:8px;color:var(--fog3);font-family:var(--mono);margin-top:1px">${r.variety}</div></div></td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // Also render a bar chart summary per room
+  const summaryCards = rooms.map(r=>{
+    const agents=bios.map(b=>{
+      const st=bioStatus(r.id,b.id);
+      const rd=ROOM_DATA[r.id].bioRecords[b.id];
+      const last=rd.history[rd.history.length-1];
+      const pct=st?Math.min(100,Math.round(st.ratio*100)):0;
+      const color=!st?'rgba(244,63,94,.4)':st.ok?'rgba(34,217,138,.7)':'rgba(245,158,11,.6)';
+      return `<div class="bmr-agent" style="background:${!st?'rgba(244,63,94,.04)':st.ok?'rgba(34,217,138,.06)':'rgba(245,158,11,.06)'}">
+        <span style="font-size:12px;flex-shrink:0">${b.icon}</span>
+        <div class="bmr-agent-bar"><div class="bmr-agent-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span style="font-family:var(--mono);font-size:9px;color:${!st?'var(--alert)':st.ok?'var(--bio)':'var(--warn)'};white-space:nowrap">${st?last.perM2:'—'}</span>
+      </div>`;
+    }).join('');
+    const farm=FARMS.find(f=>f.id===r.farmId);
+    const okCount=bios.filter(b=>{const st=bioStatus(r.id,b.id);return st&&st.ok;}).length;
+    return `
+    <div class="bio-map-room" style="border-color:${okCount===bios.length?'rgba(34,217,138,.25)':okCount>bios.length/2?'rgba(245,158,11,.2)':'rgba(244,63,94,.2)'}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div class="bmr-id" style="color:${farm.color}">${r.id}</div>
+          <div class="bmr-var">${r.variety}</div>
+        </div>
+        <span class="badge ${okCount===bios.length?'b-bio':okCount>0?'b-warn':'b-alert'}" style="font-size:9px">${okCount}/${bios.length}</span>
+      </div>
+      <div class="bmr-agents">${agents}</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div style="margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--fog2);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🗺 خريطة تغطية المفترسات — كل الغرف</div>
+      <div class="heatmap-wrap">
+        <table class="heatmap-tbl">
+          <thead><tr><th>الغرفة</th>${headerCells}</tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--fog2);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">📦 ملخص التغطية لكل غرفة</div>
+    <div class="bio-map-grid">${summaryCards}</div>`;
+}
+
+function renderRoomBio(room, bios){
+  if(!bios) bios=BIO_DB;
+  const farm = FARMS.find(f=>f.id===room.farmId);
+  const rd = ROOM_DATA[room.id];
+  const bioOk = BIO_DB.filter(b=>{ const s=bioStatus(room.id,b.id); return s&&s.ok; }).length;
+  const bioBad = BIO_DB.length - bioOk;
+
+  return `
+  <div class="room-card" id="rb-${room.id}">
+    <div class="rc-head">
+      <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
+      <div>
+        <div class="rc-id">${room.id}</div>
+        <div class="rc-variety">${room.variety} · ${room.area} م²</div>
+      </div>
+      <div class="rc-badges">
+        <span class="badge b-bio">🌿 ${bioOk} نشط</span>
+        ${bioBad>0?`<span class="badge b-warn">⚠ ${bioBad} ضعيف</span>`:''}
+      </div>
+      <div class="rc-expand">▶</div>
+    </div>
+    <div class="rc-scout-bar">
+      <span>المساحة:</span><span class="scout-date">${room.area} م²</span>
+      <span style="margin-right:auto">العمليات البيولوجية:</span><span style="color:var(--bio)">${BIO_DB.length} برنامج</span>
+    </div>
+    <div class="rc-body">
+      <div class="section-hdr">🔬 المفترسات والطفيليات</div>
+      ${BIO_DB.map(b=>renderBioItem(room,b)).join('')}
+    </div>
+  </div>`;
+}
+
+function renderBioItem(room, bio){
+  const rd = ROOM_DATA[room.id].bioRecords[bio.id];
+  const hist = rd.history;
+  const last = hist[hist.length-1];
+  const st = bioStatus(room.id, bio.id);
+  const popPct = Math.min(100,(last.perM2/bio.ratio_max)*100);
+  const statusColor = st&&st.ok?"var(--bio)":"var(--warn)";
+  const statusLabel = st&&st.ok?"أعداد كافية":"أقل من المطلوب";
+
+  return `
+  <div class="bio-item" id="bi-${room.id}-${bio.id}">
+    <div class="bio-head">
+      <div class="bio-icon">${bio.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div class="bio-name">${bio.arabic}</div>
+        <div class="bio-latin">${bio.name}</div>
+        <div class="pop-gauge" style="margin-top:5px">
+          <div class="pop-bar-track">
+            <div class="pop-bar-fill" style="width:${popPct}%;background:${statusColor}"></div>
+          </div>
+          <span style="color:${statusColor}">${last.perM2} ${bio.unit}</span>
+          <span style="color:var(--fog3)">/ ${bio.ratio_min}–${bio.ratio_max}</span>
+        </div>
+      </div>
+      <div class="bio-badges">
+        <span class="badge b-bio" style="font-size:9px">هدفه: ${PEST_DB.find(p=>p.id===bio.target)?.name||bio.target}</span>
+        <span class="badge" style="background:rgba(255,255,255,.05);border-color:var(--line2);color:${statusColor};font-size:9px">${statusLabel}</span>
+      </div>
+      <div class="pest-expand">▶</div>
+    </div>
+    <div class="pest-detail">
+      <div class="detail-grid">
+        <div class="detail-cell">
+          <div class="dc-lbl">آخر إطلاق</div>
+          <div class="dc-val" style="color:var(--bio)">${rd.lastRelease}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">معدل الإطلاق</div>
+          <div class="dc-val" style="color:var(--fog)">${rd.releaseRate} ${bio.unit}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">التعداد الحالي</div>
+          <div class="dc-val" style="color:${statusColor}">${last.perM2} ${bio.unit}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">الإجمالي المقدّر</div>
+          <div class="dc-val" style="color:var(--fog)">${last.totalEst.toLocaleString()} فرد</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">الهدف المطلوب</div>
+          <div class="dc-val">${bio.ratio_min}–${bio.ratio_max} ${bio.unit}</div>
+        </div>
+        <div class="detail-cell">
+          <div class="dc-lbl">آخر فحص</div>
+          <div class="dc-val" style="color:var(--fog2);font-size:11px">${last.date}</div>
+        </div>
+      </div>
+      ${last.notes?`<div class="note-box"><span class="note-icon">📌</span><span>${last.notes}</span></div>`:''}
+      <div style="display:flex;gap:7px">
+        <button class="history-btn" onclick="openHistory('${room.id}','bio','${bio.id}','${bio.arabic} — ${room.id}')">
+          📈 سجل التعداد (${hist.length} رصد)
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER CHEM TAB
+// ═══════════════════════════════════════════
+function renderChem(){
+  const rooms = filteredRooms();
+  $('view-chem').innerHTML=`<div class="rooms-grid">${rooms.map(r=>renderRoomChem(r)).join('')}</div>`;
+  document.querySelectorAll('.rc-head').forEach(h=>{
+    h.addEventListener('click',()=>h.closest('.room-card').classList.toggle('open'));
+  });
+}
+
+function renderRoomChem(room){
+  const farm=FARMS.find(f=>f.id===room.farmId);
+  const apps=ROOM_DATA[room.id].chemApps;
+  const lastApp=apps[0];
+  const phiOk=!lastApp||(new Date()-new Date(lastApp.date))/(86400000)>lastApp.phi;
+
+  return `
+  <div class="room-card" id="rch-${room.id}">
+    <div class="rc-head">
+      <div style="width:8px;height:36px;border-radius:4px;background:${farm.color};flex-shrink:0"></div>
+      <div>
+        <div class="rc-id">${room.id}</div>
+        <div class="rc-variety">${room.variety}</div>
+      </div>
+      <div class="rc-badges">
+        <span class="badge b-chem">${apps.length} تطبيق</span>
+        ${!phiOk?`<span class="badge b-alert">⛔ في فترة الانتظار PHI</span>`:lastApp?`<span class="badge b-ok">✓ آمن للحصاد</span>`:''}
+      </div>
+      <div class="rc-expand">▶</div>
+    </div>
+    <div class="rc-scout-bar">
+      <span>آخر تطبيق:</span>
+      <span class="scout-date">${lastApp?lastApp.date:"لا يوجد"}</span>
+      <span style="margin-right:auto">${lastApp?lastApp.chemName:""}</span>
+    </div>
+    <div class="rc-body">
+      <div class="section-hdr">🧪 سجل التطبيقات</div>
+      ${apps.map(a=>renderChemApp(a,room)).join('')}
+      <button class="history-btn" onclick="openHistory('${room.id}','chem','all','سجل المبيدات — ${room.id}')">
+        📋 الجدول الكامل للغرفة
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderChemApp(app, room){
+  const daysSince=Math.round((new Date()-new Date(app.date))/86400000);
+  const phiPassed=daysSince>=app.phi;
+  const chem=CHEM_DB.find(c=>c.id===app.chemId);
+  const targetPest=PEST_DB.find(p=>p.id===app.targetPest);
+  return `
+  <div class="chem-item">
+    <div class="chem-head">
+      <div class="chem-icon">🧴</div>
+      <div style="flex:1">
+        <div class="chem-name">${app.chemName}</div>
+        <div class="chem-ai">${app.ai} · ${chem?.group||''}</div>
+      </div>
+      <div style="text-align:left">
+        <div style="font-family:var(--mono);font-size:11px;color:var(--fog2)">${app.date}</div>
+        <div style="font-size:10px;color:var(--fog3);margin-top:1px">${daysSince} يوم مضى</div>
+      </div>
+    </div>
+    <div class="chem-grid">
+      <div class="chem-cell">
+        <div class="dc-lbl">الجرعة</div>
+        <div class="dc-val" style="color:var(--chem)">${app.doseMlPerL} مل/لتر</div>
+      </div>
+      <div class="chem-cell">
+        <div class="dc-lbl">كمية الماء</div>
+        <div class="dc-val" style="color:var(--fog)">${app.waterL} لتر</div>
+      </div>
+      <div class="chem-cell">
+        <div class="dc-lbl">إجمالي المادة</div>
+        <div class="dc-val" style="color:var(--chem)">${app.totalMl} مل</div>
+      </div>
+      <div class="chem-cell">
+        <div class="dc-lbl">الآفة المستهدفة</div>
+        <div class="dc-val" style="font-size:11px;color:var(--pest)">${targetPest?.name||app.targetPest}</div>
+      </div>
+    </div>
+    ${app.notes?`<div class="note-box" style="margin-top:8px"><span class="note-icon">📌</span><span>${app.notes}</span></div>`:''}
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+      <span class="phi-badge">⏱ PHI: ${app.phi} يوم — ${phiPassed?'✓ انتهت':'⛔ لم تنته'}</span>
+      <span class="ee-badge" style="background:rgba(34,217,138,.08);border:1px solid rgba(34,217,138,.2);color:var(--bio)">🐝 ${app.ee}</span>
+      <span style="font-size:9px;color:var(--fog3);font-family:var(--mono);display:flex;align-items:center">MoA: ${app.moa}</span>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER CHARTS TAB
+// ═══════════════════════════════════════════
+const C_BASE = {
+  responsive:true,maintainAspectRatio:false,
+  plugins:{
+    legend:{labels:{color:"#a8bda8",font:{family:"JetBrains Mono",size:10},boxWidth:10}},
+    tooltip:{backgroundColor:"#192010",borderColor:"#28362a",borderWidth:1,titleColor:"#dde8dc",bodyColor:"#a8bda8"}
+  },
+  scales:{
+    x:{ticks:{color:"#607060",font:{size:9},maxRotation:40},grid:{color:"rgba(255,255,255,.025)"},border:{display:false}},
+    y:{ticks:{color:"#607060",font:{size:9}},grid:{color:"rgba(255,255,255,.025)"},border:{display:false},min:0}
+  }
+};
+
+function renderCharts(){
+  $('view-charts').innerHTML=`
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">تطور تعداد البق الدقيقي</div><div class="chart-sub">Spider Mite count over time — all rooms</div></div>
+          <span class="badge b-pest">MITE</span>
+        </div>
+        <div style="height:240px"><canvas id="c-mite"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">تطور تعداد التربس</div><div class="chart-sub">Thrips count over time — all rooms</div></div>
+          <span class="badge b-pest">THRIPS</span>
+        </div>
+        <div style="height:240px"><canvas id="c-thrips"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">تعداد Phytoseiulus vs البق الدقيقي</div><div class="chart-sub">Predator : Prey ratio — BB-01</div></div>
+          <span class="badge b-bio">BIO</span>
+        </div>
+        <div style="height:240px"><canvas id="c-preypred"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">خريطة حالة الآفات — كل الغرف</div><div class="chart-sub">Pest pressure heatmap</div></div>
+          <span class="badge b-warn">HEATMAP</span>
+        </div>
+        <div style="height:240px"><canvas id="c-heat"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">المبيدات المُطبَّقة — تسلسل زمني</div><div class="chart-sub">Pesticide applications timeline</div></div>
+          <span class="badge b-chem">CHEM</span>
+        </div>
+        <div style="height:240px"><canvas id="c-chem"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div><div class="chart-title">تغطية المفترسات البيولوجية</div><div class="chart-sub">Bio agent coverage % — current vs target</div></div>
+          <span class="badge b-bio">COVERAGE</span>
+        </div>
+        <div style="height:240px"><canvas id="c-bio-cov"></canvas></div>
+      </div>
+    </div>`;
+
+  setTimeout(()=>{
+    buildMiteChart();
+    buildThripsChart();
+    buildPredPreyChart();
+    buildHeatmapChart();
+    buildChemTimeline();
+    buildBioCoverageChart();
+  },50);
+}
+
+function dc(id){if(chartInstances[id]){chartInstances[id].destroy();delete chartInstances[id];}}
+
+function buildMiteChart(){
+  dc('c-mite');
+  const rooms=filteredRooms().slice(0,4);
+  const allDates=[...new Set(ROOM_DATA[rooms[0]?.id||"BB-01"].pestRecords.spider_mite.map(e=>e.date))].sort();
+  const datasets=rooms.map(r=>({
+    label:r.id,
+    data:ROOM_DATA[r.id].pestRecords.spider_mite.map(e=>({x:e.date,y:e.count})),
+    borderColor:`hsl(${ROOMS.indexOf(r)*50},70%,60%)`,
+    backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3
+  }));
+  const ctx=document.getElementById('c-mite')?.getContext('2d'); if(!ctx) return;
+  chartInstances['c-mite']=new Chart(ctx,{
+    type:'line',data:{datasets},
+    options:{...C_BASE,parsing:{xAxisKey:'x',yAxisKey:'y'},
+      plugins:{...C_BASE.plugins,annotation:{annotations:{thresh:{type:'line',yMin:15,yMax:15,borderColor:'rgba(244,63,94,.6)',borderDash:[6,4],borderWidth:1.5}}}}}
+  });
+}
+
+function buildThripsChart(){
+  dc('c-thrips');
+  const rooms=filteredRooms().slice(0,4);
+  const datasets=rooms.map(r=>({
+    label:r.id,
+    data:ROOM_DATA[r.id].pestRecords.thrips.map(e=>({x:e.date,y:e.count})),
+    borderColor:`hsl(${20+ROOMS.indexOf(r)*30},80%,60%)`,
+    backgroundColor:"transparent",borderWidth:2,pointRadius:3,tension:.3
+  }));
+  const ctx=document.getElementById('c-thrips')?.getContext('2d'); if(!ctx) return;
+  chartInstances['c-thrips']=new Chart(ctx,{
+    type:'line',data:{datasets},
+    options:{...C_BASE,parsing:{xAxisKey:'x',yAxisKey:'y'}}
+  });
+}
+
+function buildPredPreyChart(){
+  dc('c-preypred');
+  const room="BB-01";
+  const miteHist=ROOM_DATA[room].pestRecords.spider_mite;
+  const phytoHist=ROOM_DATA[room].bioRecords.phyto.history;
+  const dates=miteHist.map(e=>e.date.slice(5));
+  const ctx=document.getElementById('c-preypred')?.getContext('2d'); if(!ctx) return;
+  chartInstances['c-preypred']=new Chart(ctx,{
+    type:'bar',
+    data:{labels:dates,datasets:[
+      {label:'بق دقيقي (بيضة/ورقة)',data:miteHist.map(e=>e.count),backgroundColor:'rgba(255,107,53,.5)',borderColor:'#ff6b35',borderWidth:1,borderRadius:2,yAxisID:'y'},
+      {label:'Phytoseiulus (فرد/م²)',data:phytoHist.map(e=>e.perM2),type:'line',borderColor:'#22d98a',backgroundColor:'rgba(34,217,138,.1)',borderWidth:2,pointRadius:3,tension:.3,yAxisID:'y1'},
+    ]},
+    options:{...C_BASE,scales:{
+      x:C_BASE.scales.x,
+      y:{...C_BASE.scales.y,position:'right'},
+      y1:{...C_BASE.scales.y,position:'left',grid:{display:false},ticks:{color:'#22d98a',font:{size:9}}},
+    }}
+  });
+}
+
+function buildHeatmapChart(){
+  dc('c-heat');
+  const rooms=filteredRooms();
+  const pestSample=[PEST_DB[0],PEST_DB[1],PEST_DB[3],PEST_DB[4],PEST_DB[6]];
+  const labels=rooms.map(r=>r.id);
+  const datasets=pestSample.map(p=>({
+    label:p.name,
+    data:rooms.map(r=>{
+      const last=lastCount(r.id,p.id); if(!last) return 0;
+      const sev=sevLevel(last.count,p.thresholdNum);
+      return {clear:0,trace:1,low:2,near:3,over:4,critical:5}[sev]||0;
+    }),
+    backgroundColor:rooms.map(r=>{
+      const last=lastCount(r.id,p.id); if(!last) return 'rgba(255,255,255,.03)';
+      const sev=sevLevel(last.count,p.thresholdNum);
+      return {clear:'rgba(34,197,94,.08)',trace:'rgba(34,197,94,.2)',low:'rgba(34,197,94,.4)',near:'rgba(245,158,11,.4)',over:'rgba(255,107,53,.5)',critical:'rgba(244,63,94,.7)'}[sev];
+    }),
+    borderColor:'rgba(255,255,255,.04)',borderWidth:1,borderRadius:2,
+  }));
+  const ctx=document.getElementById('c-heat')?.getContext('2d'); if(!ctx) return;
+  chartInstances['c-heat']=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets},
+    options:{...C_BASE,indexAxis:'y',scales:{x:{...C_BASE.scales.x,stacked:true,display:false},y:{...C_BASE.scales.y,stacked:true}},plugins:{...C_BASE.plugins}}
+  });
+}
+
+function buildChemTimeline(){
+  dc('c-chem');
+  const rooms=filteredRooms();
+  const allApps=[];
+  rooms.forEach(r=>ROOM_DATA[r.id].chemApps.forEach(a=>allApps.push({...a,room:r.id})));
+  allApps.sort((a,b)=>a.date.localeCompare(b.date));
+  const ctx=document.getElementById('c-chem')?.getContext('2d'); if(!ctx) return;
+  // Group by room
+  const grouped={};
+  rooms.forEach(r=>{grouped[r.id]=[];});
+  allApps.forEach(a=>{if(grouped[a.room]) grouped[a.room].push({x:a.date,y:a.doseMlPerL,label:a.chemName});});
+  const datasets=rooms.map((r,i)=>({
+    label:r.id,
+    data:grouped[r.id],
+    backgroundColor:`hsla(${40+i*30},80%,60%,.7)`,
+    borderColor:`hsl(${40+i*30},80%,60%)`,
+    borderWidth:1,borderRadius:3,
+  }));
+  chartInstances['c-chem']=new Chart(ctx,{
+    type:'bar',data:{datasets},
+    options:{...C_BASE,parsing:{xAxisKey:'x',yAxisKey:'y'},
+      scales:{x:{...C_BASE.scales.x,type:'category'},y:{...C_BASE.scales.y,ticks:{...C_BASE.scales.y.ticks,callback:v=>v+' مل/لتر'}}}}
+  });
+}
+
+function buildBioCoverageChart(){
+  dc('c-bio-cov');
+  const room=selRoom!=="all"?selRoom:"BB-01";
+  const labels=BIO_DB.map(b=>b.name.split(' ')[0]);
+  const current=BIO_DB.map(b=>{
+    const st=bioStatus(room,b.id); return st?Math.round((st.perM2/b.ratio_min)*100):0;
+  });
+  const ctx=document.getElementById('c-bio-cov')?.getContext('2d'); if(!ctx) return;
+  chartInstances['c-bio-cov']=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'تغطية %',data:current,backgroundColor:current.map(v=>v>=80?'rgba(34,217,138,.6)':v>=50?'rgba(245,158,11,.5)':'rgba(244,63,94,.5)'),borderColor:current.map(v=>v>=80?'#22d98a':v>=50?'#f59e0b':'#f43f5e'),borderWidth:1,borderRadius:3},
+    ]},
+    options:{...C_BASE,scales:{x:C_BASE.scales.x,y:{...C_BASE.scales.y,max:200,ticks:{...C_BASE.scales.y.ticks,callback:v=>v+'%'}}}}
+  });
+}
+
+// ═══════════════════════════════════════════
+//  HISTORY PANEL
+// ═══════════════════════════════════════════
+function openHistory(roomId, category, targetId, label){
+  $('hist-title').textContent = `📈 ${label}`;
+  let entries=[];
+
+  if(category==="pest"){
+    const hist=ROOM_DATA[roomId].pestRecords[targetId];
+    const pest=PEST_DB.find(p=>p.id===targetId);
+    entries=[...hist].reverse().map(e=>`
+      <div class="hist-entry">
+        <div class="hist-date">${e.date}</div>
+        <div class="hist-val" style="color:${SEV_COLORS[sevLevel(e.count,pest.thresholdNum)]}">${e.count} ${pest.unit}
+          <span style="font-size:10px;font-family:var(--mono);color:${SEV_COLORS[sevLevel(e.count,pest.thresholdNum)]}"> — ${SEV_LABELS[sevLevel(e.count,pest.thresholdNum)]}</span>
+        </div>
+        ${e.notes?`<div class="hist-note">📌 ${e.notes}</div>`:''}
+      </div>`);
+  } else if(category==="bio"){
+    const brd=ROOM_DATA[roomId].bioRecords[targetId];
+    const bio=BIO_DB.find(b=>b.id===targetId);
+    entries=[...brd.history].reverse().map(e=>`
+      <div class="hist-entry">
+        <div class="hist-date">${e.date}</div>
+        <div class="hist-val" style="color:${e.perM2>=bio.ratio_min?'var(--bio)':'var(--warn)'}">${e.perM2} ${bio.unit} — إجمالي: ${e.totalEst.toLocaleString()} فرد</div>
+        ${e.notes?`<div class="hist-note">📌 ${e.notes}</div>`:''}
+      </div>`);
+    // add release note
+    entries.unshift(`<div class="note-box" style="margin-bottom:12px"><span class="note-icon">🚀</span><span>آخر إطلاق: <strong>${brd.lastRelease}</strong> بمعدل <strong>${brd.releaseRate} ${bio.unit}</strong></span></div>`);
+  } else if(category==="chem"){
+    const apps=ROOM_DATA[roomId].chemApps;
+    entries=apps.map(a=>{
+      const daysSince=Math.round((new Date()-new Date(a.date))/86400000);
+      const phiPassed=daysSince>=a.phi;
+      return `<div class="hist-entry">
+        <div class="hist-date">${a.date} — ${daysSince} يوم مضى</div>
+        <div class="hist-val" style="color:var(--chem)">${a.chemName} — ${a.doseMlPerL} مل/لتر × ${a.waterL} لتر ماء</div>
+        <div class="hist-note">AI: ${a.ai} · PHI: ${a.phi}ي ${phiPassed?'(✓ انتهت)':'(⛔ لم تنته)'} · ${a.ee}</div>
+        ${a.notes?`<div class="hist-note">📌 ${a.notes}</div>`:''}
+      </div>`;
+    });
+  }
+
+  $('hist-body').innerHTML = entries.length?entries.join(''):'<div class="hist-empty">لا توجد بيانات مسجلة</div>';
+  $('hist-overlay').classList.add('open');
+}
+function closeHistory(){ $('hist-overlay').classList.remove('open'); }
+
+// ═══════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════
+function setTab(tab){
+  activeTab=tab;
+  ['threats','bio','chem','charts'].forEach(t=>{
+    $('view-'+t).style.display=t===tab?'block':'none';
+    $('tab-'+t).classList.toggle('on',t===tab);
+  });
+  syncFilterGroups();
+  if(tab==="charts") renderCharts();
+}
+
+// ═══════════════════════════════════════════
+//  RENDER ALL
+// ═══════════════════════════════════════════
+function renderAll(){
+  renderStatusCounts();
+  renderThreats();
+  renderBio();
+  renderChem();
+  if(activeTab==="charts") renderCharts();
+}
+
+// ═══════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════
+function $(id){return document.getElementById(id)}
+
+// ═══════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════
+initSelects();
+syncFilterGroups();
+renderAll();
+</script>
+</body>
+</html>

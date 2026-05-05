@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Climate Control — Greenhouse Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════
+   CONTROL ROOM aesthetic
+   Industrial SCADA meets field science.
+   Deep forest-black base, phosphor-green
+   for live readings, amber for actuator
+   states, red for alerts.
+   Barlow Condensed gives the "big number"
+   industrial dashboard feel.
+══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --void:    #060a07;
+  --bg:      #090d0a;
+  --bg2:     #0d1410;
+  --bg3:     #121a14;
+  --bg4:     #192218;
+  --line:    #1a2419;
+  --line2:   #223022;
+
+  /* Phosphor green — live data */
+  --ph:      #00e676;
+  --ph2:     #00c853;
+  --ph3:     #69f0ae;
+  --ph-dim:  rgba(0,230,118,.08);
+  --ph-glow: rgba(0,230,118,.15);
+
+  /* Amber — actuators */
+  --act:     #ffb300;
+  --act2:    #ff8f00;
+  --act-dim: rgba(255,179,0,.08);
+
+  /* Sky — humidity */
+  --sky:     #40c4ff;
+  --sky-dim: rgba(64,196,255,.08);
+
+  /* Alert */
+  --red:     #ff1744;
+  --red-dim: rgba(255,23,68,.08);
+
+  /* Violet — radiation */
+  --rad:     #e040fb;
+  --rad-dim: rgba(224,64,251,.07);
+
+  /* Text */
+  --t1: #c8e6c9;
+  --t2: #81c784;
+  --t3: #4a7a4c;
+  --t4: #2a422c;
+
+  --cond: 'Barlow Condensed', sans-serif;
+  --mono: 'Fira Code', monospace;
+  --sans: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+body {
+  background: var(--void);
+  color: var(--t1);
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,230,118,.012) 2px, rgba(0,230,118,.012) 4px);
+}
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,.5) 100%);
+}
+
+.app { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 20px 22px; }
+
+/* ══ HEADER ══ */
+.hdr {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 18px; margin-bottom: 18px;
+  background: var(--bg2); border: 1px solid var(--line2);
+  border-radius: 10px;
+  border-left: 3px solid var(--ph2);
+}
+.hdr-id {
+  font-family: var(--cond); font-size: 28px; font-weight: 800;
+  letter-spacing: 2px; color: var(--ph); text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(0,230,118,.4);
+}
+.hdr-name { font-size: 11px; color: var(--t3); font-family: var(--mono); margin-top: 1px; }
+.hdr-time {
+  font-family: var(--mono); font-size: 22px; font-weight: 600;
+  color: var(--ph); letter-spacing: 2px;
+  text-shadow: 0 0 12px rgba(0,230,118,.3);
+}
+.hdr-date { font-size: 10px; color: var(--t3); font-family: var(--mono); text-align: left; margin-top: 2px; }
+
+/* Day/Night indicator */
+.daynight {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px; border-radius: 20px; border: 1px solid;
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+}
+.daynight.day  { background: rgba(255,179,0,.08); border-color: rgba(255,179,0,.3); color: var(--act); }
+.daynight.night{ background: rgba(64,196,255,.06); border-color: rgba(64,196,255,.2); color: var(--sky); }
+
+/* Room selector */
+.room-pills { display: flex; gap: 4px; flex-wrap: wrap; }
+.room-pill {
+  padding: 5px 14px; border-radius: 6px; border: 1px solid var(--line2);
+  background: transparent; font-family: var(--mono); font-size: 11px;
+  color: var(--t3); cursor: pointer; transition: .15s; white-space: nowrap;
+}
+.room-pill:hover { border-color: var(--t3); color: var(--t2); }
+.room-pill.on { background: var(--ph-dim); border-color: var(--ph2); color: var(--ph); }
+
+/* Alert strip */
+.alert-strip {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  margin-right: auto;
+}
+.alert-chip {
+  display: flex; align-items: center; gap: 4px; border-radius: 5px; padding: 3px 10px;
+  font-family: var(--mono); font-size: 10px; font-weight: 600; border: 1px solid;
+  animation: chip-pulse 2s ease infinite;
+}
+@keyframes chip-pulse { 0%,100%{opacity:1}50%{opacity:.6} }
+
+/* ══ MAIN TABS ══ */
+.main-tabs {
+  display: flex; gap: 2px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--line2);
+}
+.mtab {
+  padding: 9px 22px; border: none; background: transparent;
+  font-family: var(--cond); font-size: 14px; font-weight: 600;
+  letter-spacing: .5px; color: var(--t3); cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: .15s; text-transform: uppercase;
+}
+.mtab:hover { color: var(--t2); }
+.mtab.on { color: var(--ph); border-bottom-color: var(--ph); }
+
+/* ══ CLIMATE SENSOR CARDS ══ */
+.sensor-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px; margin-bottom: 16px;
+}
+.sensor-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; position: relative; overflow: hidden;
+  transition: border-color .2s;
+}
+.sensor-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--sensor-color, var(--ph));
+}
+.sensor-card:hover { border-color: var(--line2); }
+.sc-icon { font-size: 18px; margin-bottom: 6px; opacity: .8; }
+.sc-val {
+  font-family: var(--cond); font-size: 36px; font-weight: 700;
+  letter-spacing: -1px; line-height: 1;
+  color: var(--sensor-color, var(--ph));
+  text-shadow: 0 0 16px rgba(var(--sensor-rgb, 0,230,118), .3);
+}
+.sc-unit { font-size: 14px; opacity: .6; font-family: var(--cond); }
+.sc-label { font-size: 10px; color: var(--t3); font-family: var(--mono); margin-top: 5px; text-transform: uppercase; letter-spacing: .5px; }
+.sc-trend { display: flex; align-items: center; gap: 4px; font-size: 10px; font-family: var(--mono); margin-top: 4px; }
+.sc-bar { height: 2px; background: var(--line2); border-radius: 1px; overflow: hidden; margin-top: 6px; }
+.sc-bar-fill { height: 100%; border-radius: 1px; background: var(--sensor-color, var(--ph)); transition: width .5s; }
+/* Night mode overlay for radiation */
+.sc-night-mask {
+  position: absolute; inset: 0; background: rgba(6,10,7,.7);
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; font-family: var(--mono); font-size: 10px; color: var(--sky);
+  letter-spacing: .5px;
+}
+
+/* ══ CHART GRID ══ */
+.chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.chart-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 18px; transition: border-color .2s;
+}
+.chart-card:hover { border-color: var(--line2); }
+.cc-hdr { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
+.cc-title { font-family: var(--cond); font-size: 14px; font-weight: 600; letter-spacing: .3px; color: var(--t2); text-transform: uppercase; }
+.cc-sub { font-size: 9px; color: var(--t3); font-family: var(--mono); margin-top: 2px; }
+.cc-badge {
+  font-size: 9px; font-family: var(--mono); border-radius: 4px;
+  padding: 2px 7px; border: 1px solid; white-space: nowrap; flex-shrink: 0;
+}
+
+/* ══ NIGHT BAND (chart annotation) ══ */
+
+/* ══ COMPARE PANEL ══ */
+.compare-row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+  border-bottom: 1px solid var(--line); font-size: 12px;
+}
+.compare-row:last-child { border-bottom: none; }
+.cmp-lbl { color: var(--t3); min-width: 80px; font-family: var(--mono); font-size: 10px; text-transform: uppercase; }
+.cmp-inside { font-family: var(--mono); font-weight: 600; min-width: 70px; color: var(--ph); }
+.cmp-outside { font-family: var(--mono); font-size: 11px; color: var(--t3); }
+.cmp-arrow { font-size: 11px; opacity: .5; }
+
+/* ══ CONTROL TAB ══ */
+.control-layout { display: flex; flex-direction: column; gap: 14px; }
+
+/* Actuator grid */
+.actuator-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+.actuator-card {
+  background: var(--bg2); border: 1px solid var(--line2);
+  border-radius: 10px; overflow: hidden; transition: border-color .2s;
+}
+.ac-head {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border-bottom: 1px solid var(--line); transition: background .15s;
+}
+.ac-icon { font-size: 20px; flex-shrink: 0; }
+.ac-name { font-family: var(--cond); font-size: 14px; font-weight: 600; letter-spacing: .3px; }
+.ac-desc { font-size: 10px; color: var(--t3); font-family: var(--mono); margin-top: 1px; }
+.ac-toggle-wrap { margin-right: auto; }
+
+/* Toggle switch */
+.toggle {
+  width: 44px; height: 24px; border-radius: 12px;
+  border: 1px solid var(--line2); background: var(--bg3);
+  cursor: pointer; position: relative; transition: background .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  border-radius: 9px; background: var(--t3); top: 2px; right: 2px;
+  transition: transform .2s, background .2s;
+}
+.toggle.on { background: var(--act-dim); border-color: var(--act2); }
+.toggle.on::after { background: var(--act); transform: translateX(-20px); box-shadow: 0 0 8px rgba(255,179,0,.5); }
+
+.ac-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+
+/* Slider row */
+.slider-row { display: flex; align-items: center; gap: 10px; }
+.slider-lbl { font-size: 10px; color: var(--t3); font-family: var(--mono); white-space: nowrap; min-width: 50px; }
+.slider-wrap { flex: 1; position: relative; }
+.ctrl-slider {
+  width: 100%; height: 4px; border-radius: 2px;
+  -webkit-appearance: none; appearance: none;
+  background: var(--line2); outline: none; cursor: pointer;
+}
+.ctrl-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 7px;
+  background: var(--act); cursor: pointer; box-shadow: 0 0 6px rgba(255,179,0,.5);
+  border: 2px solid var(--bg2);
+}
+.slider-val { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--act); min-width: 40px; text-align: left; }
+
+/* Schedule row */
+.schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sched-cell { background: var(--bg3); border-radius: 6px; padding: 7px 9px; border: 1px solid var(--line); }
+.sched-lbl  { font-size: 9px; color: var(--t3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .3px; margin-bottom: 3px; }
+.sched-val  { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+.time-inp {
+  background: transparent; border: none; color: var(--t1);
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  width: 100%; outline: none; cursor: pointer;
+  color-scheme: dark;
+}
+
+/* Auto logic band */
+.logic-band {
+  background: var(--bg3); border: 1px solid var(--line);
+  border-radius: 8px; padding: 10px 12px;
+}
+.lb-title { font-size: 10px; font-weight: 700; color: var(--t3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; margin-bottom:8px; display:flex; align-items:center; gap:6px; }
+.lb-rule { display: flex; align-items: center; gap: 7px; padding: 5px 8px; border-radius: 5px; margin-bottom: 4px; font-size: 11px; background: var(--bg4); border: 1px solid var(--line); }
+.lb-cond { font-family: var(--mono); color: var(--sky); font-size: 10px; }
+.lb-then { font-family: var(--mono); color: var(--act); font-size: 10px; }
+.lb-arrow { color: var(--t4); font-size: 10px; }
+.lb-active { border-color: var(--act2); background: var(--act-dim); }
+
+/* ══ SCHEDULE TABLE ══ */
+.sched-tbl { width: 100%; border-collapse: collapse; }
+.sched-tbl th { padding: 8px 12px; font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--t3); text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid var(--line2); text-align: right; background: var(--bg3); white-space: nowrap; }
+.sched-tbl td { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 11px; white-space: nowrap; }
+.sched-tbl tr:last-child td { border-bottom: none; }
+.sched-tbl tr:hover td { background: rgba(255,255,255,.015); }
+.td-mono { font-family: var(--mono); font-size: 11px; }
+.td-act { font-family: var(--mono); font-size: 11px; color: var(--act); font-weight: 600; }
+.td-result { font-family: var(--mono); font-size: 10px; color: var(--ph); }
+
+/* Status dot */
+.st-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; margin-left: 5px; }
+.st-on  { background: var(--ph2); box-shadow: 0 0 5px var(--ph2); animation: blink-on 2s ease infinite; }
+.st-off { background: var(--t4); }
+@keyframes blink-on { 0%,100%{opacity:1}50%{opacity:.4} }
+
+/* ══ CHART — Intervention timeline ══ */
+.intervention-chart { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin-top: 12px; }
+
+/* ══ MISC ══ */
+.badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 600; white-space: nowrap; border: 1px solid; font-family: var(--mono); }
+.b-ok   { background: rgba(0,200,83,.08);  border-color: rgba(0,200,83,.3);  color: var(--ph2); }
+.b-warn { background: rgba(255,179,0,.08); border-color: rgba(255,179,0,.3); color: var(--act); }
+.b-alert{ background: rgba(255,23,68,.08); border-color: rgba(255,23,68,.3);  color: var(--red); }
+.b-off  { background: rgba(255,255,255,.03);border-color:var(--line2);       color: var(--t3); }
+
+.section-rule {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  font-family: var(--cond); font-size: 12px; font-weight: 600;
+  letter-spacing: 1px; color: var(--t3); text-transform: uppercase;
+}
+.section-rule::after { content: ''; flex: 1; height: 1px; background: var(--line2); }
+
+.page { display: none; }
+.page.on { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ══ COMPARE TAB ══ */
+.cmp-toolbar {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: var(--bg2); border: 1px solid var(--line2);
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+}
+.cmp-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cmp-lbl-hdr { font-size: 10px; color: var(--t3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+
+/* Time period pills */
+.period-pills { display: flex; gap: 3px; background: var(--bg3); padding: 3px; border-radius: 7px; border: 1px solid var(--line2); }
+.period-pill {
+  padding: 5px 14px; border-radius: 5px; border: none;
+  background: transparent; font-family: var(--mono); font-size: 11px;
+  color: var(--t3); cursor: pointer; transition: .15s; white-space: nowrap;
+}
+.period-pill:hover { color: var(--t2); }
+.period-pill.on { background: var(--bg2); color: var(--ph); }
+
+/* Room multi-select */
+.room-multi-grid {
+  display: flex; gap: 5px; flex-wrap: wrap;
+}
+.rm-check {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--line2);
+  cursor: pointer; transition: .15s; font-family: var(--mono); font-size: 11px;
+  color: var(--t3); user-select: none;
+}
+.rm-check:hover { border-color: var(--t3); color: var(--t2); }
+.rm-check.sel { color: var(--fog-color, var(--ph)); border-color: var(--fog-color, var(--ph)); background: var(--fog-dim, var(--ph-dim)); }
+.rm-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fog-color, var(--ph)); flex-shrink: 0; }
+
+/* 4 charts full-width stacked */
+.cmp-charts { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.cmp-chart-card {
+  background: var(--bg2); border: 1px solid var(--line);
+  border-radius: 10px; padding: 16px 18px; transition: border-color .2s;
+}
+.cmp-chart-card:hover { border-color: var(--line2); }
+.cmp-chart-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+.cmp-chart-title { font-family: var(--cond); font-size: 16px; font-weight: 700; letter-spacing: .3px; text-transform: uppercase; }
+.cmp-chart-sub { font-size: 10px; color: var(--t3); font-family: var(--mono); }
+.cmp-stat-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.cmp-stat {
+  background: var(--bg3); border-radius: 6px; padding: 6px 12px;
+  border: 1px solid var(--line2); font-family: var(--mono); font-size: 10px; color: var(--t2);
+  display: flex; align-items: center; gap: 6px;
+}
+.cmp-stat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-id" id="hdr-room">BB-01</div>
+    <div class="hdr-name" id="hdr-name">بيانكا · 1200 نبتة · 600 م²</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end">
+    <div class="hdr-time" id="live-time">--:--:--</div>
+    <div class="hdr-date" id="live-date">---</div>
+  </div>
+  <div id="daynight-chip"></div>
+  <div class="room-pills" id="room-pills"></div>
+  <div class="alert-strip" id="alert-strip"></div>
+</div>
+
+<!-- TABS -->
+<div class="main-tabs">
+  <button class="mtab on" id="tab-monitor"  onclick="setTab('monitor')">🌡 المراقبة</button>
+  <button class="mtab"    id="tab-compare"  onclick="setTab('compare')">📊 المقارنة</button>
+  <button class="mtab"    id="tab-control"  onclick="setTab('control')">⚙ التحكم</button>
+  <button class="mtab"    id="tab-history"  onclick="setTab('history')">📋 السجل</button>
+</div>
+
+<!-- ══════ TAB: MONITOR ══════ -->
+<div class="page on" id="page-monitor">
+
+  <!-- Sensor strip -->
+  <div class="sensor-strip" id="sensor-strip"></div>
+
+  <!-- Charts -->
+  <div class="chart-grid">
+    <!-- Temp 24h -->
+    <div class="chart-card">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">درجة الحرارة — 24 ساعة</div>
+          <div class="cc-sub">داخل الصوبة vs الخارج · خط ليل/نهار واضح</div>
+        </div>
+        <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">°C</span>
+      </div>
+      <div style="height:220px"><canvas id="c-temp"></canvas></div>
+    </div>
+    <!-- RH + VPD -->
+    <div class="chart-card">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">الرطوبة و VPD</div>
+          <div class="cc-sub">Relative Humidity % · VPD kPa</div>
+        </div>
+        <span class="cc-badge" style="color:var(--sky);border-color:rgba(64,196,255,.3)">RH/VPD</span>
+      </div>
+      <div style="height:220px"><canvas id="c-rh"></canvas></div>
+    </div>
+    <!-- Radiation -->
+    <div class="chart-card">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">الإشعاع الشمسي</div>
+          <div class="cc-sub">W/m² · صفر تماماً من 18:00 حتى 06:00</div>
+        </div>
+        <span class="cc-badge" style="color:var(--rad);border-color:rgba(224,64,251,.3)">W/m²</span>
+      </div>
+      <div style="height:220px"><canvas id="c-rad"></canvas></div>
+    </div>
+    <!-- Indoor vs Outdoor compare -->
+    <div class="chart-card">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">داخل vs خارج — الآن</div>
+          <div class="cc-sub">مقارنة فورية بين بيئة الصوبة والجو الخارجي</div>
+        </div>
+        <span class="cc-badge" style="color:var(--ph);border-color:rgba(0,230,118,.3)">LIVE</span>
+      </div>
+      <div id="compare-table" style="margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TAB: COMPARE ══════ -->
+<div class="page" id="page-compare">
+
+  <!-- Toolbar -->
+  <div class="cmp-toolbar">
+
+    <!-- Period filter -->
+    <div class="cmp-group">
+      <span class="cmp-lbl-hdr">الفترة</span>
+      <div class="period-pills">
+        <button class="period-pill on" id="pp-all"   onclick="setPeriod('all')">24 ساعة</button>
+        <button class="period-pill"    id="pp-day"   onclick="setPeriod('day')">☀ نهار (6–18)</button>
+        <button class="period-pill"    id="pp-night" onclick="setPeriod('night')">🌙 ليل (18–6)</button>
+      </div>
+    </div>
+
+    <div style="width:1px;height:24px;background:var(--line2);flex-shrink:0"></div>
+
+    <!-- Room multi-selector -->
+    <div class="cmp-group" style="flex:1;min-width:0">
+      <span class="cmp-lbl-hdr">الغرف</span>
+      <div class="room-multi-grid" id="room-multi-grid"></div>
+    </div>
+
+    <div style="margin-right:auto"></div>
+    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="selectAllRooms()">كل الغرف</button>
+    <button style="padding:5px 12px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--t3);font-family:var(--mono);font-size:10px;cursor:pointer" onclick="clearRooms()">مسح</button>
+  </div>
+
+  <!-- 4 comparison charts stacked -->
+  <div class="cmp-charts">
+
+    <!-- 1. Temperature -->
+    <div class="cmp-chart-card" style="border-top:2px solid var(--act)">
+      <div class="cmp-chart-hdr">
+        <div>
+          <div class="cmp-chart-title" style="color:var(--act)">🌡 درجة الحرارة الداخلية</div>
+          <div class="cmp-chart-sub">Temperature °C — كل غرفة بلون مختلف</div>
+        </div>
+        <div class="cmp-stat-row" id="stat-temp"></div>
+      </div>
+      <div style="height:240px"><canvas id="cc-temp"></canvas></div>
+    </div>
+
+    <!-- 2. Humidity -->
+    <div class="cmp-chart-card" style="border-top:2px solid var(--sky)">
+      <div class="cmp-chart-hdr">
+        <div>
+          <div class="cmp-chart-title" style="color:var(--sky)">💧 الرطوبة النسبية</div>
+          <div class="cmp-chart-sub">Relative Humidity % — هدف: 55–75%</div>
+        </div>
+        <div class="cmp-stat-row" id="stat-rh"></div>
+      </div>
+      <div style="height:240px"><canvas id="cc-rh"></canvas></div>
+    </div>
+
+    <!-- 3. VPD -->
+    <div class="cmp-chart-card" style="border-top:2px solid var(--ph)">
+      <div class="cmp-chart-hdr">
+        <div>
+          <div class="cmp-chart-title" style="color:var(--ph)">💨 عجز ضغط البخار — VPD</div>
+          <div class="cmp-chart-sub">kPa — هدف: 0.6–1.4 · مرتفع ليلاً يسبب إجهاداً</div>
+        </div>
+        <div class="cmp-stat-row" id="stat-vpd"></div>
+      </div>
+      <div style="height:240px"><canvas id="cc-vpd"></canvas></div>
+    </div>
+
+    <!-- 4. Radiation -->
+    <div class="cmp-chart-card" style="border-top:2px solid var(--rad)">
+      <div class="cmp-chart-hdr">
+        <div>
+          <div class="cmp-chart-title" style="color:var(--rad)">☀ الإشعاع الشمسي</div>
+          <div class="cmp-chart-sub">W/m² — صفر تلقائياً قبل 06:00 وبعد 18:00</div>
+        </div>
+        <div class="cmp-stat-row" id="stat-rad"></div>
+      </div>
+      <div style="height:240px"><canvas id="cc-rad"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════ TAB: CONTROL ══════ -->
+<div class="page" id="page-control">
+  <div class="control-layout">
+
+    <!-- Actuator cards -->
+    <div class="section-rule">الأجهزة والمشغّلات</div>
+    <div class="actuator-grid" id="actuator-grid"></div>
+
+    <!-- Daily schedule table -->
+    <div class="section-rule" style="margin-top:4px">جدول الخطة اليومية — Logic Schedule</div>
+    <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:10px;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="sched-tbl" id="sched-tbl">
+          <thead>
+            <tr>
+              <th>الوقت</th>
+              <th>الجهاز</th>
+              <th>الحالة</th>
+              <th>الشرط / السبب</th>
+              <th>المستوى / السرعة</th>
+              <th>درجة الحرارة عند التدخل</th>
+              <th>الرطوبة عند التدخل</th>
+              <th>النتيجة بعد 30 د</th>
+            </tr>
+          </thead>
+          <tbody id="sched-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Intervention timeline chart -->
+    <div class="intervention-chart">
+      <div class="cc-hdr">
+        <div>
+          <div class="cc-title">تأثير التدخلات على المناخ — 24 ساعة</div>
+          <div class="cc-sub">تظهر أيقونة الجهاز عند نقطة التشغيل · الخط المنقط = هدف الضبط</div>
+        </div>
+        <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">INTERVENTION</span>
+      </div>
+      <div style="height:260px"><canvas id="c-intervention"></canvas></div>
+    </div>
+
+    <!-- Auto logic rules -->
+    <div class="section-rule" style="margin-top:4px">قواعد التشغيل التلقائي</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px" id="logic-rules"></div>
+
+  </div>
+</div>
+
+<!-- ══════ TAB: HISTORY ══════ -->
+<div class="page" id="page-history">
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="section-rule">سجل 7 أيام — Daily Log</div>
+    <div style="background:var(--bg2);border:1px solid var(--line2);border-radius:10px;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table class="sched-tbl" id="history-tbl">
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>متوسط °C نهار</th>
+              <th>متوسط °C ليل</th>
+              <th>RH% متوسط</th>
+              <th>VPD kPa</th>
+              <th>إشعاع max W/m²</th>
+              <th>تدخلات المراوح</th>
+              <th>تدخلات التبريد</th>
+              <th>تنبيهات</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="cc-hdr">
+          <div><div class="cc-title">متوسط الحرارة — 7 أيام</div><div class="cc-sub">نهاراً vs ليلاً</div></div>
+          <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">DAILY AVG</span>
+        </div>
+        <div style="height:200px"><canvas id="c-hist-temp"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-hdr">
+          <div><div class="cc-title">تكرار التدخلات — 7 أيام</div><div class="cc-sub">عدد مرات تشغيل كل جهاز يومياً</div></div>
+          <span class="cc-badge" style="color:var(--act);border-color:rgba(255,179,0,.3)">ACT COUNT</span>
+        </div>
+        <div style="height:200px"><canvas id="c-hist-act"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════
+//  ROOMS
+// ═══════════════════════════════════════════
+const ROOMS = [
+  {id:"BB-01", name:"بيانكا",  plants:1200, area:600,  farmId:"F-01"},
+  {id:"BB-02", name:"اوني",    plants:800,  area:420,  farmId:"F-01"},
+  {id:"BB-03", name:"مِسي",    plants:950,  area:500,  farmId:"F-01"},
+  {id:"BB-04", name:"بيانكا",  plants:1100, area:580,  farmId:"F-02"},
+  {id:"BB-06", name:"بلوكروب", plants:1500, area:750,  farmId:"F-03"},
+];
+let currentRoom = "BB-01";
+
+// ═══════════════════════════════════════════
+//  ACTUATORS definition
+// ═══════════════════════════════════════════
+const ACTUATORS = [
+  {
+    id:"fan-out", icon:"🌬", name:"مراوح خارجية", desc:"تهوية وطرد الهواء الساخن",
+    type:"fan", unit:"%", min:0, max:100, step:10,
+    autoRules:[
+      {cond:"حرارة > 28°C",then:"تشغيل 70%"},
+      {cond:"حرارة > 32°C",then:"تشغيل 100%"},
+      {cond:"حرارة < 24°C",then:"إيقاف"},
+    ],
+    dayOnly:false,
+    schedTemplate:[ {from:"06:00",to:"09:00",lvl:30},{from:"10:00",to:"16:00",lvl:70},{from:"16:00",to:"18:30",lvl:50} ]
+  },
+  {
+    id:"fan-circ", icon:"🔄", name:"مراوح التقليب", desc:"توزيع الهواء داخلياً",
+    type:"fan", unit:"%", min:0, max:100, step:10,
+    autoRules:[
+      {cond:"RH > 75%",then:"تشغيل 60%"},
+      {cond:"RH > 80%",then:"تشغيل 100%"},
+      {cond:"دائم أثناء الإزهار",then:"تشغيل 30% كحد أدنى"},
+    ],
+    dayOnly:false,
+    schedTemplate:[ {from:"00:00",to:"06:00",lvl:20},{from:"06:00",to:"18:00",lvl:50},{from:"18:00",to:"24:00",lvl:20} ]
+  },
+  {
+    id:"pad-cool", icon:"💦", name:"ألواح التبريد", desc:"تبريد تبخيري — ماء + هواء",
+    type:"pump", unit:"%", min:0, max:100, step:10,
+    autoRules:[
+      {cond:"حرارة > 30°C و RH < 70%",then:"تشغيل 50%"},
+      {cond:"حرارة > 33°C",then:"تشغيل 100%"},
+      {cond:"ليلاً أو حرارة < 28°C",then:"إيقاف"},
+    ],
+    dayOnly:true,
+    schedTemplate:[ {from:"10:00",to:"16:00",lvl:60} ]
+  },
+  {
+    id:"fogger", icon:"🌫", name:"رشاشات الفوجر", desc:"رشاشات سقف لرفع الرطوبة",
+    type:"nozzle", unit:"ث/دقيقة", min:0, max:60, step:5,
+    autoRules:[
+      {cond:"VPD > 1.5 kPa",then:"نبض 15 ثانية كل 5 دقائق"},
+      {cond:"RH < 55%",then:"نبض 30 ثانية كل 5 دقائق"},
+      {cond:"ليلاً",then:"إيقاف تام"},
+    ],
+    dayOnly:true,
+    schedTemplate:[ {from:"08:00",to:"12:00",lvl:15},{from:"12:00",to:"16:00",lvl:30} ]
+  },
+  {
+    id:"shade", icon:"🌥", name:"ستائر التظليل", desc:"خفض الإشعاع والحرارة",
+    type:"curtain", unit:"%", min:0, max:100, step:5,
+    autoRules:[
+      {cond:"إشعاع > 600 W/m²",then:"تظليل 40%"},
+      {cond:"إشعاع > 900 W/m²",then:"تظليل 70%"},
+      {cond:"ليلاً",then:"مفتوح 0%"},
+    ],
+    dayOnly:true,
+    schedTemplate:[ {from:"10:00",to:"14:00",lvl:50},{from:"14:00",to:"16:00",lvl:30} ]
+  },
+  {
+    id:"heat", icon:"🔥", name:"التدفئة الليلية", desc:"للحفاظ على حرارة الليل",
+    type:"heater", unit:"°C هدف", min:10, max:20, step:1,
+    autoRules:[
+      {cond:"حرارة ليلية < 12°C",then:"تشغيل حتى 14°C"},
+      {cond:"حرارة ليلية < 10°C",then:"تشغيل حتى 12°C — تنبيه تجمد"},
+      {cond:"حرارة > 14°C",then:"إيقاف"},
+    ],
+    dayOnly:false,
+    nightOnly:true,
+    schedTemplate:[ {from:"20:00",to:"06:00",lvl:14} ]
+  },
+];
+
+// ═══════════════════════════════════════════
+//  GENERATE 24h DATA — stable seeded random
+// ═══════════════════════════════════════════
+function seededRand(seed){ let s=seed; return ()=>{ s=(s*9301+49297)%233280; return s/233280; }; }
+
+function gen24h(seed=1){
+  const rand = seededRand(seed*1000+42);
+  const data = [];
+  for(let h=0;h<24;h++){
+    const isDay = h>=6 && h<=18;
+    const dayFactor = Math.max(0, Math.sin((h-6)/12*Math.PI));
+    // Temperature: realistic curve — night 14–19°C, day peak 27–34°C
+    const tempBase  = isDay ? 20 + dayFactor*(10+seed*1.5) + (seed-1)*1.2 : 13 + seed*0.8;
+    const tempIn    = +(tempBase + (rand()-.5)*2.5).toFixed(1);
+    const tempOut   = +(tempBase - 3.5 + (rand()-.5)*2).toFixed(1);
+    // Radiation: STRICT zero at night
+    const radBase   = isDay ? Math.max(0, Math.sin((h-6)/12*Math.PI)*(650+seed*60) + 80) : 0;
+    const radiation = isDay ? Math.max(0, Math.round(radBase + (rand()-.3)*90)) : 0;
+    // Humidity: higher at night, dips midday
+    const rhBase    = isDay ? 68 - dayFactor*(12+seed) : 73 + seed*1.5;
+    const rh        = Math.min(92, Math.max(42, +(rhBase + (rand()-.5)*6).toFixed(1)));
+    // VPD from actual temp+rh
+    const svp       = +(0.6108*Math.exp(17.27*tempIn/(tempIn+237.3))).toFixed(3);
+    const avp       = +(svp*(rh/100)).toFixed(3);
+    const vpd       = +Math.max(0, svp-avp).toFixed(2);
+    data.push({ h, tempIn, tempOut, radiation, rh, vpd });
+  }
+  return data;
+}
+
+// Actuator states per room
+let actState = {};
+ROOMS.forEach(r=>{
+  actState[r.id]={};
+  ACTUATORS.forEach(a=>{actState[r.id][a.id]={on:false,level:a.min,timeFrom:"",timeTo:""};});
+  // Set some defaults for BB-01
+  if(r.id==="BB-01"){
+    actState[r.id]["fan-out"]  ={on:true, level:70};
+    actState[r.id]["fan-circ"] ={on:true, level:50};
+    actState[r.id]["pad-cool"] ={on:false,level:0};
+    actState[r.id]["fogger"]   ={on:true, level:15};
+    actState[r.id]["shade"]    ={on:true, level:50};
+    actState[r.id]["heat"]     ={on:false,level:14};
+  }
+});
+
+// Schedule log (interventions)
+const SCHEDULE_LOG = [
+  {time:"06:00",act:"fan-out",  state:"تشغيل",  lvl:"30%",  tempAt:19.2, rhAt:72, result:"▼1.2°C خلال 30د"},
+  {time:"08:00",act:"shade",    state:"تشغيل",  lvl:"30%",  tempAt:23.5, rhAt:65, result:"▼2.1°C إشعاع"},
+  {time:"10:00",act:"fan-out",  state:"زيادة",  lvl:"70%",  tempAt:27.8, rhAt:60, result:"▼1.8°C"},
+  {time:"10:00",act:"fogger",   state:"تشغيل",  lvl:"15ث",  tempAt:27.8, rhAt:58, result:"▲8% RH"},
+  {time:"12:00",act:"shade",    state:"زيادة",  lvl:"60%",  tempAt:30.2, rhAt:55, result:"▼3.5°C إشعاع"},
+  {time:"12:00",act:"fogger",   state:"زيادة",  lvl:"30ث",  tempAt:30.2, rhAt:54, result:"▲12% RH"},
+  {time:"13:00",act:"pad-cool", state:"تشغيل",  lvl:"60%",  tempAt:31.8, rhAt:52, result:"▼2.4°C"},
+  {time:"14:00",act:"pad-cool", state:"زيادة",  lvl:"80%",  tempAt:32.5, rhAt:54, result:"▼3.1°C"},
+  {time:"16:00",act:"shade",    state:"تخفيف",  lvl:"30%",  tempAt:28.4, rhAt:60, result:"▲إشعاع 200W"},
+  {time:"16:30",act:"pad-cool", state:"إيقاف",  lvl:"0%",   tempAt:27.1, rhAt:63, result:"استقرار"},
+  {time:"17:00",act:"fan-out",  state:"تخفيف",  lvl:"40%",  tempAt:25.8, rhAt:66, result:"استقرار"},
+  {time:"18:00",act:"fogger",   state:"إيقاف",  lvl:"0ث",   tempAt:24.2, rhAt:68, result:"ليل — إيقاف"},
+  {time:"18:30",act:"shade",    state:"إيقاف",  lvl:"0%",   tempAt:23.5, rhAt:69, result:"ليل — فتح"},
+  {time:"20:00",act:"heat",     state:"تشغيل",  lvl:"14°C", tempAt:20.1, rhAt:72, result:"✓ حرارة مستقرة"},
+  {time:"22:00",act:"fan-circ", state:"تخفيف",  lvl:"20%",  tempAt:17.8, rhAt:74, result:"تقليب خفيف"},
+];
+
+const HISTORY_7DAYS = [
+  {date:"2025-04-28",dayAvg:27.4,nightAvg:16.2,rhAvg:63,vpdAvg:1.12,radMax:820,fanInt:4,coolInt:3,alerts:0},
+  {date:"2025-04-29",dayAvg:29.1,nightAvg:15.8,rhAvg:60,vpdAvg:1.28,radMax:890,fanInt:6,coolInt:5,alerts:1},
+  {date:"2025-04-30",dayAvg:26.8,nightAvg:16.5,rhAvg:67,vpdAvg:0.98,radMax:750,fanInt:3,coolInt:2,alerts:0},
+  {date:"2025-05-01",dayAvg:31.2,nightAvg:17.1,rhAvg:58,vpdAvg:1.45,radMax:940,fanInt:7,coolInt:6,alerts:2},
+  {date:"2025-05-02",dayAvg:28.6,nightAvg:16.8,rhAvg:62,vpdAvg:1.18,radMax:810,fanInt:5,coolInt:4,alerts:0},
+  {date:"2025-05-03",dayAvg:27.9,nightAvg:16.0,rhAvg:65,vpdAvg:1.05,radMax:770,fanInt:4,coolInt:3,alerts:0},
+  {date:"2025-05-04",dayAvg:30.4,nightAvg:17.3,rhAvg:59,vpdAvg:1.38,radMax:900,fanInt:6,coolInt:5,alerts:1},
+];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+let activeTab = "monitor";
+let chartInst = {};
+const dc = id => { if(chartInst[id]){ chartInst[id].destroy(); delete chartInst[id]; } };
+
+function isNightHour(h){ return h<6||h>=18; }
+
+// ═══════════════════════════════════════════
+//  LIVE CLOCK
+// ═══════════════════════════════════════════
+function updateClock(){
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const ss=String(now.getSeconds()).padStart(2,'0');
+  const el=document.getElementById('live-time'); if(el) el.textContent=`${hh}:${mm}:${ss}`;
+  const de=document.getElementById('live-date'); if(de) de.textContent=now.toLocaleDateString('ar-EG',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const isNight = now.getHours()<6||now.getHours()>=18;
+  const dn=document.getElementById('daynight-chip');
+  if(dn){ dn.innerHTML=`<div class="daynight ${isNight?'night':'day'}">${isNight?'🌙 ليل':'☀ نهار'} · ${hh}:${mm}</div>`; }
+}
+setInterval(updateClock,1000); updateClock();
+
+// ═══════════════════════════════════════════
+//  ROOM PILLS
+// ═══════════════════════════════════════════
+function renderRoomPills(){
+  const el=document.getElementById('room-pills');
+  el.innerHTML=ROOMS.map(r=>`
+    <button class="room-pill${r.id===currentRoom?' on':''}" onclick="switchRoom('${r.id}')">
+      ${r.id}
+    </button>`).join('');
+}
+
+function switchRoom(id){
+  currentRoom=id;
+  const r=ROOMS.find(x=>x.id===id);
+  document.getElementById('hdr-room').textContent=id;
+  document.getElementById('hdr-name').textContent=`${r.name} · ${r.plants} نبتة · ${r.area} م²`;
+  renderRoomPills();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════
+//  SENSOR STRIP
+// ═══════════════════════════════════════════
+function renderSensors(){
+  const now=new Date().getHours();
+  const isNight=isNightHour(now);
+  const idx=Math.max(0,Math.min(23,now));
+  const seed=ROOMS.findIndex(r=>r.id===currentRoom)+1;
+  const data=gen24h(seed);
+  const d=data[idx];
+
+  const SENSORS=[
+    {icon:"🌡",label:"TEMP IN",val:`${d.tempIn}`,unit:"°C",color:"--act",rgb:"255,179,0",
+     pct:Math.min(100,d.tempIn/40*100),ok:d.tempIn>=18&&d.tempIn<=28,trend:d.tempIn>26?"▲":d.tempIn<18?"▼":"─"},
+    {icon:"🌡",label:"TEMP OUT",val:`${d.tempOut}`,unit:"°C",color:"--t2",rgb:"130,196,130",
+     pct:Math.min(100,d.tempOut/40*100),ok:true,trend:"─"},
+    {icon:"💧",label:"HUMIDITY",val:`${d.rh}`,unit:"%",color:"--sky",rgb:"64,196,255",
+     pct:d.rh,ok:d.rh>=55&&d.rh<=75,trend:d.rh>75?"▲":"─"},
+    {icon:"💨",label:"VPD",val:`${d.vpd}`,unit:"kPa",color:"--ph",rgb:"0,230,118",
+     pct:Math.min(100,d.vpd/2*100),ok:d.vpd>=0.6&&d.vpd<=1.4,trend:"─"},
+    {icon:"☀",label:"RADIATION",val:isNight?"0":`${d.radiation}`,unit:"W/m²",color:"--rad",rgb:"224,64,251",
+     pct:isNight?0:Math.min(100,d.radiation/1000*100),ok:true,isNight,trend:"─"},
+    {icon:"🌫",label:"CO₂",val:"820",unit:"ppm",color:"--ph3",rgb:"105,240,174",
+     pct:82,ok:true,trend:"─"},
+  ];
+
+  const alerts=[];
+  if(d.tempIn>30) alerts.push({t:`🌡 ${d.tempIn}°C — حرارة مرتفعة`,c:"var(--red)",b:"rgba(255,23,68,.3)"});
+  if(d.rh>78)     alerts.push({t:`💧 ${d.rh}% — رطوبة عالية`,c:"var(--sky)",b:"rgba(64,196,255,.3)"});
+  if(d.vpd>1.4)   alerts.push({t:`💨 VPD ${d.vpd} — مرتفع`,c:"var(--act)",b:"rgba(255,179,0,.3)"});
+  const as=document.getElementById('alert-strip');
+  as.innerHTML=alerts.length
+    ?alerts.map(a=>`<div class="alert-chip" style="color:${a.c};border-color:${a.b};background:${a.b}30">⚠ ${a.t}</div>`).join('')
+    :`<span class="badge b-ok">✓ كل المعايير ضمن الهدف</span>`;
+
+  document.getElementById('sensor-strip').innerHTML=SENSORS.map(s=>`
+    <div class="sensor-card" style="--sensor-color:var(${s.color});--sensor-rgb:${s.rgb}">
+      ${s.isNight?`<div class="sc-night-mask">🌙 ليل — صفر</div>`:''}
+      <div class="sc-icon">${s.icon}</div>
+      <div>
+        <span class="sc-val">${s.val}</span>
+        <span class="sc-unit">${s.unit}</span>
+      </div>
+      <div class="sc-label">${s.label}</div>
+      <div class="sc-trend" style="color:${s.ok?'var('+s.color+')':'var(--red)'}">
+        <span style="font-family:var(--mono)">${s.trend}</span>
+        <span style="font-size:9px">${s.ok?'✓ ضمن الهدف':'⚠ خارج النطاق'}</span>
+      </div>
+      <div class="sc-bar"><div class="sc-bar-fill" style="width:${s.pct}%"></div></div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  CLIMATE CHARTS
+// ═══════════════════════════════════════════
+const C_DARK={
+  responsive:true,maintainAspectRatio:false,
+  plugins:{
+    legend:{labels:{color:"#81c784",font:{family:"Fira Code",size:10},boxWidth:10}},
+    tooltip:{backgroundColor:"#121a14",borderColor:"#223022",borderWidth:1,titleColor:"#c8e6c9",bodyColor:"#81c784"}
+  },
+  scales:{
+    x:{ticks:{color:"#4a7a4c",font:{family:"Fira Code",size:9}},grid:{color:"rgba(34,48,34,.8)"},border:{display:false}},
+    y:{ticks:{color:"#4a7a4c",font:{family:"Fira Code",size:9}},grid:{color:"rgba(34,48,34,.8)"},border:{display:false}}
+  }
+};
+
+// ─────────────────────────────────────────
+//  Night-band helper — called inside afterDraw
+// ─────────────────────────────────────────
+function drawNightBand(chart){
+  try{
+    const {ctx,chartArea}=chart;
+    if(!chartArea) return;
+    const {top,bottom,left,right}=chartArea;
+    const w=right-left;
+    const pxH=w/24;
+    ctx.save();
+    [[0,6],[18,24]].forEach(([s,e])=>{
+      ctx.fillStyle='rgba(64,196,255,.045)';
+      ctx.fillRect(left+s*pxH,top,(e-s)*pxH,bottom-top);
+    });
+    ctx.fillStyle='rgba(100,196,255,.35)';
+    ctx.font='11px sans-serif';
+    ctx.fillText('🌙',left+2,top+16);
+    ctx.fillText('🌙',left+18*pxH+2,top+16);
+    ctx.restore();
+  }catch(e){}
+}
+
+function renderClimateCharts(){
+  const seed=ROOMS.findIndex(r=>r.id===currentRoom)+1;
+  const data=gen24h(seed);
+  const labels=data.map(d=>`${String(d.h).padStart(2,'0')}:00`);
+
+  // ── Temp ──
+  dc('c-temp');
+  const tc=document.getElementById('c-temp')?.getContext('2d'); if(!tc) return;
+  chartInst['c-temp']=new Chart(tc,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'داخل °C',data:data.map(d=>d.tempIn),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true},
+      {label:'خارج °C',data:data.map(d=>d.tempOut),borderColor:'#4a9a4c',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.4},
+      {label:'هدف max 28°',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.3)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+    ]},
+    plugins:[{id:'nb',afterDraw:drawNightBand}],
+    options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:8,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
+  });
+
+  // ── RH + VPD ──
+  dc('c-rh');
+  const rc=document.getElementById('c-rh')?.getContext('2d'); if(!rc) return;
+  chartInst['c-rh']=new Chart(rc,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'RH %',data:data.map(d=>d.rh),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,yAxisID:'y'},
+      {label:'VPD kPa',data:data.map(d=>d.vpd),borderColor:'#00e676',backgroundColor:'rgba(0,230,118,.04)',borderWidth:2,pointRadius:0,tension:.4,yAxisID:'y1',fill:true},
+    ]},
+    plugins:[{id:'nb',afterDraw:drawNightBand}],
+    options:{...C_DARK,scales:{
+      x:C_DARK.scales.x,
+      y:{...C_DARK.scales.y,position:'right',min:30,max:100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'%'}},
+      y1:{...C_DARK.scales.y,position:'left',min:0,max:2.8,grid:{display:false},ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' kPa'}},
+    }}
+  });
+
+  // ── Radiation ──
+  dc('c-rad');
+  const radc=document.getElementById('c-rad')?.getContext('2d'); if(!radc) return;
+  chartInst['c-rad']=new Chart(radc,{
+    type:'bar',
+    data:{labels,datasets:[{
+      label:'W/m²',
+      data:data.map(d=>d.radiation),
+      backgroundColor:data.map(d=>d.radiation===0?'rgba(64,196,255,.04)':'rgba(224,64,251,.45)'),
+      borderColor:data.map(d=>d.radiation===0?'transparent':'rgba(224,64,251,.9)'),
+      borderWidth:1,borderRadius:2,
+    }]},
+    plugins:[{id:'nb',afterDraw:drawNightBand}],
+    options:{...C_DARK,plugins:{...C_DARK.plugins,legend:{display:false}},
+      scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:0,max:1100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' W'}}}}
+  });
+
+  // ── Compare table ──
+  const now=new Date().getHours(); const d=data[Math.min(23,now)];
+  document.getElementById('compare-table').innerHTML=[
+    {l:"TEMP",i:`${d.tempIn}°C`,o:`${d.tempOut}°C`,ok:d.tempIn<=28},
+    {l:"HUMIDITY",i:`${d.rh}%`,o:`${Math.max(0,+(d.rh-8).toFixed(0))}%`,ok:d.rh<=75},
+    {l:"VPD",i:`${d.vpd} kPa`,o:"—",ok:d.vpd<=1.4},
+    {l:"RADIATION",i:`${d.radiation} W/m²`,o:`${Math.max(0,d.radiation+50)} W/m²`,ok:true},
+    {l:"CO₂",i:"820 ppm",o:"420 ppm",ok:true},
+  ].map(r=>`<div class="compare-row">
+    <span class="cmp-lbl">${r.l}</span>
+    <span class="cmp-arrow">↓</span>
+    <span class="cmp-inside" style="color:${r.ok?'var(--ph)':'var(--red)'}">${r.i}</span>
+    <span class="cmp-arrow">↔</span>
+    <span class="cmp-outside">خارج: ${r.o}</span>
+    <span style="margin-right:auto" class="badge ${r.ok?'b-ok':'b-alert'}">${r.ok?'✓':'⚠'}</span>
+  </div>`).join('');
+}
+
+// ═══════════════════════════════════════════
+//  CONTROL TAB
+// ═══════════════════════════════════════════
+function renderControl(){
+  renderActuators();
+  renderScheduleTable();
+  renderInterventionChart();
+  renderLogicRules();
+}
+
+function renderActuators(){
+  const grid=document.getElementById('actuator-grid');
+  grid.innerHTML=ACTUATORS.map(a=>{
+    const st=actState[currentRoom][a.id];
+    const isNight=isNightHour(new Date().getHours());
+    const applicable = !(a.dayOnly&&isNight) && !(a.nightOnly&&!isNight);
+    const on=st.on && applicable;
+    const pct=a.max>0?Math.round((st.level/a.max)*100):0;
+
+    return `
+    <div class="actuator-card" style="border-color:${on?'rgba(255,179,0,.3)':'var(--line2)'}">
+      <div class="ac-head">
+        <div class="ac-icon">${a.icon}</div>
+        <div>
+          <div class="ac-name">${a.name}</div>
+          <div class="ac-desc">${a.desc}</div>
+        </div>
+        <div class="ac-toggle-wrap" style="display:flex;align-items:center;gap:8px">
+          ${!applicable?`<span class="badge b-off" style="font-size:9px">${a.dayOnly?'نهار فقط':'ليل فقط'}</span>`:''}
+          <div class="toggle${on?' on':''}" onclick="toggleAct('${a.id}')" title="${on?'إيقاف':'تشغيل'}"></div>
+          <span class="st-dot ${on?'st-on':'st-off'}"></span>
+        </div>
+      </div>
+      <div class="ac-body">
+        <div class="slider-row">
+          <span class="slider-lbl">المستوى</span>
+          <input type="range" class="ctrl-slider" id="sl-${a.id}" min="${a.min}" max="${a.max}" step="${a.step}" value="${st.level}"
+            oninput="setLevel('${a.id}',this.value)" style="${on?'':'opacity:.4;pointer-events:none'}">
+          <span class="slider-val" id="sv-${a.id}">${st.level}${a.unit}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="flex:1;height:3px;background:var(--line2);border-radius:2px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${on?'var(--act)':'var(--t4)'};transition:width .3s"></div>
+          </div>
+          <span style="font-size:9px;font-family:var(--mono);color:${on?'var(--act)':'var(--t3)'}">${on?'RUNNING':'IDLE'}</span>
+        </div>
+        <div class="schedule-row" style="margin-top:4px">
+          <div class="sched-cell">
+            <div class="sched-lbl">من</div>
+            <input type="time" class="time-inp" id="tf-${a.id}" value="${a.schedTemplate[0]?.from||'06:00'}">
+          </div>
+          <div class="sched-cell">
+            <div class="sched-lbl">إلى</div>
+            <input type="time" class="time-inp" id="tt-${a.id}" value="${a.schedTemplate[0]?.to||'18:00'}">
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAct(id){
+  const isNight=isNightHour(new Date().getHours());
+  const a=ACTUATORS.find(x=>x.id===id);
+  if(a.dayOnly&&isNight){alert('هذا الجهاز يعمل نهاراً فقط');return;}
+  if(a.nightOnly&&!isNight){alert('هذا الجهاز يعمل ليلاً فقط');return;}
+  actState[currentRoom][id].on=!actState[currentRoom][id].on;
+  renderActuators();
+}
+function setLevel(id,val){
+  actState[currentRoom][id].level=parseFloat(val);
+  const sv=document.getElementById('sv-'+id);
+  const a=ACTUATORS.find(x=>x.id===id);
+  if(sv) sv.textContent=val+a.unit;
+}
+
+function renderScheduleTable(){
+  const tbody=document.getElementById('sched-tbody');
+  tbody.innerHTML=SCHEDULE_LOG.map(row=>{
+    const a=ACTUATORS.find(x=>x.id===row.act);
+    const h=parseInt(row.time.split(':')[0]);
+    const isNight=isNightHour(h);
+    return `<tr>
+      <td class="td-mono" style="color:${isNight?'var(--sky)':'var(--ph)'}">${row.time} ${isNight?'🌙':'☀'}</td>
+      <td>${a?.icon||''} ${a?.name||row.act}</td>
+      <td><span class="badge ${row.state==='إيقاف'?'b-off':'b-warn'}">${row.state}</span></td>
+      <td class="td-mono" style="font-size:10px;color:var(--t2)">${row.state==='إيقاف'?'—':row.act==='fan-out'?'حرارة > 27°C':row.act==='shade'?'إشعاع > 500 W/m²':row.act==='pad-cool'?'حرارة > 30°C':row.act==='fogger'?'VPD > 1.2 kPa':'جدول يومي'}</td>
+      <td class="td-act">${row.lvl}</td>
+      <td class="td-mono">${row.tempAt}°C</td>
+      <td class="td-mono">${row.rhAt}%</td>
+      <td class="td-result">${row.result}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderInterventionChart(){
+  dc('c-intervention');
+  const seed=ROOMS.findIndex(r=>r.id===currentRoom)+1;
+  const data=gen24h(seed);
+  const labels=data.map(d=>`${String(d.h).padStart(2,'0')}:00`);
+
+  // Build annotation data from SCHEDULE_LOG
+  const annotations=SCHEDULE_LOG.map(row=>{
+    const h=parseInt(row.time.split(':')[0]);
+    const a=ACTUATORS.find(x=>x.id===row.act);
+    return {h, icon:a?.icon||'⚙', tempAt:row.tempAt};
+  });
+
+  chartInst['c-intervention']=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Temp In °C',data:data.map(d=>d.tempIn),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.06)',borderWidth:2,pointRadius:0,tension:.4,fill:true},
+      {label:'هدف 26°C',data:Array(24).fill(26),borderColor:'rgba(0,230,118,.25)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+      {label:'حد أقصى 28°C',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.2)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+    ]},
+    plugins:[{
+      id:'intv',
+      afterDraw(chart){
+        try{
+          drawNightBand(chart);
+          const {ctx:c,chartArea:{top,bottom,left,right},scales:{y}}=chart;
+          if(!y) return;
+          const w=right-left, pxH=w/24;
+          c.save();
+          annotations.forEach(an=>{
+            const px=left+an.h*pxH+pxH/2;
+            const py=y.getPixelForValue(an.tempAt);
+            c.strokeStyle='rgba(255,179,0,.25)';
+            c.lineWidth=1; c.setLineDash([3,3]);
+            c.beginPath(); c.moveTo(px,top); c.lineTo(px,bottom); c.stroke();
+            c.setLineDash([]);
+            c.fillStyle='rgba(255,179,0,.18)';
+            c.beginPath(); c.arc(px,top+16,9,0,Math.PI*2); c.fill();
+            c.font='10px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+            c.fillText(an.icon,px,top+16);
+            c.fillStyle='#ffb300';
+            c.beginPath(); c.arc(px,py,3,0,Math.PI*2); c.fill();
+          });
+          c.restore();
+        }catch(e){}
+      }
+    }],
+    options:{...C_DARK,scales:{
+      x:C_DARK.scales.x,
+      y:{...C_DARK.scales.y,min:10,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}},
+    }}
+  });
+}
+
+function renderLogicRules(){
+  const el=document.getElementById('logic-rules');
+  el.innerHTML=ACTUATORS.map(a=>{
+    const st=actState[currentRoom][a.id];
+    return `<div class="logic-band">
+      <div class="lb-title">
+        ${a.icon} ${a.name}
+        <span class="badge ${st.on?'b-warn':'b-off'}" style="font-size:9px;margin-right:auto">${st.on?'نشط':'متوقف'}</span>
+      </div>
+      ${a.autoRules.map((r,i)=>`
+        <div class="lb-rule${i===0&&st.on?' lb-active':''}">
+          <span class="lb-cond">IF ${r.cond}</span>
+          <span class="lb-arrow">→</span>
+          <span class="lb-then">${r.then}</span>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  HISTORY
+// ═══════════════════════════════════════════
+function renderHistory(){
+  document.getElementById('history-tbody').innerHTML=HISTORY_7DAYS.map(d=>
+    `<tr>
+      <td class="td-mono">${d.date}</td>
+      <td class="td-mono" style="color:var(--act)">${d.dayAvg}°C</td>
+      <td class="td-mono" style="color:var(--sky)">${d.nightAvg}°C</td>
+      <td class="td-mono">${d.rhAvg}%</td>
+      <td class="td-mono" style="color:var(--ph)">${d.vpdAvg}</td>
+      <td class="td-mono" style="color:var(--rad)">${d.radMax}</td>
+      <td class="td-mono">${d.fanInt}x</td>
+      <td class="td-mono">${d.coolInt}x</td>
+      <td><span class="badge ${d.alerts>0?'b-alert':'b-ok'}">${d.alerts>0?`${d.alerts} ⚠`:'✓'}</span></td>
+    </tr>`).join('');
+
+  dc('c-hist-temp');
+  const ht=document.getElementById('c-hist-temp')?.getContext('2d'); if(!ht) return;
+  const hLabels=HISTORY_7DAYS.map(d=>d.date.slice(5));
+  chartInst['c-hist-temp']=new Chart(ht,{type:'line',
+    data:{labels:hLabels,datasets:[
+      {label:'نهار °C',data:HISTORY_7DAYS.map(d=>d.dayAvg),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#ffb300',tension:.3,fill:true},
+      {label:'ليل °C',data:HISTORY_7DAYS.map(d=>d.nightAvg),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#40c4ff',tension:.3,fill:true},
+    ]},
+    options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
+  });
+
+  dc('c-hist-act');
+  const ha=document.getElementById('c-hist-act')?.getContext('2d'); if(!ha) return;
+  chartInst['c-hist-act']=new Chart(ha,{type:'bar',
+    data:{labels:hLabels,datasets:[
+      {label:'مراوح',data:HISTORY_7DAYS.map(d=>d.fanInt),backgroundColor:'rgba(0,230,118,.4)',borderColor:'#00e676',borderWidth:1,borderRadius:2},
+      {label:'تبريد',data:HISTORY_7DAYS.map(d=>d.coolInt),backgroundColor:'rgba(64,196,255,.4)',borderColor:'#40c4ff',borderWidth:1,borderRadius:2},
+    ]},
+    options:{...C_DARK,scales:{x:{...C_DARK.scales.x,stacked:true},y:{...C_DARK.scales.y,stacked:true}}}
+  });
+}
+
+// ═══════════════════════════════════════════
+//  COMPARE TAB STATE
+// ═══════════════════════════════════════════
+
+// Per-room distinct colors (enough for 7+ rooms)
+const ROOM_COLORS = [
+  {border:"#ffb300", bg:"rgba(255,179,0,",    dim:"rgba(255,179,0,.08)"},
+  {border:"#40c4ff", bg:"rgba(64,196,255,",   dim:"rgba(64,196,255,.08)"},
+  {border:"#00e676", bg:"rgba(0,230,118,",    dim:"rgba(0,230,118,.08)"},
+  {border:"#e040fb", bg:"rgba(224,64,251,",   dim:"rgba(224,64,251,.07)"},
+  {border:"#ff6d00", bg:"rgba(255,109,0,",    dim:"rgba(255,109,0,.08)"},
+  {border:"#76ff03", bg:"rgba(118,255,3,",    dim:"rgba(118,255,3,.07)"},
+  {border:"#f50057", bg:"rgba(245,0,87,",     dim:"rgba(245,0,87,.08)"},
+];
+
+// All rooms across all farms
+const ALL_ROOMS = [
+  {id:"BB-01", farm:"F-01", farmName:"الواحة",  name:"بيانكا",  seed:1},
+  {id:"BB-02", farm:"F-01", farmName:"الواحة",  name:"اوني",    seed:2},
+  {id:"BB-03", farm:"F-01", farmName:"الواحة",  name:"مِسي",    seed:3},
+  {id:"BB-04", farm:"F-02", farmName:"الشمس",   name:"بيانكا",  seed:4},
+  {id:"BB-05", farm:"F-02", farmName:"الشمس",   name:"دوك",     seed:5},
+  {id:"BB-06", farm:"F-03", farmName:"النيل",   name:"بلوكروب", seed:6},
+  {id:"BB-07", farm:"F-03", farmName:"النيل",   name:"مِسي",    seed:7},
+];
+
+let selectedRooms = new Set(["BB-01","BB-02","BB-04"]);
+let comparePeriod = "all"; // all | day | night
+
+function getHourRange(){
+  if(comparePeriod==="day")   return {start:6,  end:18, label:"نهار (6–18)"};
+  if(comparePeriod==="night") return {start:18, end:30, label:"ليل (18–6)"};  // 18-24 + 0-6 handled below
+  return {start:0, end:24, label:"24 ساعة"};
+}
+
+function getFilteredHours(){
+  const hrs = Array.from({length:24},(_,i)=>i);
+  if(comparePeriod==="day")   return hrs.filter(h=>h>=6&&h<18);
+  if(comparePeriod==="night") return hrs.filter(h=>h>=18||h<6);
+  return hrs;
+}
+
+function setPeriod(p){
+  comparePeriod=p;
+  ["all","day","night"].forEach(x=>{
+    const el=document.getElementById("pp-"+x);
+    if(el) el.classList.toggle("on",x===p);
+  });
+  renderCompare();
+}
+
+function selectAllRooms(){ ALL_ROOMS.forEach(r=>selectedRooms.add(r.id)); renderRoomMultiGrid(); renderCompare(); }
+function clearRooms(){ selectedRooms.clear(); renderRoomMultiGrid(); renderCompare(); }
+
+function toggleRoomSel(id){
+  if(selectedRooms.has(id)) selectedRooms.delete(id);
+  else selectedRooms.add(id);
+  renderRoomMultiGrid();
+  renderCompare();
+}
+
+function renderRoomMultiGrid(){
+  const el=document.getElementById("room-multi-grid"); if(!el) return;
+  // Group by farm
+  const byFarm={};
+  ALL_ROOMS.forEach(r=>{
+    if(!byFarm[r.farmName]) byFarm[r.farmName]=[];
+    byFarm[r.farmName].push(r);
+  });
+  let html='';
+  Object.entries(byFarm).forEach(([farm,rooms])=>{
+    html+=`<span style="font-size:9px;color:var(--t4);font-family:var(--mono);padding:0 4px;align-self:center">${farm}:</span>`;
+    rooms.forEach(r=>{
+      const ci=ALL_ROOMS.findIndex(x=>x.id===r.id)%ROOM_COLORS.length;
+      const c=ROOM_COLORS[ci];
+      const isSel=selectedRooms.has(r.id);
+      html+=`<div class="rm-check${isSel?" sel":''}" 
+        style="--fog-color:${c.border};--fog-dim:${c.dim}"
+        onclick="toggleRoomSel('${r.id}')">
+        <div class="rm-dot" style="background:${isSel?c.border:'var(--t4)'}"></div>
+        ${r.id}
+        <span style="font-size:9px;color:var(--t3)">${r.name}</span>
+      </div>`;
+    });
+    html+=`<span style="width:6px;display:inline-block"></span>`;
+  });
+  el.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════
+//  RENDER COMPARE TAB
+// ═══════════════════════════════════════════
+function renderCompare(){
+  if(activeTab!=="compare") return;
+
+  const hours = getFilteredHours();
+  const labels = hours.map(h=>`${String(h).padStart(2,'0')}:00`);
+  const rooms  = ALL_ROOMS.filter(r=>selectedRooms.has(r.id));
+
+  if(!rooms.length){
+    ["cc-temp","cc-rh","cc-vpd","cc-rad"].forEach(id=>{
+      dc(id);
+      const ctx=document.getElementById(id)?.getContext('2d'); if(!ctx) return;
+      chartInst[id]=new Chart(ctx,{type:'line',data:{labels:[],datasets:[]},options:{...C_DARK,plugins:{...C_DARK.plugins,legend:{display:false}}}});
+    });
+    ["stat-temp","stat-rh","stat-vpd","stat-rad"].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.innerHTML=`<span style="font-size:10px;color:var(--t3);font-family:var(--mono)">اختر غرفة أولاً</span>`;
+    });
+    return;
+  }
+
+  // Build datasets per room
+  const roomDatasets = rooms.map((r,ri)=>{
+    const ci = ALL_ROOMS.findIndex(x=>x.id===r.id)%ROOM_COLORS.length;
+    const c  = ROOM_COLORS[ci];
+    const d  = gen24h(r.seed);
+    return { r, c, d,
+      hours_data: hours.map(h=>d[h]),
+      label: `${r.id} (${r.name})`,
+      border: c.border,
+      bg: c.bg,
+    };
+  });
+
+  // ── Helper: build chart options per metric ──
+  const buildOpts = (yMin,yMax,yCallback,extra={})=>({
+    ...C_DARK,
+    scales:{
+      x:{...C_DARK.scales.x},
+      y:{...C_DARK.scales.y,min:yMin,max:yMax,ticks:{...C_DARK.scales.y.ticks,callback:yCallback}},
+    },
+    plugins:{...C_DARK.plugins,...extra}
+  });
+
+  // Night band only for "all" period — nightBandPlugin is registered globally
+  // no need to pass in plugins array
+
+  // ── 1. TEMPERATURE ──
+  dc("cc-temp");
+  const tCtx=document.getElementById("cc-temp")?.getContext('2d'); if(!tCtx) return;
+  chartInst["cc-temp"]=new Chart(tCtx,{
+    type:'line',
+    data:{labels, datasets:roomDatasets.map(rd=>({
+      label:rd.label,
+      data:rd.hours_data.map(d=>d.tempIn),
+      borderColor:rd.border,
+      backgroundColor:rd.bg+"0.06)",
+      borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+      pointBackgroundColor:rd.border,
+      tension:.4,fill:false,
+    }))},
+    options:buildOpts(8,42,v=>v+"°")
+  });
+
+  // stat row: avg per room
+  buildStatRow("stat-temp", roomDatasets, d=>d.tempIn, "°C", rd=>{
+    const avg=calcAvg(rd.hours_data.map(d=>d.tempIn));
+    const ok=avg>=18&&avg<=28; return {val:avg.toFixed(1)+"°C",ok};
+  });
+
+  // ── 2. HUMIDITY ──
+  dc("cc-rh");
+  const rCtx=document.getElementById("cc-rh")?.getContext('2d'); if(!rCtx) return;
+  chartInst["cc-rh"]=new Chart(rCtx,{
+    type:'line',
+    data:{labels, datasets:[
+      ...roomDatasets.map(rd=>({
+        label:rd.label,
+        data:rd.hours_data.map(d=>d.rh),
+        borderColor:rd.border,
+        backgroundColor:rd.bg+"0.05)",
+        borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+        pointBackgroundColor:rd.border,
+        tension:.4,fill:false,
+      })),
+      // Target zone
+      {label:"حد أعلى 75%",data:Array(labels.length).fill(75),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
+      {label:"حد أدنى 55%",data:Array(labels.length).fill(55),borderColor:"rgba(64,196,255,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
+    ]},
+    options:buildOpts(25,100,v=>v+"%")
+  });
+  buildStatRow("stat-rh", roomDatasets, d=>d.rh, "%", rd=>{
+    const avg=calcAvg(rd.hours_data.map(d=>d.rh));
+    const ok=avg>=55&&avg<=75; return {val:avg.toFixed(1)+"%",ok};
+  });
+
+  // ── 3. VPD ──
+  dc("cc-vpd");
+  const vCtx=document.getElementById("cc-vpd")?.getContext('2d'); if(!vCtx) return;
+  chartInst["cc-vpd"]=new Chart(vCtx,{
+    type:'line',
+    data:{labels, datasets:[
+      ...roomDatasets.map(rd=>({
+        label:rd.label,
+        data:rd.hours_data.map(d=>d.vpd),
+        borderColor:rd.border,
+        backgroundColor:rd.bg+"0.05)",
+        borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+        pointBackgroundColor:rd.border,
+        tension:.4,fill:false,
+      })),
+      {label:"VPD Max 1.4",data:Array(labels.length).fill(1.4),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0},
+      {label:"VPD Min 0.6",data:Array(labels.length).fill(0.6),borderColor:"rgba(0,230,118,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0},
+    ]},
+    options:buildOpts(0,2.5,v=>v+" kPa")
+  });
+  buildStatRow("stat-vpd", roomDatasets, d=>d.vpd, "kPa", rd=>{
+    const avg=calcAvg(rd.hours_data.map(d=>d.vpd));
+    const ok=avg>=0.6&&avg<=1.4; return {val:avg.toFixed(2)+" kPa",ok};
+  });
+
+  // ── 4. RADIATION (line NOT bar for multi-room, bar for single) ──
+  dc("cc-rad");
+  const radCtx=document.getElementById("cc-rad")?.getContext('2d'); if(!radCtx) return;
+  chartInst["cc-rad"]=new Chart(radCtx,{
+    type:'line',
+    data:{labels, datasets:roomDatasets.map(rd=>({
+      label:rd.label,
+      data:rd.hours_data.map(d=>d.radiation),
+      borderColor:rd.border,
+      backgroundColor:rd.bg+"0.06)",
+      borderWidth:2,pointRadius:comparePeriod==="all"?0:2,
+      pointBackgroundColor:rd.border,
+      tension:.3,fill:true,
+    }))},
+    options:buildOpts(0,1100,v=>v+" W")
+  });
+  buildStatRow("stat-rad", roomDatasets, d=>d.radiation, "W/m²", rd=>{
+    const vals=rd.hours_data.map(d=>d.radiation);
+    const mx=Math.max(...vals); const avg=calcAvg(vals);
+    return {val:`max ${mx.toFixed(0)} W`,ok:true,sub:`avg ${avg.toFixed(0)}`};
+  });
+}
+
+function calcAvg(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
+
+function buildStatRow(elId, roomDatasets, valFn, unit, statFn){
+  const el=document.getElementById(elId); if(!el) return;
+  el.innerHTML=roomDatasets.map(rd=>{
+    const st=statFn(rd);
+    return `<div class="cmp-stat">
+      <div class="cmp-stat-dot" style="background:${rd.border}"></div>
+      <span style="color:${rd.border}">${rd.r.id}</span>
+      <span style="color:${st.ok?'var(--ph)':'var(--red)';}">${st.val}</span>
+      ${st.sub?`<span style="color:var(--t3);font-size:9px">${st.sub}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+
+function setTab(tab){
+  activeTab=tab;
+  ['monitor','compare','control','history'].forEach(t=>{
+    const pg=document.getElementById('page-'+t);
+    const tb=document.getElementById('tab-'+t);
+    if(pg) pg.classList.toggle('on',t===tab);
+    if(tb) tb.classList.toggle('on',t===tab);
+  });
+  if(tab==='compare'){ renderRoomMultiGrid(); renderCompare(); }
+  if(tab==='control') renderControl();
+  if(tab==='history') renderHistory();
+}
+
+function renderAll(){
+  renderSensors();
+  renderClimateCharts();
+  if(activeTab==='compare'){ renderRoomMultiGrid(); renderCompare(); }
+  if(activeTab==='control') renderControl();
+  if(activeTab==='history') renderHistory();
+}
+
+// ═══════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════
+renderRoomPills();
+renderSensors();
+renderClimateCharts();
+// Refresh sensors every 30s
+setInterval(()=>{ renderSensors(); },30000);
+</script>
+</body>
+</html>

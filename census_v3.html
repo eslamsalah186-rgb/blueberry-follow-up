@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Assessment — Blueberry</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   DESIGN DIRECTION:
+   "Field Notebook meets Clinical Lab"
+   
+   Dark charcoal base (#141414) with warm
+   off-white PAPER panels (#F5F2EC) for all
+   data display areas — charts are fully
+   readable, high contrast. 
+   
+   Typography: DM Serif Display for headings
+   (gives it a botanical/scientific journal
+   feel), DM Mono for numbers, IBM Plex
+   Arabic for Arabic text.
+   
+   Three distinct color codes:
+   Census   → slate-blue  #4A6FA5
+   Harvest  → harvest-gold #C08940
+   Quality  → berry-crimson #A0394A
+══════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Base */
+  --ink:    #141414;
+  --ink2:   #1e1e1e;
+  --ink3:   #2a2a2a;
+  --border: #2e2e2e;
+  --border2:#3a3a3a;
+
+  /* Paper panels */
+  --paper:  #F5F2EC;
+  --paper2: #EDE9E1;
+  --paper3: #E4E0D6;
+  --paper-ink: #1a1a1a;
+  --paper-ink2: #4a4a4a;
+  --paper-ink3: #7a7a7a;
+
+  /* Text on dark */
+  --fog:  #E8E4DC;
+  --fog2: #9A9590;
+  --fog3: #5A5550;
+
+  /* Accent — tab colors */
+  --census-c:  #4A6FA5;
+  --census-l:  #6B8FBF;
+  --census-bg: rgba(74,111,165,.1);
+  --harvest-c: #C08940;
+  --harvest-l: #D4A85E;
+  --harvest-bg:rgba(192,137,64,.1);
+  --quality-c: #A0394A;
+  --quality-l: #C05060;
+  --quality-bg:rgba(160,57,74,.1);
+
+  /* Status */
+  --ok:   #2D7A4A;
+  --ok-l: #4CAF72;
+  --warn: #A86B00;
+  --warn-l:#D4920A;
+  --bad:  #8B2020;
+  --bad-l:#D43030;
+
+  --mono:    'DM Mono', monospace;
+  --serif:   'DM Serif Display', serif;
+  --sans:    'IBM Plex Sans Arabic', sans-serif;
+}
+
+body {
+  background: var(--ink);
+  color: var(--fog);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ── Subtle grain texture ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: .6;
+}
+
+.app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 28px 24px; }
+
+/* ══════════════════════════════════════════
+   TOP BAR
+══════════════════════════════════════════ */
+.topbar {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 20px; margin-bottom: 24px;
+  border-bottom: 1px solid var(--border2);
+  flex-wrap: wrap;
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.tb-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  background: var(--ink2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.tb-title { font-family: var(--serif); font-size: 22px; color: var(--fog); letter-spacing: -.3px; }
+.tb-sub   { font-size: 11px; color: var(--fog3); font-family: var(--mono); margin-top: 1px; }
+.topbar-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-right: auto; }
+
+/* selects & buttons */
+.sel {
+  background: var(--ink2); border: 1px solid var(--border2);
+  color: var(--fog); border-radius: 7px; padding: 7px 28px 7px 10px;
+  font-family: var(--mono); font-size: 11px; outline: none;
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%235A5550' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 8px center;
+  transition: border-color .15s;
+}
+.sel:hover, .sel:focus { border-color: var(--fog3); }
+.btn {
+  padding: 7px 15px; border-radius: 7px; border: 1px solid var(--border2);
+  background: transparent; color: var(--fog2); font-family: var(--mono);
+  font-size: 11px; cursor: pointer; transition: .15s; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px;
+}
+.btn:hover { border-color: var(--fog2); color: var(--fog); background: var(--ink2); }
+
+/* ══════════════════════════════════════════
+   MAIN TABS — 3 distinct personalities
+══════════════════════════════════════════ */
+.main-tabs {
+  display: flex; gap: 3px; margin-bottom: 22px;
+  background: var(--ink2); padding: 4px; border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.mtab {
+  flex: 1; padding: 11px 20px; border-radius: 9px; border: none;
+  background: transparent; font-family: var(--sans); font-size: 13px;
+  font-weight: 600; color: var(--fog3); cursor: pointer;
+  transition: background .18s, color .18s; display: flex; align-items: center;
+  justify-content: center; gap: 8px; letter-spacing: .1px;
+}
+.mtab:hover { color: var(--fog); }
+.mtab.on { background: var(--ink3); color: var(--fog); box-shadow: 0 1px 6px rgba(0,0,0,.4); }
+.mtab.on.t-census  { color: var(--census-l);  border-bottom: 2px solid var(--census-c); }
+.mtab.on.t-harvest { color: var(--harvest-l); border-bottom: 2px solid var(--harvest-c); }
+.mtab.on.t-quality { color: var(--quality-l); border-bottom: 2px solid var(--quality-c); }
+.mtab-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; opacity: .7; flex-shrink: 0; }
+.mtab-badge {
+  font-size: 9px; font-family: var(--mono); border-radius: 20px;
+  padding: 1px 7px; border: 1px solid; opacity: .7;
+}
+
+/* ══════════════════════════════════════════
+   PAPER PANEL — the key design element
+   All data displays on warm off-white paper
+══════════════════════════════════════════ */
+.paper {
+  background: var(--paper); color: var(--paper-ink);
+  border-radius: 12px; border: 1px solid var(--paper3);
+}
+.paper-sm { background: var(--paper2); border-radius: 8px; border: 1px solid var(--paper3); }
+.paper-hdr {
+  padding: 14px 18px; border-bottom: 1px solid var(--paper3);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.paper-title { font-family: var(--serif); font-size: 16px; color: var(--paper-ink); }
+.paper-sub   { font-size: 10px; color: var(--paper-ink3); font-family: var(--mono); margin-top: 2px; }
+.paper-body  { padding: 16px 18px; }
+
+/* ══════════════════════════════════════════
+   CENSUS TAB
+══════════════════════════════════════════ */
+.census-layout {
+  display: grid; grid-template-columns: 300px 1fr; gap: 16px; align-items: start;
+}
+@media(max-width: 960px) { .census-layout { grid-template-columns: 1fr; } }
+
+/* Sample selector */
+.sample-nav { background: var(--ink2); border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
+.sn-hdr { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.sn-title { font-family: var(--serif); font-size: 14px; }
+.sn-count { font-size: 10px; color: var(--fog3); font-family: var(--mono); }
+.sample-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
+.s-row {
+  display: flex; align-items: center; gap: 9px; padding: 8px 10px;
+  border-radius: 7px; cursor: pointer; transition: background .12s;
+  border: 1px solid transparent;
+}
+.s-row:hover { background: var(--ink3); }
+.s-row.on { background: var(--census-bg); border-color: rgba(74,111,165,.3); }
+.s-num { font-family: var(--mono); font-size: 11px; color: var(--fog3); min-width: 24px; }
+.s-label { font-size: 12px; font-weight: 500; flex: 1; }
+.s-preview { font-family: var(--mono); font-size: 10px; color: var(--fog3); }
+.add-btn {
+  width: 100%; padding: 9px; border: none; border-top: 1px solid var(--border);
+  background: transparent; color: var(--fog3); font-family: var(--mono);
+  font-size: 11px; cursor: pointer; transition: .12s; display: flex;
+  align-items: center; justify-content: center; gap: 5px;
+}
+.add-btn:hover { background: var(--ink3); color: var(--census-l); }
+
+/* Counters — clean 2-col grid */
+.counter-section { margin-bottom: 14px; }
+.cs-label { font-size: 10px; font-weight: 700; color: var(--fog3); font-family: var(--mono); letter-spacing: .7px; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
+.cs-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.counter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ctr {
+  background: var(--ink2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 12px; transition: border-color .15s;
+}
+.ctr:hover { border-color: var(--border2); }
+.ctr.ok   { border-color: rgba(45,122,74,.4); }
+.ctr.warn { border-color: rgba(168,107,0,.4); }
+.ctr.low  { border-color: rgba(139,32,32,.4); }
+.ctr-name { font-size: 11px; font-weight: 600; margin-bottom: 1px; }
+.ctr-range { font-size: 9px; color: var(--fog3); font-family: var(--mono); }
+.ctr-ctrl { display: flex; align-items: center; gap: 7px; margin: 8px 0; }
+.ctr-btn {
+  width: 34px; height: 34px; border-radius: 7px; border: 1px solid var(--border2);
+  background: var(--ink3); color: var(--fog); font-size: 17px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background .1s, transform .1s; flex-shrink: 0;
+}
+.ctr-btn:hover { background: var(--border2); transform: scale(1.08); }
+.ctr-btn:active { transform: scale(.92); }
+.ctr-val { flex: 1; text-align: center; font-size: 26px; font-weight: 700; font-family: var(--mono); letter-spacing: -1px; }
+.ctr-q-row { display: flex; gap: 4px; }
+.ctr-q {
+  padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--fog3); font-size: 10px; font-family: var(--mono);
+  cursor: pointer; transition: .1s;
+}
+.ctr-q:hover { background: var(--ink3); color: var(--fog); }
+.ctr-bar { height: 2px; background: var(--border); border-radius: 1px; overflow: hidden; margin-top: 7px; }
+.ctr-bar-fill { height: 100%; border-radius: 1px; transition: width .3s; }
+
+/* Average panel on paper */
+.avg-stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.avg-stat {
+  padding: 10px 12px; background: var(--paper2); border-radius: 7px;
+  border: 1px solid var(--paper3); transition: background .12s;
+}
+.avg-stat:hover { background: var(--paper3); }
+.as-label { font-size: 9px; color: var(--paper-ink3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 4px; }
+.as-val { font-family: var(--mono); font-size: 20px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.as-note { font-size: 9px; margin-top: 4px; font-family: var(--mono); }
+.as-bar { height: 2px; background: var(--paper3); border-radius: 1px; overflow: hidden; margin-top: 5px; }
+.as-bar-fill { height: 100%; border-radius: 1px; }
+
+/* Ratios */
+.ratio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.ratio-cell {
+  padding: 12px 14px; background: var(--paper2); border-radius: 8px;
+  border-right: 3px solid; border-top: 1px solid var(--paper3);
+  border-bottom: 1px solid var(--paper3); border-left: 1px solid var(--paper3);
+  transition: background .12s;
+}
+.ratio-cell:hover { background: var(--paper3); }
+.rc-label { font-size: 9px; color: var(--paper-ink3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+.rc-val { font-family: var(--mono); font-size: 22px; font-weight: 700; letter-spacing: -1px; line-height: 1; }
+.rc-unit { font-size: 11px; opacity: .6; }
+.rc-status { font-size: 10px; font-family: var(--mono); margin-top: 4px; }
+.rc-target { font-size: 9px; color: var(--paper-ink3); margin-top: 2px; font-family: var(--mono); }
+
+/* Pruning box */
+.pruning-box {
+  background: var(--paper2); border-radius: 8px; padding: 12px 14px;
+  border-right: 3px solid; margin-bottom: 8px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.pb-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.pb-text { font-size: 12px; color: var(--paper-ink); line-height: 1.6; }
+
+/* Yield card on paper */
+.yield-card { padding: 18px 20px; background: var(--paper); border-radius: 11px; border: 1px solid var(--paper3); }
+.yc-label { font-size: 10px; color: var(--paper-ink3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.yc-num { font-family: var(--serif); font-size: 52px; color: var(--census-c); letter-spacing: -2px; line-height: 1; }
+.yc-unit { font-size: 18px; color: var(--census-c); opacity: .7; }
+.yc-formula { font-size: 10px; color: var(--paper-ink3); font-family: var(--mono); margin-top: 5px; }
+.yc-pills { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+.yp { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-family: var(--mono); font-weight: 600; border: 1.5px solid; }
+
+/* Charts on paper — CONTRAST FIX */
+.chart-paper { background: var(--paper); border-radius: 11px; border: 1px solid var(--paper3); padding: 16px 18px; }
+.cp-title { font-family: var(--serif); font-size: 14px; color: var(--paper-ink); margin-bottom: 3px; }
+.cp-sub { font-size: 10px; color: var(--paper-ink3); font-family: var(--mono); margin-bottom: 14px; }
+.charts-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width: 800px){ .charts-2col { grid-template-columns: 1fr; } }
+
+/* ══════════════════════════════════════════
+   HARVEST TAB
+══════════════════════════════════════════ */
+.harvest-layout { display: flex; flex-direction: column; gap: 14px; }
+.harvest-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 4px; }
+.hkpi {
+  background: var(--paper); border: 1px solid var(--paper3);
+  border-radius: 10px; padding: 14px 16px; border-top: 3px solid var(--harvest-c);
+}
+.hkpi-num { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--harvest-c); letter-spacing: -1px; }
+.hkpi-lbl { font-size: 10px; color: var(--paper-ink3); margin-top: 3px; font-family: var(--mono); }
+.hkpi-delta { font-size: 9px; font-family: var(--mono); margin-top: 4px; }
+
+/* Harvest log table */
+.harvest-table-wrap { background: var(--paper); border: 1px solid var(--paper3); border-radius: 11px; overflow: hidden; }
+.htbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.htbl thead tr { background: var(--paper2); border-bottom: 2px solid var(--paper3); }
+.htbl th { padding: 10px 14px; text-align: right; font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--paper-ink2); text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+.htbl td { padding: 10px 14px; border-bottom: 1px solid var(--paper3); color: var(--paper-ink); transition: background .1s; }
+.htbl tr:last-child td { border-bottom: none; }
+.htbl tbody tr:hover td { background: var(--paper2); }
+.htbl td.mono { font-family: var(--mono); font-size: 12px; }
+.htbl td.num  { font-family: var(--mono); font-weight: 700; font-size: 13px; }
+
+/* Pass badge */
+.pass-badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 20px; padding: 2px 9px; font-size: 10px; font-weight: 600; border: 1.5px solid; font-family: var(--mono); }
+
+/* Add harvest row */
+.add-harvest-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 16px; background: var(--paper2); border-top: 1px solid var(--paper3); }
+.h-inp {
+  background: var(--paper); border: 1.5px solid var(--paper3); color: var(--paper-ink);
+  border-radius: 7px; padding: 7px 10px; font-family: var(--mono); font-size: 12px;
+  outline: none; transition: border-color .15s; min-width: 0;
+}
+.h-inp:focus { border-color: var(--harvest-c); }
+.h-inp::placeholder { color: var(--paper-ink3); }
+.btn-harvest { padding: 7px 16px; border-radius: 7px; border: none; background: var(--harvest-c); color: #fff; font-family: var(--mono); font-size: 12px; font-weight: 600; cursor: pointer; transition: opacity .15s; white-space: nowrap; }
+.btn-harvest:hover { opacity: .85; }
+
+/* ══════════════════════════════════════════
+   QUALITY TAB
+══════════════════════════════════════════ */
+.quality-layout { display: flex; flex-direction: column; gap: 14px; }
+.quality-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; }
+.qkpi {
+  background: var(--paper); border: 1px solid var(--paper3);
+  border-radius: 10px; padding: 14px 16px; border-top: 3px solid var(--quality-c);
+  transition: border-color .15s;
+}
+.qkpi-val { font-family: var(--mono); font-size: 24px; font-weight: 700; letter-spacing: -1px; color: var(--quality-c); }
+.qkpi-lbl { font-size: 10px; color: var(--paper-ink3); margin-top: 3px; font-family: var(--mono); }
+.qkpi-status { font-size: 9px; font-family: var(--mono); margin-top: 4px; }
+
+/* Grade selector */
+.grade-selector { display: flex; gap: 6px; flex-wrap: wrap; }
+.grade-btn {
+  padding: 6px 16px; border-radius: 20px; border: 1.5px solid;
+  background: transparent; font-family: var(--mono); font-size: 11px;
+  font-weight: 600; cursor: pointer; transition: .15s;
+}
+.grade-btn.on { color: #fff; }
+
+/* Quality entry form */
+.q-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.q-field { display: flex; flex-direction: column; gap: 4px; }
+.q-label { font-size: 10px; color: var(--paper-ink3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px; }
+.q-inp {
+  background: var(--paper); border: 1.5px solid var(--paper3); color: var(--paper-ink);
+  border-radius: 7px; padding: 8px 10px; font-family: var(--mono); font-size: 13px;
+  font-weight: 600; outline: none; transition: border-color .15s; width: 100%;
+}
+.q-inp:focus { border-color: var(--quality-c); }
+.q-inp::placeholder { color: var(--paper-ink3); font-weight: 400; font-size: 11px; }
+
+/* Quality history table */
+.qtbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.qtbl thead tr { background: var(--paper2); border-bottom: 2px solid var(--paper3); }
+.qtbl th { padding: 9px 12px; text-align: right; font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--paper-ink2); text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+.qtbl td { padding: 9px 12px; border-bottom: 1px solid var(--paper3); color: var(--paper-ink); font-family: var(--mono); font-size: 12px; transition: background .1s; }
+.qtbl tr:last-child td { border-bottom: none; }
+.qtbl tbody tr:hover td { background: var(--paper2); }
+
+/* ══════════════════════════════════════════
+   SHARED
+══════════════════════════════════════════ */
+.section-rule {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  font-size: 10px; font-weight: 700; color: var(--fog3);
+  font-family: var(--mono); text-transform: uppercase; letter-spacing: .6px;
+}
+.section-rule::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.page { display: none; }
+.page.on { display: block; animation: fadeUp .2s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="tb-icon">🫐</div>
+    <div>
+      <div class="tb-title">Field Assessment</div>
+      <div class="tb-sub">NODE CENSUS · HARVEST · QUALITY</div>
+    </div>
+  </div>
+  <div class="topbar-controls">
+    <select class="sel" id="sel-room" onchange="switchRoom()">
+      <option value="BB-01">BB-01 — بيانكا</option>
+      <option value="BB-02">BB-02 — اوني</option>
+      <option value="BB-03">BB-03 — مِسي</option>
+      <option value="BB-06">BB-06 — بلوكروب</option>
+    </select>
+    <select class="sel" id="sel-stage">
+      <option value="fullBloom">إزهار كامل</option>
+      <option value="greenFruit">ثمر أخضر</option>
+      <option value="petalFall">تساقط البتلات</option>
+      <option value="coloring">تلوين</option>
+      <option value="harvest75">حصاد رئيسي</option>
+    </select>
+    <button class="btn" onclick="saveAll()">💾 حفظ</button>
+  </div>
+</div>
+
+<!-- MAIN TABS -->
+<div class="main-tabs">
+  <button class="mtab on t-census"  id="tab-census"  onclick="setTab('census')">
+    <span class="mtab-dot"></span>Node Census
+    <span class="mtab-badge" id="census-badge"  style="color:var(--census-l);border-color:rgba(74,111,165,.35)">0 عينة</span>
+  </button>
+  <button class="mtab t-harvest" id="tab-harvest" onclick="setTab('harvest')">
+    <span class="mtab-dot"></span>الحصاد
+    <span class="mtab-badge" id="harvest-badge" style="color:var(--harvest-l);border-color:rgba(192,137,64,.35)">0 جولة</span>
+  </button>
+  <button class="mtab t-quality" id="tab-quality" onclick="setTab('quality')">
+    <span class="mtab-dot"></span>جودة الثمرة
+    <span class="mtab-badge" id="quality-badge" style="color:var(--quality-l);border-color:rgba(160,57,74,.35)">0 قراءة</span>
+  </button>
+</div>
+
+<!-- ══════════ TAB: CENSUS ══════════ -->
+<div class="page on" id="page-census">
+  <div class="census-layout">
+
+    <!-- LEFT -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <!-- Sample nav -->
+      <div class="sample-nav">
+        <div class="sn-hdr">
+          <span class="sn-title">العينات</span>
+          <span class="sn-count" id="sn-count">5 نبتة</span>
+        </div>
+        <div class="sample-list" id="sample-list"></div>
+        <button class="add-btn" onclick="addSample()">+ نبتة جديدة</button>
+      </div>
+
+      <!-- Counters -->
+      <div>
+        <div class="section-rule">📋 إدخال العد</div>
+        <div class="counter-section">
+          <div class="cs-label">الهيكل الرئيسي</div>
+          <div class="counter-grid" id="ctr-struct"></div>
+        </div>
+        <div class="counter-section">
+          <div class="cs-label">البراعم</div>
+          <div class="counter-grid" id="ctr-buds"></div>
+        </div>
+        <div class="counter-section">
+          <div class="cs-label">الثمار والتلف</div>
+          <div class="counter-grid" id="ctr-fruit"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Sample Average — PAPER -->
+      <div class="paper">
+        <div class="paper-hdr">
+          <div>
+            <div class="paper-title">Sample Average</div>
+            <div class="paper-sub" id="avg-sub">Across 5 plants · BB-01</div>
+          </div>
+          <div style="margin-right:auto"></div>
+          <span id="struct-status" style="font-size:11px;font-family:var(--mono);font-weight:600;color:var(--ok)">✓ ضمن الهدف</span>
+        </div>
+        <div class="paper-body">
+          <div class="avg-stat-grid" id="avg-stats"></div>
+        </div>
+      </div>
+
+      <!-- Structure Ratios + Pruning — PAPER -->
+      <div class="paper">
+        <div class="paper-hdr">
+          <div class="paper-title">Structure Ratios</div>
+          <div class="paper-sub">النسب الهيكلية · من الصورة: 1.42 : 18.2 : 3.4 : 3.4</div>
+        </div>
+        <div class="paper-body">
+          <div class="ratio-grid" id="ratio-grid"></div>
+          <div class="section-rule" style="margin-top:4px">✂ توصيات التقليم</div>
+          <div id="pruning-recs"></div>
+        </div>
+      </div>
+
+      <!-- Yield Estimate — PAPER -->
+      <div class="yield-card">
+        <div class="yc-label">Estimated Yield — <span id="yc-room">BB-01</span></div>
+        <div style="display:flex;align-items:flex-end;gap:5px;margin-bottom:5px">
+          <span class="yc-num" id="yc-num">—</span>
+          <span class="yc-unit" id="yc-unit"></span>
+        </div>
+        <div class="yc-formula" id="yc-formula">أدخل بيانات للحساب</div>
+        <div class="yc-pills" id="yc-pills"></div>
+      </div>
+
+      <!-- Charts on PAPER — High contrast -->
+      <div class="section-rule">📊 التحليل</div>
+
+      <div class="charts-2col">
+        <div class="chart-paper">
+          <div class="cp-title">Structural Balance</div>
+          <div class="cp-sub">الأعداد الفعلية vs النطاق المستهدف</div>
+          <div style="height:200px"><canvas id="c-balance"></canvas></div>
+        </div>
+        <div class="chart-paper">
+          <div class="cp-title">Conversion Chain</div>
+          <div class="cp-sub">nodes → buds → flowers → fruit</div>
+          <div style="height:200px"><canvas id="c-chain"></canvas></div>
+        </div>
+        <div class="chart-paper">
+          <div class="cp-title">Within-Session Variance</div>
+          <div class="cp-sub">تباين القراءات بين النباتات</div>
+          <div style="height:200px"><canvas id="c-variance"></canvas></div>
+        </div>
+        <div class="chart-paper">
+          <div class="cp-title">Fertility & Fruit Set %</div>
+          <div class="cp-sub">معدلات الخصوبة والإنجاز عبر الموسم</div>
+          <div style="height:200px"><canvas id="c-fertility"></canvas></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: HARVEST ══════════ -->
+<div class="page" id="page-harvest">
+  <div class="harvest-layout">
+
+    <!-- KPIs -->
+    <div class="harvest-kpi" id="harvest-kpi"></div>
+
+    <!-- Log table + add row -->
+    <div class="harvest-table-wrap">
+      <table class="htbl" id="harvest-tbl">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>الغرفة</th>
+            <th>الجولة</th>
+            <th>الوزن الكلي (kg)</th>
+            <th>عدد العمال</th>
+            <th>ساعات العمل</th>
+            <th>kg/عامل/ساعة</th>
+            <th>نسبة الرفض %</th>
+            <th>الملاحظات</th>
+          </tr>
+        </thead>
+        <tbody id="harvest-tbody"></tbody>
+      </table>
+      <div class="add-harvest-row">
+        <input class="h-inp" id="h-date"    type="date" style="width:130px">
+        <input class="h-inp" id="h-weight"  type="number" placeholder="وزن kg" style="width:90px">
+        <input class="h-inp" id="h-workers" type="number" placeholder="عمال"   style="width:70px">
+        <input class="h-inp" id="h-hours"   type="number" placeholder="ساعات"  style="width:70px">
+        <input class="h-inp" id="h-reject"  type="number" placeholder="رفض %"  style="width:70px">
+        <input class="h-inp" id="h-notes"   type="text"   placeholder="ملاحظة" style="flex:1;min-width:120px">
+        <button class="btn-harvest" onclick="addHarvest()">+ إضافة</button>
+      </div>
+    </div>
+
+    <!-- Harvest charts -->
+    <div class="charts-2col">
+      <div class="chart-paper">
+        <div class="cp-title">إجمالي الحصاد — يومي (kg)</div>
+        <div class="cp-sub">Daily harvest weight across rounds</div>
+        <div style="height:200px"><canvas id="c-harvest-daily"></canvas></div>
+      </div>
+      <div class="chart-paper">
+        <div class="cp-title">كفاءة العمال (kg/عامل/ساعة)</div>
+        <div class="cp-sub">Labour efficiency per round</div>
+        <div style="height:200px"><canvas id="c-harvest-eff"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: QUALITY ══════════ -->
+<div class="page" id="page-quality">
+  <div class="quality-layout">
+
+    <!-- KPIs -->
+    <div class="quality-kpi" id="quality-kpi"></div>
+
+    <!-- Entry form -->
+    <div class="paper">
+      <div class="paper-hdr">
+        <div class="paper-title">تسجيل قراءة جديدة</div>
+        <div class="paper-sub">اختر الدرجة ثم أدخل القياسات</div>
+      </div>
+      <div class="paper-body" style="display:flex;flex-direction:column;gap:14px">
+        <!-- Grade selector -->
+        <div>
+          <div class="section-rule" style="margin-bottom:8px">درجة الجودة</div>
+          <div class="grade-selector" id="grade-selector"></div>
+        </div>
+        <!-- Measurements -->
+        <div>
+          <div class="section-rule" style="margin-bottom:8px">القياسات</div>
+          <div class="q-form" id="q-form"></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input class="q-inp" id="q-notes" type="text" placeholder="ملاحظات اختيارية..." style="flex:1;min-width:160px">
+          <button style="padding:8px 20px;border-radius:7px;border:none;background:var(--quality-c);color:#fff;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onclick="addQuality()" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">تسجيل ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History table -->
+    <div class="paper" style="overflow:hidden">
+      <div class="paper-hdr"><div class="paper-title">سجل القراءات</div></div>
+      <div style="overflow-x:auto">
+        <table class="qtbl" id="quality-tbl">
+          <thead>
+            <tr>
+              <th>التاريخ</th>
+              <th>الغرفة</th>
+              <th>الدرجة</th>
+              <th>وزن الحبة (g)</th>
+              <th>Brix °</th>
+              <th>قطر (mm)</th>
+              <th>صلابة (N)</th>
+              <th>لون (1-5)</th>
+              <th>رفض %</th>
+              <th>ملاحظة</th>
+            </tr>
+          </thead>
+          <tbody id="quality-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quality charts -->
+    <div class="charts-2col">
+      <div class="chart-paper">
+        <div class="cp-title">Brix° — تطور الحلاوة</div>
+        <div class="cp-sub">Sugar content trend over harvest rounds</div>
+        <div style="height:200px"><canvas id="c-brix"></canvas></div>
+      </div>
+      <div class="chart-paper">
+        <div class="cp-title">Berry Size Distribution</div>
+        <div class="cp-sub">وزن الحبة ومتوسط القطر</div>
+        <div style="height:200px"><canvas id="c-size"></canvas></div>
+      </div>
+      <div class="chart-paper">
+        <div class="cp-title">نسبة الرفض vs الدرجة</div>
+        <div class="cp-sub">Reject rate by grade over time</div>
+        <div style="height:200px"><canvas id="c-reject"></canvas></div>
+      </div>
+      <div class="chart-paper">
+        <div class="cp-title">Firmness & Color Score</div>
+        <div class="cp-sub">صلابة الثمرة + نقاط اللون</div>
+        <div style="height:200px"><canvas id="c-firm"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app -->
+<script>
+// ═══════════════════════════════
+//  METRICS
+// ═══════════════════════════════
+const METRICS = {
+  struct: [
+    {id:"mainCanes",  label:"Main Canes",       ar:"الجذوع",          target:[5,8],   color:"#4A6FA5"},
+    {id:"laterals",   label:"Laterals",         ar:"الأفرع الجانبية", target:[15,25], color:"#6B8FBF"},
+  ],
+  buds: [
+    {id:"nodes",      label:"Nodes (total)",    ar:"العقد",           target:[80,140],color:"#38a0c5"},
+    {id:"flowerBuds", label:"Flower Buds",      ar:"براعم زهرية",     target:[60,120],color:"#C05060"},
+    {id:"leafBuds",   label:"Leaf Buds",        ar:"براعم خضرية",     target:[40,90], color:"#4A8840"},
+    {id:"openFlowers",label:"Open Flowers",     ar:"أزهار مفتوحة",    target:[20,80], color:"#2D7A4A"},
+  ],
+  fruit: [
+    {id:"greenFruit", label:"Green Fruit",      ar:"ثمر أخضر",        target:[50,120],color:"#C08940"},
+    {id:"damaged",    label:"Dead/Damaged",     ar:"تالف / ميت",      target:[0,5],   color:"#A04040"},
+  ]
+};
+const ALL_METRICS = [...METRICS.struct,...METRICS.buds,...METRICS.fruit];
+
+const RATIOS = [
+  {id:"fl",  label:"Flower : Leaf",   formula:a=>a.leafBuds>0?(a.flowerBuds/a.leafBuds).toFixed(2):"—",  tMin:1.2,tMax:2.0, unit:":1",  color:"#C05060"},
+  {id:"npc", label:"Nodes / Cane",    formula:a=>a.mainCanes>0?(a.nodes/a.mainCanes).toFixed(1):"—",       tMin:14, tMax:22,  unit:"",    color:"#38a0c5"},
+  {id:"lpc", label:"Laterals / Cane", formula:a=>a.mainCanes>0?(a.laterals/a.mainCanes).toFixed(1):"—",    tMin:3,  tMax:5,   unit:"",    color:"#6B8FBF"},
+  {id:"fpl", label:"Fruit / Lateral", formula:a=>a.laterals>0?(a.greenFruit/a.laterals).toFixed(1):"—",    tMin:2.5,tMax:5.5, unit:"",    color:"#C08940"},
+];
+
+// ═══════════════════════════════
+//  STATE
+// ═══════════════════════════════
+let activeTab   = "census";
+let activeSample= 0;
+let currentRoom = "BB-01";
+let selectedGrade = "A";
+
+let samples = [
+  {mainCanes:6,laterals:22,nodes:109,flowerBuds:86,leafBuds:61,openFlowers:42,greenFruit:70,damaged:3},
+  {mainCanes:6,laterals:20,nodes:108,flowerBuds:84,leafBuds:59,openFlowers:40,greenFruit:67,damaged:2},
+  {mainCanes:6,laterals:21,nodes:110,flowerBuds:87,leafBuds:62,openFlowers:43,greenFruit:71,damaged:2},
+  {mainCanes:6,laterals:21,nodes:108,flowerBuds:85,leafBuds:60,openFlowers:41,greenFruit:69,damaged:3},
+  {mainCanes:6,laterals:20,nodes:110,flowerBuds:86,leafBuds:60,openFlowers:41,greenFruit:70,damaged:3},
+];
+
+let harvestLog = [
+  {date:"2025-04-10",room:"BB-01",round:1,weight:82,workers:4,hours:6,reject:3.2,notes:"دفعة أولى — توت مكتمل التلوين"},
+  {date:"2025-04-14",room:"BB-01",round:2,weight:110,workers:5,hours:7,reject:2.1,notes:""},
+  {date:"2025-04-18",room:"BB-01",round:3,weight:95,workers:4,hours:6.5,reject:2.8,notes:"حرارة مرتفعة — بدأنا الصباح الباكر"},
+];
+
+let qualityLog = [
+  {date:"2025-04-10",room:"BB-01",grade:"A",berryWt:1.82,brix:12.4,diameter:14.2,firmness:1.8,color:4,reject:3.2,notes:"ممتاز"},
+  {date:"2025-04-14",room:"BB-01",grade:"A",berryWt:1.91,brix:13.1,diameter:14.8,firmness:1.9,color:5,reject:2.1,notes:""},
+  {date:"2025-04-18",room:"BB-01",grade:"B",berryWt:1.65,brix:11.8,diameter:13.5,firmness:1.6,color:3,reject:2.8,notes:"حجم أصغر — حرارة"},
+];
+
+const TOTAL_PLANTS = 1200;
+const BERRY_WEIGHT_G = 1.8;
+
+let chartInst = {};
+const dc = id => { if(chartInst[id]){chartInst[id].destroy();delete chartInst[id];} };
+
+// Paper chart defaults — DARK TEXT on LIGHT background
+const C_PAPER = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{labels:{color:"#3a3a3a",font:{family:"DM Mono",size:10},boxWidth:10}},
+    tooltip:{backgroundColor:"#1e1e1e",borderColor:"#3a3a3a",borderWidth:1,titleColor:"#f5f2ec",bodyColor:"#9a9590"}
+  },
+  scales:{
+    x:{ticks:{color:"#5a5550",font:{family:"DM Mono",size:9}},grid:{color:"rgba(0,0,0,.07)"},border:{display:false}},
+    y:{ticks:{color:"#5a5550",font:{family:"DM Mono",size:9}},grid:{color:"rgba(0,0,0,.07)"},border:{display:false},min:0}
+  }
+};
+
+// ═══════════════════════════════
+//  HELPERS
+// ═══════════════════════════════
+const avg = key => { const f=samples.filter(s=>s[key]>=0); return f.length ? f.reduce((a,s)=>a+s[key],0)/f.length : 0; };
+const avgs = () => Object.fromEntries(ALL_METRICS.map(m=>[m.id,avg(m.id)]));
+
+function vColor(v,mn,mx){ return v>mx?"var(--warn)":v<mn?"var(--bad-l)":"var(--ok)"; }
+function vColorPaper(v,mn,mx){ return v>mx?"#A86B00":v<mn?"#8B2020":"#2D7A4A"; }
+function vClass(v,mn,mx){ return v>mx?"warn":v<mn?"low":"ok"; }
+
+function ratioSt(val,tMin,tMax){
+  if(val==="—") return {color:"#7a7a7a",label:"—"};
+  const n=parseFloat(val);
+  if(n<tMin) return {color:"#8B2020",label:"⬇ منخفض"};
+  if(n>tMax) return {color:"#A86B00",label:"⬆ مرتفع"};
+  return {color:"#2D7A4A",label:"✓ مثالي"};
+}
+
+// ═══════════════════════════════
+//  RENDER CENSUS
+// ═══════════════════════════════
+function renderSampleList(){
+  document.getElementById('sn-count').textContent = samples.length+" نبتة";
+  document.getElementById('census-badge').textContent = samples.length+" عينة";
+  const el = document.getElementById('sample-list');
+  el.innerHTML = samples.map((s,i)=>`
+    <div class="s-row${i===activeSample?" on":''}" onclick="selectSample(${i})">
+      <span class="s-num">#${i+1}</span>
+      <span class="s-label">نبتة ${i+1}</span>
+      <span class="s-preview">${s.flowerBuds}F · ${s.greenFruit}G</span>
+    </div>`).join('');
+}
+
+function buildCounters(groupId, metrics){
+  const el = document.getElementById(groupId); if(!el) return;
+  const s = samples[activeSample];
+  el.innerHTML = metrics.map(m=>{
+    const v=s[m.id]||0; const [mn,mx]=m.target;
+    const vc=vColor(v,mn,mx); const cls=vClass(v,mn,mx);
+    const bw=mx>0?Math.min(100,(v/mx)*100):0;
+    return `<div class="ctr ${cls}" id="ctrc-${m.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <div class="ctr-name">${m.ar}</div>
+          <div class="ctr-range">${m.label} · ${mn}–${mx}</div>
+        </div>
+      </div>
+      <div class="ctr-ctrl">
+        <button class="ctr-btn" onclick="change('${m.id}',-1)">−</button>
+        <div class="ctr-val" id="cv-${m.id}" style="color:${vc}">${v}</div>
+        <button class="ctr-btn" onclick="change('${m.id}',1)">+</button>
+      </div>
+      <div class="ctr-q-row">
+        <button class="ctr-q" onclick="change('${m.id}',5)">+5</button>
+        <button class="ctr-q" onclick="change('${m.id}',10)">+10</button>
+        <button class="ctr-q" onclick="set('${m.id}',0)">↺</button>
+      </div>
+      <div class="ctr-bar"><div class="ctr-bar-fill" id="cb-${m.id}" style="width:${bw}%;background:${vc}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderAllCounters(){
+  buildCounters('ctr-struct', METRICS.struct);
+  buildCounters('ctr-buds',   METRICS.buds);
+  buildCounters('ctr-fruit',  METRICS.fruit);
+}
+
+function renderAverage(){
+  const av = avgs();
+  const filled = samples.filter(s=>Object.values(s).some(v=>v>0)).length;
+  document.getElementById('avg-sub').textContent = `Across ${filled} plant${filled!==1?'s':''} · ${currentRoom}`;
+
+  // Stats
+  document.getElementById('avg-stats').innerHTML = ALL_METRICS.map(m=>{
+    const v=av[m.id]; const [mn,mx]=m.target;
+    const vc=vColorPaper(v,mn,mx); const bw=mx?Math.min(100,(v/mx)*100):0;
+    const note=v>=mn&&v<=mx?"✓ ضمن":v<mn?"⬇ أقل":"⬆ أعلى";
+    return `<div class="avg-stat">
+      <div class="as-label">${m.label.split(' ')[0]}</div>
+      <div class="as-val" style="color:${vc}">${v>0?v.toFixed(1):"—"}</div>
+      <div class="as-note" style="color:${vc}">${v>0?note:""}</div>
+      <div class="as-bar"><div class="as-bar-fill" style="width:${bw}%;background:${vc}"></div></div>
+    </div>`;
+  }).join('');
+
+  // Overall status
+  const bad = ALL_METRICS.filter(m=>{const v=av[m.id];const[mn,mx]=m.target;return v>0&&(v<mn||v>mx);}).length;
+  const sBadge = document.getElementById('struct-status');
+  if(sBadge){ sBadge.textContent=bad===0?"✓ ضمن الهدف":`⚠ ${bad} خارج النطاق`; sBadge.style.color=bad===0?"var(--ok)":"var(--warn)"; }
+
+  // Ratios
+  const rv={};
+  RATIOS.forEach(r=>{ rv[r.id]=r.formula(av); });
+  document.getElementById('ratio-grid').innerHTML = RATIOS.map(r=>{
+    const val=rv[r.id]; const st=ratioSt(val,r.tMin,r.tMax);
+    return `<div class="ratio-cell" style="border-right-color:${r.color}">
+      <div class="rc-label">${r.label}</div>
+      <div class="rc-val" style="color:${st.color}">${val}<span class="rc-unit">${val!=="—"?r.unit:""}</span></div>
+      <div class="rc-status" style="color:${st.color}">${st.label}</div>
+      <div class="rc-target">هدف: ${r.tMin}–${r.tMax}${r.unit}</div>
+    </div>`;
+  }).join('');
+
+  // Pruning recs
+  const recs=[]; const fl=parseFloat(rv.fl); const np=parseFloat(rv.npc);
+  if(av.mainCanes>0&&av.mainCanes<5) recs.push({t:`الجذوع الرئيسية منخفضة (${av.mainCanes.toFixed(1)}) — اترك فروع شبابية لملء الهيكل`,c:"#8B2020",i:"✂"});
+  else if(av.mainCanes>8)            recs.push({t:`الجذوع كثيرة (${av.mainCanes.toFixed(1)}) — أزل الأضعف للوصول لـ 5–8`,c:"#A86B00",i:"✂"});
+  if(av.damaged>5)                   recs.push({t:`أجزاء تالفة مرتفعة (${av.damaged.toFixed(1)}) — تقليم صحي فوري`,c:"#8B2020",i:"⚠"});
+  if(!isNaN(fl)&&fl<1.2)             recs.push({t:`Flower:Leaf منخفضة (${fl}) — قلل النيتروجين لتشجيع البرعم الزهري`,c:"#A86B00",i:"⚡"});
+  if(!isNaN(fl)&&fl>2.0)             recs.push({t:`Flower:Leaf مرتفعة (${fl}) — خطر إرهاق الشجرة، تقليم تخفيفي`,c:"#8B2020",i:"⚠"});
+  if(!isNaN(np)&&np>22)              recs.push({t:`عقد كثيرة جداً/جذع (${np}) — تخفيف الأفرع الجانبية`,c:"#A86B00",i:"✂"});
+  if(recs.length===0)                recs.push({t:"Structure within target range — continue standard pruning regime.",c:"#2D7A4A",i:"✓"});
+  document.getElementById('pruning-recs').innerHTML = recs.map(r=>`
+    <div class="pruning-box" style="border-right-color:${r.c}">
+      <span class="pb-icon">${r.i}</span>
+      <span class="pb-text" style="color:${r.c==='#2D7A4A'?r.c:'#1a1a1a'}">${r.t}</span>
+    </div>`).join('');
+
+  // Yield
+  const yKg = ((av.flowerBuds||0)*0.65*TOTAL_PLANTS*BERRY_WEIGHT_G/1000);
+  if(filled>0){
+    document.getElementById('yc-num').textContent   = yKg.toFixed(1);
+    document.getElementById('yc-unit').textContent  = "kg";
+    document.getElementById('yc-formula').textContent = `${av.flowerBuds.toFixed(1)} buds × 65% × ${TOTAL_PLANTS} plants × ${BERRY_WEIGHT_G}g`;
+    const fert  = av.nodes>0?((av.flowerBuds/av.nodes)*100).toFixed(1)+"% fertility":"—";
+    const poll  = av.flowerBuds>0?((av.openFlowers/av.flowerBuds)*100).toFixed(1)+"% pollination":"—";
+    const fset  = av.openFlowers>0?((av.greenFruit/av.openFlowers)*100).toFixed(1)+"% fruit set":"—";
+    document.getElementById('yc-pills').innerHTML=[fert,poll,fset].map((v,i)=>{
+      const colors=["#C05060","#2D7A4A","#C08940"];
+      return `<span class="yp" style="color:${colors[i]};border-color:${colors[i]}44">${v}</span>`;
+    }).join('');
+  }
+
+  renderCensusCharts(av);
+}
+
+// ═══════════════════════════════
+//  CENSUS CHARTS — on paper
+// ═══════════════════════════════
+function renderCensusCharts(av){
+  // 1. Balance bar
+  dc('c-balance');
+  const bCtx=document.getElementById('c-balance')?.getContext('2d'); if(!bCtx) return;
+  chartInst['c-balance']=new Chart(bCtx,{
+    type:'bar',
+    data:{
+      labels: ALL_METRICS.map(m=>m.label.split(' ')[0]),
+      datasets:[
+        {label:'الفعلي',data:ALL_METRICS.map(m=>+(av[m.id]||0).toFixed(1)),
+          backgroundColor:ALL_METRICS.map(m=>{const v=av[m.id]||0;const[mn,mx]=m.target;return v>=mn&&v<=mx?m.color+'99':v<mn?'#8B202066':'#A86B0066';}),
+          borderColor:ALL_METRICS.map(m=>m.color),
+          borderWidth:1.5,borderRadius:3
+        },
+        {label:'الحد الأدنى',type:'line',data:ALL_METRICS.map(m=>m.target[0]),
+          borderColor:'rgba(0,0,0,.2)',borderDash:[4,3],borderWidth:1,pointRadius:0,tension:0
+        },
+      ]
+    },
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{labels:{...C_PAPER.plugins.legend.labels,boxWidth:8}}}}
+  });
+
+  // 2. Conversion chain
+  dc('c-chain');
+  const cCtx=document.getElementById('c-chain')?.getContext('2d'); if(!cCtx) return;
+  const chain=[{l:"Nodes",v:av.nodes,c:"#38a0c5"},{l:"Floral Buds",v:av.flowerBuds,c:"#C05060"},{l:"Open Flowers",v:av.openFlowers,c:"#4A6FA5"},{l:"Green Fruit",v:av.greenFruit,c:"#4A8840"}];
+  chartInst['c-chain']=new Chart(cCtx,{
+    type:'bar',
+    data:{labels:chain.map(c=>c.l),datasets:[{label:'عدد',data:chain.map(c=>+(c.v||0).toFixed(1)),backgroundColor:chain.map(c=>c.c+'99'),borderColor:chain.map(c=>c.c),borderWidth:1.5,borderRadius:4}]},
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{display:false}}}
+  });
+
+  // 3. Variance
+  dc('c-variance');
+  const vCtx=document.getElementById('c-variance')?.getContext('2d'); if(!vCtx) return;
+  const vLabels=samples.map((_,i)=>`#${i+1}`);
+  chartInst['c-variance']=new Chart(vCtx,{
+    type:'line',
+    data:{labels:vLabels,datasets:[
+      {label:'Flower Buds',data:samples.map(s=>s.flowerBuds),borderColor:'#C05060',backgroundColor:'#C0506018',borderWidth:2,pointRadius:4,pointBackgroundColor:'#C05060',tension:.3,fill:true},
+      {label:'Green Fruit',data:samples.map(s=>s.greenFruit),borderColor:'#4A8840',backgroundColor:'#4A884018',borderWidth:2,pointRadius:4,pointBackgroundColor:'#4A8840',tension:.3},
+      {label:'Laterals',data:samples.map(s=>s.laterals),borderColor:'#6B8FBF',backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,tension:.3},
+    ]},
+    options:{...C_PAPER}
+  });
+
+  // 4. Fertility (uses saved history if exists)
+  dc('c-fertility');
+  const fCtx=document.getElementById('c-fertility')?.getContext('2d'); if(!fCtx) return;
+  const cpLabels=["إزهار","ثمر أخضر","قبل الحصاد"];
+  const fertArr=[78.6,null,null]; const fsetArr=[null,68.2,null]; // demo data
+  chartInst['c-fertility']=new Chart(fCtx,{
+    type:'line',
+    data:{labels:cpLabels,datasets:[
+      {label:'Fertility %',data:fertArr,borderColor:'#C05060',backgroundColor:'#C0506020',borderWidth:2,pointRadius:6,pointBackgroundColor:'#C05060',tension:.3,fill:true,spanGaps:false},
+      {label:'Fruit Set %',data:fsetArr,borderColor:'#4A8840',backgroundColor:'#4A884020',borderWidth:2,pointRadius:6,pointBackgroundColor:'#4A8840',tension:.3,spanGaps:false},
+    ]},
+    options:{...C_PAPER,scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'%'}}}}
+  });
+}
+
+// ═══════════════════════════════
+//  HARVEST
+// ═══════════════════════════════
+function renderHarvest(){
+  const rounds = harvestLog.filter(h=>h.room===currentRoom);
+  const totalKg = rounds.reduce((a,h)=>a+h.weight,0);
+  const avgEff  = rounds.length?rounds.reduce((a,h)=>a+(h.weight/(h.workers*h.hours)),0)/rounds.length:0;
+  const avgReject=rounds.length?rounds.reduce((a,h)=>a+h.reject,0)/rounds.length:0;
+
+  document.getElementById('harvest-badge').textContent=rounds.length+" جولة";
+  document.getElementById('harvest-kpi').innerHTML=[
+    {v:totalKg.toFixed(0)+"kg",l:"إجمالي الحصاد"},
+    {v:rounds.length,            l:"جولات الحصاد"},
+    {v:avgEff.toFixed(2),        l:"kg/عامل/ساعة"},
+    {v:avgReject.toFixed(1)+"%", l:"متوسط الرفض"},
+  ].map(k=>`<div class="hkpi">
+    <div class="hkpi-num">${k.v}</div>
+    <div class="hkpi-lbl">${k.l}</div>
+  </div>`).join('');
+
+  document.getElementById('harvest-tbody').innerHTML = rounds.map((h,i)=>{
+    const eff=(h.weight/(h.workers*h.hours)).toFixed(2);
+    const rjc=h.reject<=3?'ok':h.reject<=5?'warn':'bad';
+    const rjColors={'ok':'#2D7A4A','warn':'#A86B00','bad':'#8B2020'};
+    return `<tr>
+      <td class="mono">${h.date}</td>
+      <td class="mono">${h.room}</td>
+      <td class="mono">#${h.round}</td>
+      <td class="num" style="color:#C08940">${h.weight}</td>
+      <td class="mono">${h.workers}</td>
+      <td class="mono">${h.hours}</td>
+      <td class="num" style="color:#2D7A4A">${eff}</td>
+      <td><span style="font-family:var(--mono);font-weight:700;color:${rjColors[rjc]}">${h.reject}%</span></td>
+      <td style="font-size:11px;color:#4a4a4a">${h.notes||"—"}</td>
+    </tr>`;
+  }).join('');
+
+  renderHarvestCharts(rounds);
+}
+
+function renderHarvestCharts(rounds){
+  const labels=rounds.map(h=>`${h.date.slice(5)} R${h.round}`);
+  dc('c-harvest-daily');
+  const hd=document.getElementById('c-harvest-daily')?.getContext('2d'); if(!hd) return;
+  chartInst['c-harvest-daily']=new Chart(hd,{type:'bar',
+    data:{labels,datasets:[{label:'kg',data:rounds.map(h=>h.weight),backgroundColor:'#C0894066',borderColor:'#C08940',borderWidth:1.5,borderRadius:4}]},
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{display:false}},scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'kg'}}}}
+  });
+  dc('c-harvest-eff');
+  const he=document.getElementById('c-harvest-eff')?.getContext('2d'); if(!he) return;
+  chartInst['c-harvest-eff']=new Chart(he,{type:'line',
+    data:{labels,datasets:[{label:'kg/worker/hr',data:rounds.map(h=>+(h.weight/(h.workers*h.hours)).toFixed(2)),borderColor:'#C08940',backgroundColor:'#C0894020',borderWidth:2,pointRadius:5,pointBackgroundColor:'#C08940',tension:.3,fill:true}]},
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{display:false}}}
+  });
+}
+
+function addHarvest(){
+  const d=$('h-date').value, w=parseFloat($('h-weight').value), wk=parseFloat($('h-workers').value), hr=parseFloat($('h-hours').value), rj=parseFloat($('h-reject').value)||0, nt=$('h-notes').value;
+  if(!d||!w||!wk||!hr) return;
+  harvestLog.push({date:d,room:currentRoom,round:harvestLog.filter(h=>h.room===currentRoom).length+1,weight:w,workers:wk,hours:hr,reject:rj,notes:nt});
+  ['h-date','h-weight','h-workers','h-hours','h-reject','h-notes'].forEach(id=>$(id).value='');
+  renderHarvest();
+}
+
+// ═══════════════════════════════
+//  QUALITY
+// ═══════════════════════════════
+const GRADES = [
+  {id:"A+",label:"A⁺ Extra",color:"#2D7A4A"},{id:"A",label:"A Grade",color:"#4A6FA5"},{id:"B",label:"B Grade",color:"#C08940"},{id:"C",label:"C Grade",color:"#A0394A"}
+];
+const Q_FIELDS=[
+  {id:"q-wt",    label:"وزن الحبة (g)",   placeholder:"1.8",  key:"berryWt"},
+  {id:"q-brix",  label:"Brix °",           placeholder:"12.0", key:"brix"},
+  {id:"q-diam",  label:"قطر (mm)",          placeholder:"14.0", key:"diameter"},
+  {id:"q-firm",  label:"صلابة (N)",         placeholder:"1.8",  key:"firmness"},
+  {id:"q-color", label:"نقاط اللون (1–5)", placeholder:"4",    key:"color"},
+  {id:"q-rej",   label:"رفض %",            placeholder:"3.0",  key:"reject"},
+];
+
+function renderQuality(){
+  const entries=qualityLog.filter(q=>q.room===currentRoom);
+  document.getElementById('quality-badge').textContent=entries.length+" قراءة";
+
+  // KPIs
+  const avgBrix=entries.length?entries.reduce((a,q)=>a+q.brix,0)/entries.length:0;
+  const avgWt  =entries.length?entries.reduce((a,q)=>a+q.berryWt,0)/entries.length:0;
+  const avgRej =entries.length?entries.reduce((a,q)=>a+q.reject,0)/entries.length:0;
+  const gradeA =entries.filter(q=>q.grade==="A"||q.grade==="A+").length;
+  document.getElementById('quality-kpi').innerHTML=[
+    {v:avgBrix.toFixed(1)+"°",l:"متوسط Brix",ok:avgBrix>=11},
+    {v:avgWt.toFixed(2)+"g",  l:"متوسط وزن الحبة",ok:avgWt>=1.6&&avgWt<=2.2},
+    {v:avgRej.toFixed(1)+"%", l:"متوسط الرفض",ok:avgRej<=5},
+    {v:gradeA+"/"+entries.length,l:"A+ / A grade",ok:gradeA===entries.length},
+  ].map(k=>`<div class="qkpi">
+    <div class="qkpi-val">${k.v}</div>
+    <div class="qkpi-lbl">${k.l}</div>
+    <div class="qkpi-status" style="color:${k.ok?'#2D7A4A':'#A86B00'}">${k.ok?'✓ جيد':'⚠ راجع'}</div>
+  </div>`).join('');
+
+  // Grade selector
+  document.getElementById('grade-selector').innerHTML=GRADES.map(g=>`
+    <button class="grade-btn${selectedGrade===g.id?" on":''}" onclick="setGrade('${g.id}')"
+      style="color:${g.color};border-color:${g.color}55;${selectedGrade===g.id?`background:${g.color};color:#fff`:''}">${g.label}</button>`).join('');
+
+  // Form
+  document.getElementById('q-form').innerHTML=Q_FIELDS.map(f=>`
+    <div class="q-field">
+      <label class="q-label">${f.label}</label>
+      <input class="q-inp" id="${f.id}" type="number" step="0.1" placeholder="${f.placeholder}">
+    </div>`).join('');
+
+  // Table
+  document.getElementById('quality-tbody').innerHTML=entries.map(q=>{
+    const g=GRADES.find(x=>x.id===q.grade);
+    const brixOk=q.brix>=11; const wtOk=q.berryWt>=1.6&&q.berryWt<=2.2;
+    return `<tr>
+      <td>${q.date}</td>
+      <td>${q.room}</td>
+      <td><span style="color:${g?.color||'#4a4a4a'};font-weight:700">${q.grade}</span></td>
+      <td style="color:${wtOk?'#2D7A4A':'#A86B00'};font-weight:600">${q.berryWt}</td>
+      <td style="color:${brixOk?'#2D7A4A':'#A86B00'};font-weight:600">${q.brix}</td>
+      <td>${q.diameter}</td>
+      <td>${q.firmness}</td>
+      <td>${q.color}/5</td>
+      <td style="color:${q.reject<=5?'#2D7A4A':'#A86B00'}">${q.reject}%</td>
+      <td style="font-size:11px;color:#4a4a4a">${q.notes||"—"}</td>
+    </tr>`;
+  }).join('');
+
+  renderQualityCharts(entries);
+}
+
+function renderQualityCharts(entries){
+  const labels=entries.map(q=>`${q.date.slice(5)}`);
+
+  dc('c-brix');
+  const bx=document.getElementById('c-brix')?.getContext('2d'); if(!bx) return;
+  chartInst['c-brix']=new Chart(bx,{type:'line',
+    data:{labels,datasets:[{label:'Brix°',data:entries.map(q=>q.brix),borderColor:'#A0394A',backgroundColor:'#A0394A20',borderWidth:2,pointRadius:5,pointBackgroundColor:'#A0394A',tension:.3,fill:true}]},
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{display:false}},
+      scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,min:8,max:16,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'°'}}}}
+  });
+
+  dc('c-size');
+  const sz=document.getElementById('c-size')?.getContext('2d'); if(!sz) return;
+  chartInst['c-size']=new Chart(sz,{type:'bar',
+    data:{labels,datasets:[
+      {label:'وزن (g)',data:entries.map(q=>q.berryWt),backgroundColor:'#A0394A66',borderColor:'#A0394A',borderWidth:1.5,borderRadius:3,yAxisID:'y'},
+      {label:'قطر (mm)',data:entries.map(q=>q.diameter),type:'line',borderColor:'#C08940',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#C08940',yAxisID:'y1'},
+    ]},
+    options:{...C_PAPER,scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,position:'right',ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'g'}},y1:{...C_PAPER.scales.y,position:'left',grid:{display:false},ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'mm'}}}}
+  });
+
+  dc('c-reject');
+  const rj=document.getElementById('c-reject')?.getContext('2d'); if(!rj) return;
+  chartInst['c-reject']=new Chart(rj,{type:'bar',
+    data:{labels,datasets:[{label:'رفض %',data:entries.map(q=>q.reject),backgroundColor:entries.map(q=>q.reject<=3?'#2D7A4A66':q.reject<=5?'#A86B0066':'#8B202066'),borderColor:entries.map(q=>q.reject<=3?'#2D7A4A':q.reject<=5?'#A86B00':'#8B2020'),borderWidth:1.5,borderRadius:3}]},
+    options:{...C_PAPER,plugins:{...C_PAPER.plugins,legend:{display:false}},scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'%'}}}}
+  });
+
+  dc('c-firm');
+  const fm=document.getElementById('c-firm')?.getContext('2d'); if(!fm) return;
+  chartInst['c-firm']=new Chart(fm,{type:'line',
+    data:{labels,datasets:[
+      {label:'Firmness (N)',data:entries.map(q=>q.firmness),borderColor:'#4A6FA5',backgroundColor:'#4A6FA520',borderWidth:2,pointRadius:4,pointBackgroundColor:'#4A6FA5',tension:.3,fill:true,yAxisID:'y'},
+      {label:'Color Score',data:entries.map(q=>q.color),borderColor:'#A0394A',backgroundColor:'transparent',borderWidth:2,pointRadius:4,pointBackgroundColor:'#A0394A',tension:.3,yAxisID:'y1'},
+    ]},
+    options:{...C_PAPER,scales:{x:C_PAPER.scales.x,y:{...C_PAPER.scales.y,position:'right',min:0,max:3,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'N'}},y1:{...C_PAPER.scales.y,position:'left',grid:{display:false},min:0,max:5,ticks:{...C_PAPER.scales.y.ticks,callback:v=>v+'/5'}}}}
+  });
+}
+
+// ═══════════════════════════════
+//  INTERACTIONS
+// ═══════════════════════════════
+function selectSample(i){ activeSample=i; renderSampleList(); renderAllCounters(); }
+function change(id,d){ samples[activeSample][id]=Math.max(0,(samples[activeSample][id]||0)+d); updateCtr(id); renderAverage(); }
+function set(id,v){ samples[activeSample][id]=v; updateCtr(id); renderAverage(); }
+function updateCtr(id){
+  const m=ALL_METRICS.find(x=>x.id===id); const v=samples[activeSample][id]||0;
+  const [mn,mx]=m.target; const vc=vColor(v,mn,mx); const bw=mx?Math.min(100,(v/mx)*100):0;
+  const vEl=$('cv-'+id); if(vEl){vEl.textContent=v;vEl.style.color=vc;}
+  const bEl=$('cb-'+id); if(bEl){bEl.style.width=bw+'%';bEl.style.background=vc;}
+  const cEl=$('ctrc-'+id); if(cEl){cEl.className=`ctr ${vClass(v,mn,mx)}`;}
+}
+function addSample(){ samples.push(Object.fromEntries(ALL_METRICS.map(m=>[m.id,0]))); activeSample=samples.length-1; renderSampleList(); renderAllCounters(); renderAverage(); }
+function switchRoom(){ currentRoom=$('sel-room').value; document.getElementById('yc-room').textContent=currentRoom; if(activeTab==='harvest')renderHarvest(); else if(activeTab==='quality')renderQuality(); else renderAverage(); }
+function setGrade(g){ selectedGrade=g; renderQuality(); }
+function addQuality(){
+  const row={date:new Date().toISOString().split('T')[0],room:currentRoom,grade:selectedGrade};
+  Q_FIELDS.forEach(f=>{ const el=$(f.id); row[f.key]=parseFloat(el?.value)||0; if(el)el.value=''; });
+  row.notes=$('q-notes')?.value||''; if($('q-notes'))$('q-notes').value='';
+  qualityLog.push(row); renderQuality();
+}
+function setTab(tab){
+  activeTab=tab;
+  ['census','harvest','quality'].forEach(t=>{
+    document.getElementById('page-'+t).classList.toggle('on',t===tab);
+    document.getElementById('tab-'+t).classList.toggle('on',t===tab);
+    ['census','harvest','quality'].forEach(x=>document.getElementById('tab-'+x).classList.remove('t-census','t-harvest','t-quality'));
+    document.getElementById('tab-census').classList.add('t-census');
+    document.getElementById('tab-harvest').classList.add('t-harvest');
+    document.getElementById('tab-quality').classList.add('t-quality');
+  });
+  if(tab==='harvest') renderHarvest();
+  if(tab==='quality') renderQuality();
+}
+function saveAll(){ const btn=document.querySelector('[onclick="saveAll()"]'); btn.textContent="✓ تم"; setTimeout(()=>btn.textContent="💾 حفظ",2000); }
+const $ = id => document.getElementById(id);
+
+// ═══════════════════════════════
+//  BOOT
+// ═══════════════════════════════
+renderSampleList();
+renderAllCounters();
+renderAverage();
+</script>
+</body>
+</html>
