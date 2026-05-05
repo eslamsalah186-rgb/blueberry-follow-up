@@ -30,7 +30,7 @@ This dashboard provides real-time monitoring and data management for blueberry c
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/blueberry-follow-up.git
+   git clone https://github.com/eslamsalah186-rgb/blueberry-follow-up.git
    cd blueberry-follow-up
    ```
 
