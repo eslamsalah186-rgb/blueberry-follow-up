@@ -516,11 +516,11 @@ body {
     </a>
 
     <div class="sb-group-label" style="margin-top:8px">البيئة</div>
-    <a class="sb-item" data-page="climate" data-tip="المناخ" data-src="climate_monitor_v2.html" onclick="navigate('module',this)">
+    <a class="sb-item" data-page="climate" data-tip="المناخ" data-src="climate_monitor_v3.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">🌡</span>
       <span class="sb-item-text">المناخ والتحكم</span>
     </a>
-    <a class="sb-item" data-page="irrigation" data-tip="الري" data-src="irrigation_log.html" onclick="navigate('module',this)">
+    <a class="sb-item" data-page="irrigation" data-tip="الري" data-src="irrigation_log_v2.html" onclick="navigate('module',this)">
       <span class="sb-item-icon">💧</span>
       <span class="sb-item-text">الري والتسميد</span>
     </a>
@@ -869,8 +869,8 @@ function renderHistoryTimeline(){
 }
 const MODULE_TITLES = {
   "census_v3.html":         {title:"النمو والـ Census",    crumb:"GROWTH · HARVEST · QUALITY"},
-  "climate_monitor_v2.html":{title:"المناخ والتحكم",       crumb:"CLIMATE CONTROL"},
-  "irrigation_log.html":    {title:"الري والتسميد",        crumb:"FERTIGATION LOG"},
+  "climate_monitor_v3.html":{title:"المناخ والتحكم",       crumb:"CLIMATE CONTROL"},
+  "irrigation_log_v2.html": {title:"الري والتسميد",        crumb:"FERTIGATION LOG"},
   "ipm_monitor_v2.html":    {title:"المكافحة المتكاملة",   crumb:"IPM MONITOR"},
 };
 
@@ -956,7 +956,7 @@ function renderDashboard(){
         <span>⚠</span><span>${a.t}</span>
       </div>`).join('');
     return `
-    <div class="farm-card" onclick="navigate('module',document.querySelector('[data-src=\\'climate_monitor_v2.html\\']'))">
+    <div class="farm-card" onclick="navigate('module',document.querySelector('[data-src=\\'climate_monitor_v3.html\\']'))">
       <div class="fc-image">
         <img src="${f.img}" alt="${f.name}" loading="lazy">
         <div class="fc-image-overlay"></div>
@@ -1225,7 +1225,7 @@ function saveReg(){
 function openRoomDetail(id){
   // Navigate to climate module for that room
   const iframe=document.getElementById('module-frame');
-  iframe.src="climate_monitor_v2.html";
+  iframe.src="climate_monitor_v3.html";
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.getElementById('page-module').classList.add('on');
   document.getElementById('tb-title').textContent="المناخ والتحكم";

@@ -946,71 +946,87 @@ function renderClimateCharts(){
   const seed=ROOMS.findIndex(r=>r.id===currentRoom)+1;
   const data=gen24h(seed);
   const labels=data.map(d=>`${String(d.h).padStart(2,'0')}:00`);
+  
+  console.log('renderClimateCharts called', {seed, dataLength: data.length, currentRoom});
+  console.log('Sample data point:', data[12]); // Check noon data
 
   // ── Temp ──
   dc('c-temp');
-  const tc=document.getElementById('c-temp')?.getContext('2d'); if(!tc) return;
-  chartInst['c-temp']=new Chart(tc,{
-    type:'line',
-    data:{labels,datasets:[
-      {label:'داخل °C',data:data.map(d=>d.tempIn),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true},
-      {label:'خارج °C',data:data.map(d=>d.tempOut),borderColor:'#4a9a4c',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.4},
-      {label:'هدف max 28°',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.3)',borderDash:[6,4],borderWidth:1,pointRadius:0},
-    ]},
-    plugins:[{id:'nb',afterDraw:drawNightBand}],
-    options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:8,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
-  });
+  const tc=document.getElementById('c-temp')?.getContext('2d');
+  console.log('c-temp canvas:', tc ? 'found' : 'not found');
+  if(tc){
+    const tempData = data.map(d=>d.tempIn);
+    console.log('Temperature data:', tempData);
+    chartInst['c-temp']=new Chart(tc,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'داخل °C',data:tempData,borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true},
+        {label:'خارج °C',data:data.map(d=>d.tempOut),borderColor:'#4a9a4c',backgroundColor:'transparent',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.4},
+        {label:'هدف max 28°',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.3)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+      ]},
+      plugins:[{id:'nb',afterDraw:drawNightBand}],
+      options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:8,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
+    });
+    console.log('c-temp chart created');
+  }
 
   // ── RH + VPD ──
   dc('c-rh');
-  const rc=document.getElementById('c-rh')?.getContext('2d'); if(!rc) return;
-  chartInst['c-rh']=new Chart(rc,{
-    type:'line',
-    data:{labels,datasets:[
-      {label:'RH %',data:data.map(d=>d.rh),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,yAxisID:'y'},
-      {label:'VPD kPa',data:data.map(d=>d.vpd),borderColor:'#00e676',backgroundColor:'rgba(0,230,118,.04)',borderWidth:2,pointRadius:0,tension:.4,yAxisID:'y1',fill:true},
-    ]},
-    plugins:[{id:'nb',afterDraw:drawNightBand}],
-    options:{...C_DARK,scales:{
-      x:C_DARK.scales.x,
-      y:{...C_DARK.scales.y,position:'right',min:30,max:100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'%'}},
-      y1:{...C_DARK.scales.y,position:'left',min:0,max:2.8,grid:{display:false},ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' kPa'}},
-    }}
-  });
+  const rc=document.getElementById('c-rh')?.getContext('2d');
+  if(rc){
+    chartInst['c-rh']=new Chart(rc,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'RH %',data:data.map(d=>d.rh),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.08)',borderWidth:2.5,pointRadius:0,tension:.4,fill:true,yAxisID:'y'},
+        {label:'VPD kPa',data:data.map(d=>d.vpd),borderColor:'#00e676',backgroundColor:'rgba(0,230,118,.04)',borderWidth:2,pointRadius:0,tension:.4,yAxisID:'y1',fill:true},
+      ]},
+      plugins:[{id:'nb',afterDraw:drawNightBand}],
+      options:{...C_DARK,scales:{
+        x:C_DARK.scales.x,
+        y:{...C_DARK.scales.y,position:'right',min:30,max:100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'%'}},
+        y1:{...C_DARK.scales.y,position:'left',min:0,max:2.8,grid:{display:false},ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' kPa'}},
+      }}
+    });
+  }
 
   // ── Radiation ──
   dc('c-rad');
-  const radc=document.getElementById('c-rad')?.getContext('2d'); if(!radc) return;
-  chartInst['c-rad']=new Chart(radc,{
-    type:'bar',
-    data:{labels,datasets:[{
-      label:'W/m²',
-      data:data.map(d=>d.radiation),
-      backgroundColor:data.map(d=>d.radiation===0?'rgba(64,196,255,.04)':'rgba(224,64,251,.45)'),
-      borderColor:data.map(d=>d.radiation===0?'transparent':'rgba(224,64,251,.9)'),
-      borderWidth:1,borderRadius:2,
-    }]},
-    plugins:[{id:'nb',afterDraw:drawNightBand}],
-    options:{...C_DARK,plugins:{...C_DARK.plugins,legend:{display:false}},
-      scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:0,max:1100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' W'}}}}
-  });
+  const radc=document.getElementById('c-rad')?.getContext('2d');
+  if(radc){
+    chartInst['c-rad']=new Chart(radc,{
+      type:'bar',
+      data:{labels,datasets:[{
+        label:'W/m²',
+        data:data.map(d=>d.radiation),
+        backgroundColor:data.map(d=>d.radiation===0?'rgba(64,196,255,.04)':'rgba(224,64,251,.45)'),
+        borderColor:data.map(d=>d.radiation===0?'transparent':'rgba(224,64,251,.9)'),
+        borderWidth:1,borderRadius:2,
+      }]},
+      plugins:[{id:'nb',afterDraw:drawNightBand}],
+      options:{...C_DARK,plugins:{...C_DARK.plugins,legend:{display:false}},
+        scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,min:0,max:1100,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+' W'}}}}
+    });
+  }
 
   // ── Compare table ──
   const now=new Date().getHours(); const d=data[Math.min(23,now)];
-  document.getElementById('compare-table').innerHTML=[
-    {l:"TEMP",i:`${d.tempIn}°C`,o:`${d.tempOut}°C`,ok:d.tempIn<=28},
-    {l:"HUMIDITY",i:`${d.rh}%`,o:`${Math.max(0,+(d.rh-8).toFixed(0))}%`,ok:d.rh<=75},
-    {l:"VPD",i:`${d.vpd} kPa`,o:"—",ok:d.vpd<=1.4},
-    {l:"RADIATION",i:`${d.radiation} W/m²`,o:`${Math.max(0,d.radiation+50)} W/m²`,ok:true},
-    {l:"CO₂",i:"820 ppm",o:"420 ppm",ok:true},
-  ].map(r=>`<div class="compare-row">
-    <span class="cmp-lbl">${r.l}</span>
-    <span class="cmp-arrow">↓</span>
-    <span class="cmp-inside" style="color:${r.ok?'var(--ph)':'var(--red)'}">${r.i}</span>
-    <span class="cmp-arrow">↔</span>
-    <span class="cmp-outside">خارج: ${r.o}</span>
-    <span style="margin-right:auto" class="badge ${r.ok?'b-ok':'b-alert'}">${r.ok?'✓':'⚠'}</span>
-  </div>`).join('');
+  const compareTable=document.getElementById('compare-table');
+  if(compareTable){
+    compareTable.innerHTML=[
+      {l:"TEMP",i:`${d.tempIn}°C`,o:`${d.tempOut}°C`,ok:d.tempIn<=28},
+      {l:"HUMIDITY",i:`${d.rh}%`,o:`${Math.max(0,+(d.rh-8).toFixed(0))}%`,ok:d.rh<=75},
+      {l:"VPD",i:`${d.vpd} kPa`,o:"—",ok:d.vpd<=1.4},
+      {l:"RADIATION",i:`${d.radiation} W/m²`,o:`${Math.max(0,d.radiation+50)} W/m²`,ok:true},
+      {l:"CO₂",i:"820 ppm",o:"420 ppm",ok:true},
+    ].map(r=>`<div class="compare-row">
+      <span class="cmp-lbl">${r.l}</span>
+      <span class="cmp-arrow">↓</span>
+      <span class="cmp-inside" style="color:${r.ok?'var(--ph)':'var(--red)'}">${r.i}</span>
+      <span class="cmp-arrow">↔</span>
+      <span class="cmp-outside">خارج: ${r.o}</span>
+      <span style="margin-right:auto" class="badge ${r.ok?'b-ok':'b-alert'}">${r.ok?'✓':'⚠'}</span>
+    </div>`).join('');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1121,45 +1137,48 @@ function renderInterventionChart(){
     return {h, icon:a?.icon||'⚙', tempAt:row.tempAt};
   });
 
-  chartInst['c-intervention']=new Chart(ctx,{
-    type:'line',
-    data:{labels,datasets:[
-      {label:'Temp In °C',data:data.map(d=>d.tempIn),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.06)',borderWidth:2,pointRadius:0,tension:.4,fill:true},
-      {label:'هدف 26°C',data:Array(24).fill(26),borderColor:'rgba(0,230,118,.25)',borderDash:[6,4],borderWidth:1,pointRadius:0},
-      {label:'حد أقصى 28°C',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.2)',borderDash:[6,4],borderWidth:1,pointRadius:0},
-    ]},
-    plugins:[{
-      id:'intv',
-      afterDraw(chart){
-        try{
-          drawNightBand(chart);
-          const {ctx:c,chartArea:{top,bottom,left,right},scales:{y}}=chart;
-          if(!y) return;
-          const w=right-left, pxH=w/24;
-          c.save();
-          annotations.forEach(an=>{
-            const px=left+an.h*pxH+pxH/2;
-            const py=y.getPixelForValue(an.tempAt);
-            c.strokeStyle='rgba(255,179,0,.25)';
-            c.lineWidth=1; c.setLineDash([3,3]);
-            c.beginPath(); c.moveTo(px,top); c.lineTo(px,bottom); c.stroke();
-            c.setLineDash([]);
-            c.fillStyle='rgba(255,179,0,.18)';
-            c.beginPath(); c.arc(px,top+16,9,0,Math.PI*2); c.fill();
-            c.font='10px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
-            c.fillText(an.icon,px,top+16);
-            c.fillStyle='#ffb300';
-            c.beginPath(); c.arc(px,py,3,0,Math.PI*2); c.fill();
-          });
-          c.restore();
-        }catch(e){}
-      }
-    }],
-    options:{...C_DARK,scales:{
-      x:C_DARK.scales.x,
-      y:{...C_DARK.scales.y,min:10,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}},
-    }}
-  });
+  const ctx=document.getElementById('c-intervention')?.getContext('2d');
+  if(ctx){
+    chartInst['c-intervention']=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'Temp In °C',data:data.map(d=>d.tempIn),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.06)',borderWidth:2,pointRadius:0,tension:.4,fill:true},
+        {label:'هدف 26°C',data:Array(24).fill(26),borderColor:'rgba(0,230,118,.25)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+        {label:'حد أقصى 28°C',data:Array(24).fill(28),borderColor:'rgba(255,23,68,.2)',borderDash:[6,4],borderWidth:1,pointRadius:0},
+      ]},
+      plugins:[{
+        id:'intv',
+        afterDraw(chart){
+          try{
+            drawNightBand(chart);
+            const {ctx:c,chartArea:{top,bottom,left,right},scales:{y}}=chart;
+            if(!y) return;
+            const w=right-left, pxH=w/24;
+            c.save();
+            annotations.forEach(an=>{
+              const px=left+an.h*pxH+pxH/2;
+              const py=y.getPixelForValue(an.tempAt);
+              c.strokeStyle='rgba(255,179,0,.25)';
+              c.lineWidth=1; c.setLineDash([3,3]);
+              c.beginPath(); c.moveTo(px,top); c.lineTo(px,bottom); c.stroke();
+              c.setLineDash([]);
+              c.fillStyle='rgba(255,179,0,.18)';
+              c.beginPath(); c.arc(px,top+16,9,0,Math.PI*2); c.fill();
+              c.font='10px sans-serif'; c.textAlign='center'; c.textBaseline='middle';
+              c.fillText(an.icon,px,top+16);
+              c.fillStyle='#ffb300';
+              c.beginPath(); c.arc(px,py,3,0,Math.PI*2); c.fill();
+            });
+            c.restore();
+          }catch(e){}
+        }
+      }],
+      options:{...C_DARK,scales:{
+        x:C_DARK.scales.x,
+        y:{...C_DARK.scales.y,min:10,max:40,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}},
+      }}
+    });
+  }
 }
 
 function renderLogicRules(){
@@ -1199,25 +1218,30 @@ function renderHistory(){
     </tr>`).join('');
 
   dc('c-hist-temp');
-  const ht=document.getElementById('c-hist-temp')?.getContext('2d'); if(!ht) return;
-  const hLabels=HISTORY_7DAYS.map(d=>d.date.slice(5));
-  chartInst['c-hist-temp']=new Chart(ht,{type:'line',
-    data:{labels:hLabels,datasets:[
-      {label:'نهار °C',data:HISTORY_7DAYS.map(d=>d.dayAvg),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#ffb300',tension:.3,fill:true},
-      {label:'ليل °C',data:HISTORY_7DAYS.map(d=>d.nightAvg),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#40c4ff',tension:.3,fill:true},
-    ]},
-    options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
-  });
+  const ht=document.getElementById('c-hist-temp')?.getContext('2d');
+  if(ht){
+    const hLabels=HISTORY_7DAYS.map(d=>d.date.slice(5));
+    chartInst['c-hist-temp']=new Chart(ht,{type:'line',
+      data:{labels:hLabels,datasets:[
+        {label:'نهار °C',data:HISTORY_7DAYS.map(d=>d.dayAvg),borderColor:'#ffb300',backgroundColor:'rgba(255,179,0,.08)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#ffb300',tension:.3,fill:true},
+        {label:'ليل °C',data:HISTORY_7DAYS.map(d=>d.nightAvg),borderColor:'#40c4ff',backgroundColor:'rgba(64,196,255,.06)',borderWidth:2,pointRadius:4,pointBackgroundColor:'#40c4ff',tension:.3,fill:true},
+      ]},
+      options:{...C_DARK,scales:{x:C_DARK.scales.x,y:{...C_DARK.scales.y,ticks:{...C_DARK.scales.y.ticks,callback:v=>v+'°'}}}}
+    });
+  }
 
   dc('c-hist-act');
-  const ha=document.getElementById('c-hist-act')?.getContext('2d'); if(!ha) return;
-  chartInst['c-hist-act']=new Chart(ha,{type:'bar',
-    data:{labels:hLabels,datasets:[
-      {label:'مراوح',data:HISTORY_7DAYS.map(d=>d.fanInt),backgroundColor:'rgba(0,230,118,.4)',borderColor:'#00e676',borderWidth:1,borderRadius:2},
-      {label:'تبريد',data:HISTORY_7DAYS.map(d=>d.coolInt),backgroundColor:'rgba(64,196,255,.4)',borderColor:'#40c4ff',borderWidth:1,borderRadius:2},
-    ]},
-    options:{...C_DARK,scales:{x:{...C_DARK.scales.x,stacked:true},y:{...C_DARK.scales.y,stacked:true}}}
-  });
+  const ha=document.getElementById('c-hist-act')?.getContext('2d');
+  if(ha){
+    const hLabels=HISTORY_7DAYS.map(d=>d.date.slice(5));
+    chartInst['c-hist-act']=new Chart(ha,{type:'bar',
+      data:{labels:hLabels,datasets:[
+        {label:'مراوح',data:HISTORY_7DAYS.map(d=>d.fanInt),backgroundColor:'rgba(0,230,118,.4)',borderColor:'#00e676',borderWidth:1,borderRadius:2},
+        {label:'تبريد',data:HISTORY_7DAYS.map(d=>d.coolInt),backgroundColor:'rgba(64,196,255,.4)',borderColor:'#40c4ff',borderWidth:1,borderRadius:2},
+      ]},
+      options:{...C_DARK,scales:{x:{...C_DARK.scales.x,stacked:true},y:{...C_DARK.scales.y,stacked:true}}}
+    });
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -1359,20 +1383,22 @@ function renderCompare(){
 
   // ── 1. TEMPERATURE ──
   dc("cc-temp");
-  const tCtx=document.getElementById("cc-temp")?.getContext('2d'); if(!tCtx) return;
-  chartInst["cc-temp"]=new Chart(tCtx,{
-    type:'line',
-    data:{labels, datasets:roomDatasets.map(rd=>({
-      label:rd.label,
-      data:rd.hours_data.map(d=>d.tempIn),
-      borderColor:rd.border,
-      backgroundColor:rd.bg+"0.06)",
-      borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
-      pointBackgroundColor:rd.border,
-      tension:.4,fill:false,
-    }))},
-    options:buildOpts(8,42,v=>v+"°")
-  });
+  const tCtx=document.getElementById("cc-temp")?.getContext('2d');
+  if(tCtx){
+    chartInst["cc-temp"]=new Chart(tCtx,{
+      type:'line',
+      data:{labels, datasets:roomDatasets.map(rd=>({
+        label:rd.label,
+        data:rd.hours_data.map(d=>d.tempIn),
+        borderColor:rd.border,
+        backgroundColor:rd.bg+"0.06)",
+        borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+        pointBackgroundColor:rd.border,
+        tension:.4,fill:false,
+      }))},
+      options:buildOpts(8,42,v=>v+"°")
+    });
+  }
 
   // stat row: avg per room
   buildStatRow("stat-temp", roomDatasets, d=>d.tempIn, "°C", rd=>{
@@ -1382,25 +1408,27 @@ function renderCompare(){
 
   // ── 2. HUMIDITY ──
   dc("cc-rh");
-  const rCtx=document.getElementById("cc-rh")?.getContext('2d'); if(!rCtx) return;
-  chartInst["cc-rh"]=new Chart(rCtx,{
-    type:'line',
-    data:{labels, datasets:[
-      ...roomDatasets.map(rd=>({
-        label:rd.label,
-        data:rd.hours_data.map(d=>d.rh),
-        borderColor:rd.border,
-        backgroundColor:rd.bg+"0.05)",
-        borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
-        pointBackgroundColor:rd.border,
-        tension:.4,fill:false,
-      })),
-      // Target zone
-      {label:"حد أعلى 75%",data:Array(labels.length).fill(75),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-      {label:"حد أدنى 55%",data:Array(labels.length).fill(55),borderColor:"rgba(64,196,255,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
-    ]},
-    options:buildOpts(25,100,v=>v+"%")
-  });
+  const rCtx=document.getElementById("cc-rh")?.getContext('2d');
+  if(rCtx){
+    chartInst["cc-rh"]=new Chart(rCtx,{
+      type:'line',
+      data:{labels, datasets:[
+        ...roomDatasets.map(rd=>({
+          label:rd.label,
+          data:rd.hours_data.map(d=>d.rh),
+          borderColor:rd.border,
+          backgroundColor:rd.bg+"0.05)",
+          borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+          pointBackgroundColor:rd.border,
+          tension:.4,fill:false,
+        })),
+        // Target zone
+        {label:"حد أعلى 75%",data:Array(labels.length).fill(75),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
+        {label:"حد أدنى 55%",data:Array(labels.length).fill(55),borderColor:"rgba(64,196,255,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0,fill:false},
+      ]},
+      options:buildOpts(25,100,v=>v+"%")
+    });
+  }
   buildStatRow("stat-rh", roomDatasets, d=>d.rh, "%", rd=>{
     const avg=calcAvg(rd.hours_data.map(d=>d.rh));
     const ok=avg>=55&&avg<=75; return {val:avg.toFixed(1)+"%",ok};
@@ -1408,24 +1436,26 @@ function renderCompare(){
 
   // ── 3. VPD ──
   dc("cc-vpd");
-  const vCtx=document.getElementById("cc-vpd")?.getContext('2d'); if(!vCtx) return;
-  chartInst["cc-vpd"]=new Chart(vCtx,{
-    type:'line',
-    data:{labels, datasets:[
-      ...roomDatasets.map(rd=>({
-        label:rd.label,
-        data:rd.hours_data.map(d=>d.vpd),
-        borderColor:rd.border,
-        backgroundColor:rd.bg+"0.05)",
-        borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
-        pointBackgroundColor:rd.border,
-        tension:.4,fill:false,
-      })),
-      {label:"VPD Max 1.4",data:Array(labels.length).fill(1.4),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0},
-      {label:"VPD Min 0.6",data:Array(labels.length).fill(0.6),borderColor:"rgba(0,230,118,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0},
-    ]},
-    options:buildOpts(0,2.5,v=>v+" kPa")
-  });
+  const vCtx=document.getElementById("cc-vpd")?.getContext('2d');
+  if(vCtx){
+    chartInst["cc-vpd"]=new Chart(vCtx,{
+      type:'line',
+      data:{labels, datasets:[
+        ...roomDatasets.map(rd=>({
+          label:rd.label,
+          data:rd.hours_data.map(d=>d.vpd),
+          borderColor:rd.border,
+          backgroundColor:rd.bg+"0.05)",
+          borderWidth:2,pointRadius:comparePeriod==="all"?0:3,
+          pointBackgroundColor:rd.border,
+          tension:.4,fill:false,
+        })),
+        {label:"VPD Max 1.4",data:Array(labels.length).fill(1.4),borderColor:"rgba(255,23,68,.25)",borderDash:[6,4],borderWidth:1,pointRadius:0},
+        {label:"VPD Min 0.6",data:Array(labels.length).fill(0.6),borderColor:"rgba(0,230,118,.2)",borderDash:[6,4],borderWidth:1,pointRadius:0},
+      ]},
+      options:buildOpts(0,2.5,v=>v+" kPa")
+    });
+  }
   buildStatRow("stat-vpd", roomDatasets, d=>d.vpd, "kPa", rd=>{
     const avg=calcAvg(rd.hours_data.map(d=>d.vpd));
     const ok=avg>=0.6&&avg<=1.4; return {val:avg.toFixed(2)+" kPa",ok};
@@ -1433,20 +1463,22 @@ function renderCompare(){
 
   // ── 4. RADIATION (line NOT bar for multi-room, bar for single) ──
   dc("cc-rad");
-  const radCtx=document.getElementById("cc-rad")?.getContext('2d'); if(!radCtx) return;
-  chartInst["cc-rad"]=new Chart(radCtx,{
-    type:'line',
-    data:{labels, datasets:roomDatasets.map(rd=>({
-      label:rd.label,
-      data:rd.hours_data.map(d=>d.radiation),
-      borderColor:rd.border,
-      backgroundColor:rd.bg+"0.06)",
-      borderWidth:2,pointRadius:comparePeriod==="all"?0:2,
-      pointBackgroundColor:rd.border,
-      tension:.3,fill:true,
-    }))},
-    options:buildOpts(0,1100,v=>v+" W")
-  });
+  const radCtx=document.getElementById("cc-rad")?.getContext('2d');
+  if(radCtx){
+    chartInst["cc-rad"]=new Chart(radCtx,{
+      type:'line',
+      data:{labels, datasets:roomDatasets.map(rd=>({
+        label:rd.label,
+        data:rd.hours_data.map(d=>d.radiation),
+        borderColor:rd.border,
+        backgroundColor:rd.bg+"0.06)",
+        borderWidth:2,pointRadius:comparePeriod==="all"?0:2,
+        pointBackgroundColor:rd.border,
+        tension:.3,fill:true,
+      }))},
+      options:buildOpts(0,1100,v=>v+" W")
+    });
+  }
   buildStatRow("stat-rad", roomDatasets, d=>d.radiation, "W/m²", rd=>{
     const vals=rd.hours_data.map(d=>d.radiation);
     const mx=Math.max(...vals); const avg=calcAvg(vals);
@@ -1463,7 +1495,7 @@ function buildStatRow(elId, roomDatasets, valFn, unit, statFn){
     return `<div class="cmp-stat">
       <div class="cmp-stat-dot" style="background:${rd.border}"></div>
       <span style="color:${rd.border}">${rd.r.id}</span>
-      <span style="color:${st.ok?'var(--ph)':'var(--red)';}">${st.val}</span>
+      <span style="color:${st.ok?'var(--ph)':'var(--red)'}">${st.val}</span>
       ${st.sub?`<span style="color:var(--t3);font-size:9px">${st.sub}</span>`:''}
     </div>`;
   }).join('');
@@ -1494,11 +1526,19 @@ function renderAll(){
 // ═══════════════════════════════════════════
 //  BOOT
 // ═══════════════════════════════════════════
-renderRoomPills();
-renderSensors();
-renderClimateCharts();
-// Refresh sensors every 30s
-setInterval(()=>{ renderSensors(); },30000);
+console.log('Script executing...');
+console.log('Chart.js available:', typeof Chart !== 'undefined');
+if(typeof Chart === 'undefined'){
+  console.error('Chart.js not loaded!');
+} else {
+  console.log('Starting render...');
+  renderRoomPills();
+  renderSensors();
+  renderClimateCharts();
+  console.log('Initial render complete');
+  // Refresh sensors every 30s
+  setInterval(()=>{ renderSensors(); },30000);
+}
 </script>
 </body>
 </html>
