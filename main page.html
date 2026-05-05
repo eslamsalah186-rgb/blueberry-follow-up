@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueberry Field Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Fira+Code:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   ORGANIC BRUTALISM — warm cream base
+   Playfair Display for editorial headings
+   Fira Code for all numbers
+   Deep forest ink for text
+   Berry accent for navigation active state
+   Each farm card = photographic + data fusion
+══════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Cream base */
+  --cream:   #f0ede6;
+  --cream2:  #e8e4db;
+  --cream3:  #dedad1;
+  --cream4:  #d0cbc0;
+
+  /* Forest ink */
+  --ink:     #1a1f1a;
+  --ink2:    #2a302a;
+  --ink3:    #3d453d;
+  --ink4:    #5a645a;
+  --ink5:    #8a948a;
+
+  /* Berry accent */
+  --berry:   #2d1854;
+  --berry2:  #4a2d8a;
+  --berry3:  #7c5abf;
+  --berry-l: #b89ee8;
+
+  /* Leaf */
+  --leaf:    #1a4a2e;
+  --leaf2:   #2d7a4a;
+  --leaf-l:  #5abf7e;
+
+  /* Amber */
+  --amber:   #8a5200;
+  --amber-l: #d4920a;
+
+  /* Alert */
+  --rose:    #8a1a2f;
+  --rose-l:  #e85a7a;
+
+  /* Sidebar */
+  --side-bg: #1a1f1a;
+  --side-hover: #2a302a;
+  --side-active: #2d1854;
+
+  --mono:    'Fira Code', monospace;
+  --serif:   'Playfair Display', serif;
+  --sans:    'IBM Plex Sans Arabic', sans-serif;
+}
+
+body {
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--sans);
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ══ SIDEBAR ══ */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--side-bg);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+  border-left: 1px solid rgba(255,255,255,.05);
+  transition: width .3s ease;
+  flex-shrink: 0;
+}
+.sidebar.collapsed { width: 58px; min-width: 58px; }
+
+.sb-brand {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.sb-logo {
+  width: 36px; height: 36px; background: var(--berry2);
+  border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(74,45,138,.4);
+}
+.sb-title-wrap { overflow: hidden; }
+.sb-title { font-family: var(--serif); font-size: 14px; color: #f0ede6; white-space: nowrap; font-style: italic; }
+.sb-sub   { font-size: 9px; color: rgba(240,237,230,.35); font-family: var(--mono); margin-top: 1px; white-space: nowrap; }
+
+.sb-collapse-btn {
+  position: absolute; top: 22px; left: -12px;
+  width: 24px; height: 24px; border-radius: 12px;
+  background: var(--side-bg); border: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 10px; color: rgba(240,237,230,.5);
+  transition: .15s; z-index: 20;
+}
+.sb-collapse-btn:hover { background: var(--side-hover); color: #f0ede6; }
+
+/* Nav groups */
+.sb-nav { flex: 1; overflow-y: auto; padding: 10px 0; }
+.sb-nav::-webkit-scrollbar { width: 3px; }
+.sb-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); }
+.sb-group-label {
+  font-size: 9px; color: rgba(240,237,230,.3); font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: .8px;
+  padding: 10px 16px 4px; white-space: nowrap; overflow: hidden;
+}
+.sidebar.collapsed .sb-group-label { display: none; }
+
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px; cursor: pointer; transition: background .15s;
+  border-right: 3px solid transparent; position: relative;
+  text-decoration: none; color: rgba(240,237,230,.5);
+}
+.sb-item:hover { background: var(--side-hover); color: rgba(240,237,230,.8); }
+.sb-item.active { background: var(--side-active); border-right-color: var(--berry-l); color: #f0ede6; }
+.sb-item.active .sb-item-icon { filter: none; }
+.sb-item-icon { font-size: 17px; flex-shrink: 0; width: 20px; text-align: center; }
+.sb-item-text { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; font-family: var(--sans); }
+.sidebar.collapsed .sb-item-text { display: none; }
+.sidebar.collapsed .sb-item { padding: 10px; justify-content: center; }
+.sb-item-badge {
+  font-size: 9px; font-family: var(--mono);
+  background: var(--berry2); color: var(--berry-l);
+  border-radius: 10px; padding: 1px 6px; margin-right: auto;
+  flex-shrink: 0;
+}
+.sidebar.collapsed .sb-item-badge { display: none; }
+
+/* Tooltip for collapsed state */
+.sidebar.collapsed .sb-item:hover::after {
+  content: attr(data-tip);
+  position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  background: var(--ink); color: var(--cream);
+  border-radius: 6px; padding: 4px 10px; font-size: 11px;
+  white-space: nowrap; pointer-events: none; z-index: 100;
+  font-family: var(--sans);
+  box-shadow: 0 4px 12px rgba(0,0,0,.4);
+}
+
+.sb-footer {
+  padding: 12px 16px; border-top: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.live-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; font-family: var(--mono); color: var(--leaf-l);
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--leaf-l); animation: pulse 2s ease infinite; flex-shrink: 0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.sidebar.collapsed .live-status span { display: none; }
+
+/* ══ MAIN CONTENT ══ */
+.main {
+  flex: 1; height: 100vh; overflow: hidden;
+  display: flex; flex-direction: column; min-width: 0;
+}
+
+/* ══ TOP BAR ══ */
+.topbar {
+  background: var(--cream); border-bottom: 1px solid var(--cream3);
+  padding: 0 24px; height: 54px;
+  display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+  position: relative; z-index: 5;
+}
+.topbar-title {
+  font-family: var(--serif); font-size: 18px; color: var(--ink);
+  letter-spacing: -.3px;
+}
+.topbar-breadcrumb { font-size: 11px; color: var(--ink5); font-family: var(--mono); }
+.topbar-right { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+.topbar-time { font-family: var(--mono); font-size: 12px; color: var(--ink4); }
+#clock { font-weight: 600; color: var(--ink3); }
+
+/* ══ CONTENT AREA ══ */
+.content-area {
+  flex: 1; overflow: hidden; position: relative;
+}
+
+/* Dashboard page */
+.page { display: none; width: 100%; height: 100%; }
+.page.on { display: block; }
+
+/* Dashboard scroll */
+.dashboard-scroll {
+  height: 100%; overflow-y: auto; padding: 24px;
+}
+.dashboard-scroll::-webkit-scrollbar { width: 5px; }
+.dashboard-scroll::-webkit-scrollbar-thumb { background: var(--cream3); border-radius: 3px; }
+
+/* Module iframe */
+.module-frame {
+  width: 100%; height: 100%; border: none; display: block;
+}
+
+/* ══ DASHBOARD: HERO ══ */
+.hero {
+  display: grid; grid-template-columns: 1fr 420px; gap: 20px;
+  margin-bottom: 24px; align-items: start;
+}
+@media(max-width:1100px){ .hero{grid-template-columns:1fr} }
+
+.hero-main {
+  background: var(--ink); border-radius: 16px; overflow: hidden;
+  position: relative; min-height: 280px;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('https://images.unsplash.com/photo-1464965224031-90a7da0e0f31?auto=format&fit=crop&w=1200&q=80');
+  background-size: cover; background-position: center;
+  opacity: .35; transition: opacity .4s;
+}
+.hero-main:hover .hero-bg { opacity: .45; }
+.hero-overlay {
+  position: relative; z-index: 1; padding: 28px 30px;
+  background: linear-gradient(135deg, rgba(26,31,26,.9) 0%, rgba(45,24,84,.6) 100%);
+  min-height: 280px; display: flex; flex-direction: column; justify-content: flex-end;
+}
+.hero-tag {
+  font-family: var(--mono); font-size: 10px; color: var(--berry-l);
+  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px;
+}
+.hero-headline {
+  font-family: var(--serif); font-size: 42px; font-weight: 900;
+  color: #f0ede6; line-height: .95; letter-spacing: -2px;
+  margin-bottom: 14px;
+}
+.hero-headline em { font-style: italic; color: var(--berry-l); }
+.hero-stats-row { display: flex; gap: 20px; flex-wrap: wrap; }
+.hero-stat { text-align: right; }
+.hs-num { font-family: var(--mono); font-size: 28px; font-weight: 600; color: #f0ede6; letter-spacing: -1px; line-height: 1; }
+.hs-lbl { font-size: 10px; color: rgba(240,237,230,.5); font-family: var(--mono); margin-top: 3px; }
+
+/* Alert panel beside hero */
+.hero-side { display: flex; flex-direction: column; gap: 10px; }
+.alert-panel {
+  background: var(--ink2); border-radius: 12px; padding: 16px 18px;
+  border-right: 3px solid var(--rose-l); flex-shrink: 0;
+}
+.ap-title { font-family: var(--serif); font-size: 13px; color: #f0ede6; margin-bottom: 10px; font-style: italic; }
+.alert-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,.05); font-size: 11px;
+  color: rgba(240,237,230,.7);
+}
+.alert-item:last-child { border-bottom: none; }
+.ai-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+
+.kpi-strip-mini {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 8px;
+}
+.kpi-mini {
+  background: var(--ink2); border-radius: 10px; padding: 12px 14px;
+  transition: background .15s;
+}
+.kpi-mini:hover { background: var(--ink3); }
+.km-num { font-family: var(--mono); font-size: 22px; font-weight: 600; color: #f0ede6; letter-spacing: -1px; }
+.km-lbl { font-size: 10px; color: rgba(240,237,230,.4); font-family: var(--mono); margin-top: 2px; }
+
+/* ══ FARM CARDS ══ */
+.section-title {
+  font-family: var(--serif); font-size: 28px; font-weight: 700;
+  color: var(--ink); margin-bottom: 16px; letter-spacing: -.5px;
+}
+.section-title em { font-style: italic; color: var(--berry2); }
+
+.farms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px,1fr)); gap: 16px; margin-bottom: 28px; }
+
+.farm-card {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--cream3);
+  transition: transform .2s, box-shadow .2s;
+  cursor: pointer;
+}
+.farm-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(26,31,26,.12); }
+.farm-card:active { transform: translateY(-1px); }
+
+.fc-image {
+  height: 160px; overflow: hidden; position: relative;
+  background: var(--ink);
+}
+.fc-image img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .5s; display: block;
+}
+.farm-card:hover .fc-image img { transform: scale(1.06); }
+.fc-image-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(26,31,26,.7) 100%);
+}
+.fc-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(26,31,26,.8); border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px; padding: 3px 10px; font-size: 10px;
+  font-family: var(--mono); color: #f0ede6;
+  backdrop-filter: blur(4px);
+}
+.fc-farm-name {
+  position: absolute; bottom: 12px; right: 14px;
+  font-family: var(--serif); font-size: 18px; font-weight: 700;
+  color: #f0ede6; font-style: italic;
+}
+
+.fc-body { padding: 16px 18px; }
+.fc-location {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; color: var(--ink5); font-family: var(--mono);
+  margin-bottom: 12px;
+}
+.fc-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+.fc-stat {
+  background: var(--cream); border-radius: 8px; padding: 9px 10px;
+  border: 1px solid var(--cream3); transition: background .12s;
+}
+.farm-card:hover .fc-stat { background: var(--cream2); }
+.fcs-num { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--ink); letter-spacing: -.5px; }
+.fcs-lbl { font-size: 9px; color: var(--ink5); margin-top: 2px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .3px; }
+
+.fc-rooms { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 12px; }
+.fc-room-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px;
+  font-family: var(--mono); border: 1px solid; cursor: pointer;
+  transition: .12s;
+}
+.fc-room-pill:hover { transform: translateY(-1px); }
+
+.fc-alerts { display: flex; gap: 6px; flex-wrap: wrap; }
+.fc-alert-chip {
+  display: flex; align-items: center; gap: 4px; border-radius: 6px;
+  padding: 3px 9px; font-size: 10px; font-family: var(--mono); font-weight: 600;
+  border: 1px solid;
+}
+
+/* Animated counter */
+.anim-num { display: inline-block; }
+
+/* ══ CHARTS STRIP ══ */
+.charts-strip {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+  gap: 14px; margin-bottom: 28px;
+}
+.strip-chart {
+  background: #fff; border-radius: 12px; padding: 16px 18px;
+  border: 1px solid var(--cream3); transition: box-shadow .2s;
+}
+.strip-chart:hover { box-shadow: 0 4px 16px rgba(26,31,26,.08); }
+.sc-title { font-family: var(--serif); font-size: 14px; color: var(--ink); margin-bottom: 3px; }
+.sc-sub   { font-size: 10px; color: var(--ink5); font-family: var(--mono); margin-bottom: 12px; }
+
+/* ══ REGISTRATION TAB ══ */
+.reg-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; align-items: start; }
+@media(max-width:900px){ .reg-layout{grid-template-columns:1fr} }
+
+.reg-sidebar {
+  background: #fff; border-radius: 14px; border: 1px solid var(--cream3);
+  overflow: hidden; position: sticky; top: 0;
+}
+.reg-sb-hdr { padding: 16px 18px; border-bottom: 1px solid var(--cream3); }
+.reg-sb-title { font-family: var(--serif); font-size: 16px; color: var(--ink); font-style: italic; }
+.reg-sb-list { padding: 8px; display: flex; flex-direction: column; gap: 2px; }
+.reg-farm-btn {
+  display: flex; align-items: center; gap: 9px; padding: 10px 12px;
+  border-radius: 8px; border: 1px solid transparent; cursor: pointer;
+  transition: .15s; background: transparent;
+}
+.reg-farm-btn:hover { background: var(--cream); }
+.reg-farm-btn.on { background: var(--cream2); border-color: var(--cream3); }
+.rfb-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rfb-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.rfb-rooms { font-size: 10px; color: var(--ink5); font-family: var(--mono); }
+.reg-add-farm {
+  padding: 12px 18px; border-top: 1px solid var(--cream3);
+  display: flex; align-items: center; gap: 7px; cursor: pointer;
+  font-size: 12px; color: var(--berry2); font-family: var(--mono);
+  transition: background .12s;
+}
+.reg-add-farm:hover { background: var(--cream); }
+
+.reg-content {
+  display: flex; flex-direction: column; gap: 14px;
+}
+.reg-card {
+  background: #fff; border-radius: 14px; border: 1px solid var(--cream3);
+  overflow: hidden;
+}
+.reg-card-hdr {
+  padding: 14px 18px; border-bottom: 1px solid var(--cream3);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.reg-card-title { font-family: var(--serif); font-size: 15px; color: var(--ink); font-style: italic; }
+.reg-card-body { padding: 16px 18px; }
+
+/* Form fields */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 10px; color: var(--ink5); font-family: var(--mono); text-transform: uppercase; letter-spacing: .4px; }
+.form-input {
+  background: var(--cream); border: 1.5px solid var(--cream3);
+  color: var(--ink); border-radius: 8px; padding: 9px 12px;
+  font-family: var(--mono); font-size: 13px; font-weight: 500;
+  outline: none; transition: border-color .15s;
+  width: 100%;
+}
+.form-input:focus { border-color: var(--berry2); background: #fff; }
+.form-input::placeholder { color: var(--ink5); font-weight: 400; font-size: 11px; }
+.form-select {
+  background: var(--cream); border: 1.5px solid var(--cream3);
+  color: var(--ink); border-radius: 8px; padding: 9px 12px;
+  font-family: var(--mono); font-size: 12px; outline: none;
+  cursor: pointer; transition: border-color .15s; width: 100%;
+  appearance: none;
+}
+.form-select:focus { border-color: var(--berry2); }
+
+/* Room table */
+.room-reg-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.room-reg-tbl th { padding: 9px 12px; text-align: right; font-family: var(--mono); font-size: 9px; font-weight: 600; color: var(--ink5); text-transform: uppercase; letter-spacing: .4px; border-bottom: 2px solid var(--cream3); background: var(--cream); white-space: nowrap; }
+.room-reg-tbl td { padding: 9px 12px; border-bottom: 1px solid var(--cream3); color: var(--ink); transition: background .1s; }
+.room-reg-tbl tr:last-child td { border-bottom: none; }
+.room-reg-tbl tbody tr:hover td { background: var(--cream); }
+.td-mono { font-family: var(--mono); font-size: 11px; font-weight: 600; }
+
+.worker-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--cream2); border: 1px solid var(--cream3); border-radius: 20px; padding: 2px 9px; font-size: 10px; font-family: var(--mono); color: var(--ink3); margin: 2px; }
+
+/* Save button */
+.btn-save {
+  padding: 10px 22px; border-radius: 9px; border: none;
+  background: var(--berry2); color: #f0ede6; font-family: var(--sans);
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: .15s;
+}
+.btn-save:hover { background: var(--berry); transform: translateY(-1px); }
+.btn-outline-sm {
+  padding: 6px 14px; border-radius: 7px; border: 1.5px solid var(--cream3);
+  background: transparent; color: var(--ink4); font-family: var(--mono);
+  font-size: 11px; cursor: pointer; transition: .15s;
+}
+.btn-outline-sm:hover { border-color: var(--berry2); color: var(--berry2); }
+
+/* ══ MISC ══ */
+.badge { display: inline-flex; align-items: center; gap: 3px; border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 600; border: 1px solid; font-family: var(--mono); white-space: nowrap; }
+.b-ok   { background: rgba(90,191,126,.1); border-color: rgba(90,191,126,.3); color: var(--leaf2); }
+.b-warn { background: rgba(212,146,10,.1);  border-color: rgba(212,146,10,.3);  color: var(--amber); }
+.b-alert{ background: rgba(232,90,122,.1); border-color: rgba(232,90,122,.3); color: var(--rose-l); }
+.b-info { background: rgba(124,90,191,.1); border-color: rgba(124,90,191,.3); color: var(--berry3); }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.page.on .dashboard-scroll > * { animation: fadeUp .25s ease both; }
+.page.on .dashboard-scroll > *:nth-child(1){animation-delay:.0s}
+.page.on .dashboard-scroll > *:nth-child(2){animation-delay:.06s}
+.page.on .dashboard-scroll > *:nth-child(3){animation-delay:.12s}
+.page.on .dashboard-scroll > *:nth-child(4){animation-delay:.18s}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav class="sidebar" id="sidebar">
+
+  <div class="sb-brand">
+    <div class="sb-logo">🫐</div>
+    <div class="sb-title-wrap">
+      <div class="sb-title">Blueberry Ops</div>
+      <div class="sb-sub">FIELD MANAGEMENT v1.0</div>
+    </div>
+  </div>
+
+  <!-- Decorative berry vine divider -->
+  <div style="padding:8px 16px 0;overflow:hidden;flex-shrink:0">
+    <svg width="100%" height="18" viewBox="0 0 180 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="opacity:.25">
+      <path d="M2 9 Q20 2 38 9 Q56 16 74 9 Q92 2 110 9 Q128 16 146 9 Q164 2 178 9" stroke="#7c5abf" stroke-width="1.5" fill="none"/>
+      <circle cx="38" cy="9" r="3" fill="#7c5abf"/>
+      <circle cx="74" cy="9" r="2" fill="#7c5abf" opacity=".6"/>
+      <circle cx="110" cy="9" r="3" fill="#7c5abf"/>
+      <circle cx="146" cy="9" r="2" fill="#7c5abf" opacity=".6"/>
+    </svg>
+  </div>
+
+  <div class="sb-collapse-btn" onclick="toggleSidebar()" id="sb-collapse-btn" title="طي / فتح">◀</div>
+
+  <div class="sb-nav">
+    <div class="sb-group-label">المزارع</div>
+    <a class="sb-item active" data-page="dashboard" data-tip="المزارع" onclick="navigate('dashboard',this)">
+      <span class="sb-item-icon">🏡</span>
+      <span class="sb-item-text">عرض المزارع</span>
+    </a>
+    <a class="sb-item" data-page="registration" data-tip="التسجيل" onclick="navigate('registration',this)">
+      <span class="sb-item-icon">📝</span>
+      <span class="sb-item-text">تسجيل البيانات</span>
+    </a>
+
+    <div class="sb-group-label" style="margin-top:8px">الإنتاج</div>
+    <a class="sb-item" data-page="growth" data-tip="النمو" data-src="census_v3.html" onclick="navigate('module',this)">
+      <span class="sb-item-icon">🌿</span>
+      <span class="sb-item-text">النمو والـ Census</span>
+    </a>
+    <a class="sb-item" data-page="harvest" data-tip="الحصاد" data-src="census_v3.html#harvest" onclick="navigate('module',this)">
+      <span class="sb-item-icon">🫐</span>
+      <span class="sb-item-text">الحصاد والجودة</span>
+    </a>
+
+    <div class="sb-group-label" style="margin-top:8px">البيئة</div>
+    <a class="sb-item" data-page="climate" data-tip="المناخ" data-src="climate_monitor_v2.html" onclick="navigate('module',this)">
+      <span class="sb-item-icon">🌡</span>
+      <span class="sb-item-text">المناخ والتحكم</span>
+    </a>
+    <a class="sb-item" data-page="irrigation" data-tip="الري" data-src="irrigation_log.html" onclick="navigate('module',this)">
+      <span class="sb-item-icon">💧</span>
+      <span class="sb-item-text">الري والتسميد</span>
+    </a>
+    <a class="sb-item" data-page="ipm" data-tip="IPM" data-src="ipm_monitor_v2.html" onclick="navigate('module',this)">
+      <span class="sb-item-icon">🔬</span>
+      <span class="sb-item-text">المكافحة المتكاملة</span>
+      <span class="sb-item-badge">IPM</span>
+    </a>
+
+    <div class="sb-group-label" style="margin-top:8px">البيانات</div>
+    <a class="sb-item" data-page="history" data-tip="السجل" onclick="navigate('history',this)">
+      <span class="sb-item-icon">🗂</span>
+      <span class="sb-item-text">السجل التاريخي</span>
+    </a>
+  </div>
+
+  <div class="sb-footer">
+    <div class="live-status">
+      <div class="live-dot"></div>
+      <span id="sb-time" style="font-size:11px">--:--</span>
+    </div>
+    <div style="margin-top:10px;border-top:1px solid rgba(255,255,255,.06);padding-top:8px">
+      <div style="font-size:9px;color:rgba(240,237,230,.2);font-family:var(--mono);line-height:1.6;overflow:hidden">
+        <span class="sidebar-credit" style="white-space:nowrap">م. إسلام صلاح</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<div class="main">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="tb-title">عرض المزارع</div>
+      <div class="topbar-breadcrumb" id="tb-crumb">BLUEBERRY FIELD OPS</div>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-time" id="clock">--:--:--</span>
+      <span id="daynight-indicator" class="badge b-ok">☀ نهار</span>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+
+    <!-- ══ PAGE: DASHBOARD ══ -->
+    <div class="page on" id="page-dashboard">
+      <div class="dashboard-scroll">
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="hero-main">
+            <div class="hero-bg"></div>
+            <div class="hero-overlay">
+              <div class="hero-tag">🫐 Blueberry Field Operations</div>
+              <div class="hero-headline">
+                <em>3</em> مزارع<br>
+                <em>7</em> صوب
+              </div>
+              <div class="hero-stats-row" id="hero-stats"></div>
+            </div>
+          </div>
+          <div class="hero-side">
+            <div class="alert-panel" id="global-alerts">
+              <div class="ap-title">تنبيهات فعّالة</div>
+              <div id="alerts-list"></div>
+            </div>
+            <div class="kpi-strip-mini" id="kpi-mini"></div>
+          </div>
+        </div>
+
+        <!-- Farm cards -->
+        <div class="section-title">المزارع — <em>نظرة عامة</em></div>
+        <div class="farms-grid" id="farms-grid"></div>
+
+        <!-- Mini charts strip -->
+        <div class="section-title" style="font-size:22px">بيانات المزارع — <em>آخر 7 أيام</em></div>
+        <div class="charts-strip">
+          <div class="strip-chart">
+            <div class="sc-title">متوسط الحرارة</div>
+            <div class="sc-sub">نهاراً — كل مزرعة</div>
+            <div style="height:140px"><canvas id="ch-temp"></canvas></div>
+          </div>
+          <div class="strip-chart">
+            <div class="sc-title">إجمالي الحصاد (kg)</div>
+            <div class="sc-sub">تراكمي — هذا الموسم</div>
+            <div style="height:140px"><canvas id="ch-harvest"></canvas></div>
+          </div>
+          <div class="strip-chart">
+            <div class="sc-title">تنبيهات IPM</div>
+            <div class="sc-sub">عدد الآفات المرصودة</div>
+            <div style="height:140px"><canvas id="ch-ipm"></canvas></div>
+          </div>
+          <div class="strip-chart">
+            <div class="sc-title">مستوى الري</div>
+            <div class="sc-sub">متوسط وسط النمو %</div>
+            <div style="height:140px"><canvas id="ch-irrig"></canvas></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══ PAGE: REGISTRATION ══ -->
+    <div class="page" id="page-registration">
+      <div class="dashboard-scroll">
+        <div class="section-title" style="margin-bottom:18px">تسجيل بيانات المزارع — <em>إدارة الموارد</em></div>
+        <div class="reg-layout">
+
+          <!-- Sidebar: Farm selector -->
+          <div class="reg-sidebar">
+            <div class="reg-sb-hdr">
+              <div class="reg-sb-title">المزارع المسجلة</div>
+            </div>
+            <div class="reg-sb-list" id="reg-farm-list"></div>
+            <div class="reg-add-farm" onclick="addFarmPrompt()">
+              <span style="font-size:16px">+</span> إضافة مزرعة جديدة
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="reg-content" id="reg-content"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MODULE PAGES (iframe) ══ -->
+    <div class="page" id="page-module" style="background:var(--ink)">
+      <iframe class="module-frame" id="module-frame" src="" title="وحدة"></iframe>
+    </div>
+
+    <!-- ══ HISTORY PAGE ══ -->
+    <div class="page" id="page-history">
+      <div class="dashboard-scroll">
+        <div class="section-title" style="margin-bottom:4px">السجل التاريخي — <em>كل البيانات</em></div>
+        <p style="font-size:12px;color:var(--ink5);font-family:var(--mono);margin-bottom:18px">ابحث عبر كل الأحداث: ري · مناخ · حصاد · آفات · census · تدخلات</p>
+
+        <!-- Search + filter bar -->
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--cream3);border-radius:10px;padding:12px 16px;margin-bottom:16px">
+          <input id="hist-search" type="text" placeholder="🔍 ابحث بالغرفة أو النوع أو التاريخ..." oninput="filterHistory()"
+            style="flex:1;min-width:200px;background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none">
+          <select id="hist-cat" onchange="filterHistory()"
+            style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none;cursor:pointer">
+            <option value="all">كل الأنواع</option>
+            <option value="irrig">💧 ري</option>
+            <option value="climate">🌡 مناخ</option>
+            <option value="census">🌿 Census</option>
+            <option value="harvest">🫐 حصاد</option>
+            <option value="ipm">🔬 IPM</option>
+            <option value="quality">⭐ جودة</option>
+          </select>
+          <select id="hist-room" onchange="filterHistory()"
+            style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 12px;font-family:var(--mono);font-size:12px;outline:none;cursor:pointer">
+            <option value="all">كل الغرف</option>
+            <option value="BB-01">BB-01</option><option value="BB-02">BB-02</option>
+            <option value="BB-03">BB-03</option><option value="BB-04">BB-04</option>
+            <option value="BB-05">BB-05</option><option value="BB-06">BB-06</option>
+            <option value="BB-07">BB-07</option>
+          </select>
+          <input id="hist-from" type="date" onchange="filterHistory()"
+            style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;outline:none;color-scheme:light">
+          <span style="font-size:11px;color:var(--ink5)">—</span>
+          <input id="hist-to" type="date" onchange="filterHistory()"
+            style="background:var(--cream);border:1.5px solid var(--cream3);color:var(--ink);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:12px;outline:none;color-scheme:light">
+          <span id="hist-count" style="font-size:11px;color:var(--ink5);font-family:var(--mono);margin-right:auto"></span>
+        </div>
+
+        <!-- Timeline -->
+        <div id="hist-timeline" style="display:flex;flex-direction:column;gap:6px;padding-bottom:30px"></div>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════════
+const FARMS_DATA = [
+  {
+    id:"F-01", name:"مزرعة الواحة", location:"الإسكندرية",
+    color:"#4A6FA5", founded:"2019",
+    area:1520, img:"https://images.unsplash.com/photo-1464965224031-90a7da0e0f31?auto=format&fit=crop&w=800&q=80",
+    rooms:[
+      {id:"BB-01",variety:"بيانكا",  area:600, dim:"30×20م",  plants:1200, age:4, setup:"كوكوبيت", samples:5, workers:["محمد أحمد","علي حسن"],    stage:"fullBloom",  waterPct:92, pestOk:true,  disOk:true,  tempIn:22.4},
+      {id:"BB-02",variety:"اوني",    area:420, dim:"21×20م",  plants:800,  age:4, setup:"كوكوبيت", samples:5, workers:["علي حسن"],              stage:"greenFruit", waterPct:78, pestOk:false, disOk:true,  tempIn:24.1},
+      {id:"BB-03",variety:"مِسي",    area:500, dim:"25×20م",  plants:950,  age:3, setup:"كوكوبيت", samples:5, workers:["كريم سعد"],             stage:"coloring",   waterPct:41, pestOk:true,  disOk:false, tempIn:26.8},
+    ],
+    totalHarvest:287, alerts:[{t:"بق دقيقي BB-02",c:"#e85a7a"},{t:"ري متأخر BB-03",c:"#f0a04a"}]
+  },
+  {
+    id:"F-02", name:"مزرعة الشمس", location:"المنوفية",
+    color:"#C08940", founded:"2021",
+    area:960, img:"https://images.unsplash.com/photo-1498557850523-fd3d118b962e?auto=format&fit=crop&w=800&q=80",
+    rooms:[
+      {id:"BB-04",variety:"بيانكا",  area:580, dim:"29×20م",  plants:1100, age:3, setup:"بيت لحمي",  samples:5, workers:["أحمد فاروق"],           stage:"petalFall",  waterPct:100,pestOk:true,  disOk:true,  tempIn:21.0},
+      {id:"BB-05",variety:"دوك",     area:380, dim:"19×20م",  plants:700,  age:3, setup:"بيت لحمي",  samples:5, workers:["سامي طه"],              stage:"earlyBloom", waterPct:70, pestOk:false, disOk:true,  tempIn:23.5},
+    ],
+    totalHarvest:142, alerts:[{t:"حشرة الدبور BB-05",c:"#e85a7a"}]
+  },
+  {
+    id:"F-03", name:"مزرعة النيل", location:"الفيوم",
+    color:"#2D7A4A", founded:"2022",
+    area:1070, img:"https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?auto=format&fit=crop&w=800&q=80",
+    rooms:[
+      {id:"BB-06",variety:"بلوكروب",area:750, dim:"37.5×20م",plants:1500, age:2, setup:"بيت بلاستيك",samples:5, workers:["مصطفى علي","عمر خالد"], stage:"harvest25",  waterPct:96, pestOk:true,  disOk:true,  tempIn:20.8},
+      {id:"BB-07",variety:"مِسي",   area:320, dim:"16×20م",  plants:600,  age:2, setup:"بيت بلاستيك",samples:5, workers:["عمر خالد"],            stage:"greenFruit", waterPct:24, pestOk:true,  disOk:false, tempIn:28.2},
+    ],
+    totalHarvest:198, alerts:[{t:"ري متأخر BB-07",c:"#f0a04a"},{t:"عفن رمادي BB-07",c:"#e85a7a"}]
+  }
+];
+
+const STAGE_LABELS = {fullBloom:"إزهار كامل",greenFruit:"ثمر أخضر",coloring:"تلوين",petalFall:"تساقط البتلات",earlyBloom:"بداية الإزهار",harvest25:"حصاد أول",harvest75:"حصاد رئيسي"};
+const STAGE_COLORS = {fullBloom:"#38bdf8",greenFruit:"#a3e635",coloring:"#818cf8",petalFall:"#86efac",earlyBloom:"#60a5fa",harvest25:"#6366f1",harvest75:"#7c5cfc"};
+
+let sidebarCollapsed = false;
+let currentRegFarm   = "F-01";
+let chartInst        = {};
+
+// ═══════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════
+function tick(){
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const ss=String(now.getSeconds()).padStart(2,'0');
+  const el=document.getElementById('clock'); if(el) el.textContent=`${hh}:${mm}:${ss}`;
+  const sbt=document.getElementById('sb-time'); if(sbt) sbt.textContent=`${hh}:${mm}`;
+  const isNight=now.getHours()<6||now.getHours()>=18;
+  const dn=document.getElementById('daynight-indicator');
+  if(dn){ dn.textContent=isNight?'🌙 ليل':'☀ نهار'; dn.className='badge '+(isNight?'b-info':'b-ok'); }
+}
+setInterval(tick,1000); tick();
+
+// ═══════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════
+const PAGE_TITLES = {
+  dashboard:    {title:"عرض المزارع",          crumb:"BLUEBERRY FIELD OPS"},
+  registration: {title:"تسجيل البيانات",       crumb:"FARM MANAGEMENT"},
+  history:      {title:"السجل التاريخي",        crumb:"DATA HISTORY"},
+  module:       {title:"",                      crumb:""},
+};
+
+// ═══════════════════════════════════════════
+//  HISTORY DATA
+// ═══════════════════════════════════════════
+function daysAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; }
+function rh(a,b){ return +(Math.random()*(b-a)+a).toFixed(2); }
+
+const HISTORY_EVENTS = [
+  // ── Irrigation ──
+  ...["BB-01","BB-02","BB-03","BB-04","BB-05","BB-06","BB-07"].flatMap(room=>[0,1,2,3,4,5,6].map(d=>({
+    id:`irrig-${room}-${d}`, cat:"irrig", room, date:daysAgo(d),
+    title:`ري ${room} — ${4+Math.floor(Math.random()*3)} دورات`,
+    detail:`VOL IN: ${Math.round(160+Math.random()*60)} mL/plant · EC IN: ${rh(1.8,2.4)} mS · pH IN: ${rh(5.5,6.2)} · Drain: ${Math.round(20+Math.random()*10)}%`,
+    icon:"💧", color:"#1a6fff"
+  }))),
+  // ── Climate alerts ──
+  {id:"cl-1",cat:"climate",room:"BB-01",date:daysAgo(0),title:"تنبيه حرارة مرتفعة — BB-01",detail:"31.2°C الساعة 13:00 · تم تشغيل ألواح التبريد 80% · النتيجة: انخفاض 2.4°C",icon:"🌡",color:"#ffb300"},
+  {id:"cl-2",cat:"climate",room:"BB-03",date:daysAgo(1),title:"رطوبة مرتفعة — BB-03",detail:"82% RH الساعة 11:30 · تم تشغيل مراوح التقليب 100% · النتيجة: ▼7% RH",icon:"💧",color:"#40c4ff"},
+  {id:"cl-3",cat:"climate",room:"BB-07",date:daysAgo(2),title:"VPD مرتفع — BB-07",detail:"1.68 kPa · تم تشغيل رشاشات الفوجر 30ث كل 5 دقائق · RH ارتفعت 9%",icon:"💨",color:"#00e676"},
+  {id:"cl-4",cat:"climate",room:"BB-05",date:daysAgo(3),title:"حرارة ليلية منخفضة — BB-05",detail:"11.2°C الساعة 03:00 · تم تشغيل التدفئة هدف 14°C · استقر على 13.8°C",icon:"🔥",color:"#ff6d00"},
+  {id:"cl-5",cat:"climate",room:"BB-02",date:daysAgo(1),title:"مراقبة يومية طبيعية — BB-02",detail:"متوسط نهاري 25.4°C · RH 64% · VPD 1.12 kPa · لا تدخلات",icon:"✅",color:"#00c853"},
+  // ── Census ──
+  {id:"cen-1",cat:"census",room:"BB-01",date:daysAgo(2),title:"Census إزهار كامل — BB-01",detail:"5 عينات · Flower Buds متوسط 85.8 · Fertility Rate 78.6% · Yield تقديري 120.3 kg",icon:"🌿",color:"#4A6FA5"},
+  {id:"cen-2",cat:"census",room:"BB-04",date:daysAgo(5),title:"Census ثمر أخضر — BB-04",detail:"5 عينات · Green Fruit متوسط 68.4 · Fruit Set 68.2% · Yield تقديري 112.4 kg",icon:"🌿",color:"#4A6FA5"},
+  {id:"cen-3",cat:"census",room:"BB-06",date:daysAgo(4),title:"Census قبل الحصاد — BB-06",detail:"5 عينات · Nodes per Cane: 18.2 · Laterals/Cane: 3.4 · Yield تقديري 198 kg",icon:"🌿",color:"#2D7A4A"},
+  // ── Harvest ──
+  {id:"har-1",cat:"harvest",room:"BB-06",date:daysAgo(0),title:"حصاد جولة #3 — BB-06",detail:"95 kg · 4 عمال · 6.5 ساعة · كفاءة 3.65 kg/عامل/ساعة · رفض 2.8%",icon:"🫐",color:"#C08940"},
+  {id:"har-2",cat:"harvest",room:"BB-06",date:daysAgo(4),title:"حصاد جولة #2 — BB-06",detail:"110 kg · 5 عمال · 7 ساعات · كفاءة 3.14 kg/عامل/ساعة · رفض 2.1%",icon:"🫐",color:"#C08940"},
+  {id:"har-3",cat:"harvest",room:"BB-06",date:daysAgo(8),title:"حصاد جولة #1 — BB-06",detail:"82 kg · 4 عمال · 6 ساعات · كفاءة 3.42 kg/عامل/ساعة · رفض 3.2%",icon:"🫐",color:"#C08940"},
+  // ── IPM ──
+  {id:"ipm-1",cat:"ipm",room:"BB-02",date:daysAgo(3),title:"رصد بق دقيقي — BB-02",detail:"8–12 بيضة/ورقة · فوق 80% من العتبة · تطبيق زيت صويا 2% مجدول",icon:"🔬",color:"#ff6b35"},
+  {id:"ipm-2",cat:"ipm",room:"BB-05",date:daysAgo(1),title:"رصد حشرة الدبور — BB-05",detail:"3 مصائد صفراء ملتقطة · تجديد المصائد · إطلاق Amblyseius cucumeris",icon:"🔬",color:"#ff6b35"},
+  {id:"ipm-3",cat:"ipm",room:"BB-07",date:daysAgo(2),title:"رصد عفن رمادي — BB-07",detail:"بؤرة إصابة واحدة على أزهار متأخرة · إزالة فورية · تحسين التهوية",icon:"🍄",color:"#b44fdb"},
+  {id:"ipm-4",cat:"ipm",room:"BB-01",date:daysAgo(0),title:"إطلاق Encarsia formosa — BB-01",detail:"50 بطاقة/صوبة · لمكافحة الذبابة البيضاء وقائياً · الإطلاق القادم بعد أسبوعين",icon:"🌿",color:"#00c853"},
+  // ── Quality ──
+  {id:"qua-1",cat:"quality",room:"BB-06",date:daysAgo(0),title:"قياس جودة A grade — BB-06",detail:"Brix 12.4° · وزن 1.82g · قطر 14.2mm · صلابة 1.8N · لون 4/5 · رفض 3.2%",icon:"⭐",color:"#A0394A"},
+  {id:"qua-2",cat:"quality",room:"BB-06",date:daysAgo(4),title:"قياس جودة A grade — BB-06",detail:"Brix 13.1° · وزن 1.91g · قطر 14.8mm · صلابة 1.9N · لون 5/5 · رفض 2.1%",icon:"⭐",color:"#A0394A"},
+];
+
+const CAT_LABELS = {irrig:"💧 ري",climate:"🌡 مناخ",census:"🌿 Census",harvest:"🫐 حصاد",ipm:"🔬 IPM",quality:"⭐ جودة"};
+let histFiltered = [...HISTORY_EVENTS];
+
+function filterHistory(){
+  const q=(document.getElementById('hist-search')?.value||'').toLowerCase();
+  const cat=document.getElementById('hist-cat')?.value||'all';
+  const room=document.getElementById('hist-room')?.value||'all';
+  const from=document.getElementById('hist-from')?.value||'';
+  const to=document.getElementById('hist-to')?.value||'';
+  histFiltered=HISTORY_EVENTS.filter(e=>{
+    if(cat!=='all'&&e.cat!==cat) return false;
+    if(room!=='all'&&e.room!==room) return false;
+    if(from&&e.date<from) return false;
+    if(to&&e.date>to) return false;
+    if(q&&!e.title.toLowerCase().includes(q)&&!e.detail.toLowerCase().includes(q)&&!e.room.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b)=>b.date.localeCompare(a.date));
+  renderHistoryTimeline();
+}
+
+function renderHistoryTimeline(){
+  const el=document.getElementById('hist-timeline'); if(!el) return;
+  document.getElementById('hist-count').textContent=histFiltered.length+' حدث';
+  if(!histFiltered.length){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--ink5);font-family:var(--mono);font-size:12px">لا توجد نتائج تطابق الفلتر</div>';
+    return;
+  }
+  // Group by date
+  const byDate={};
+  histFiltered.forEach(e=>{ if(!byDate[e.date]) byDate[e.date]=[]; byDate[e.date].push(e); });
+  el.innerHTML=Object.entries(byDate).map(([date,events])=>`
+    <div style="display:flex;gap:0;align-items:flex-start">
+      <!-- Date label -->
+      <div style="min-width:90px;text-align:left;padding-top:10px;flex-shrink:0">
+        <div style="font-family:var(--mono);font-size:11px;font-weight:600;color:var(--ink3)">${date.slice(5)}</div>
+        <div style="font-size:9px;color:var(--ink5);font-family:var(--mono)">${date}</div>
+      </div>
+      <!-- Timeline line -->
+      <div style="width:20px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding-top:12px">
+        <div style="width:10px;height:10px;border-radius:50%;background:var(--cream3);border:2px solid var(--cream4);flex-shrink:0"></div>
+        <div style="width:1px;flex:1;min-height:20px;background:var(--cream3);margin-top:4px"></div>
+      </div>
+      <!-- Events -->
+      <div style="flex:1;min-width:0;padding:6px 0 10px 0;display:flex;flex-direction:column;gap:5px">
+        ${events.map(e=>`
+          <div style="background:#fff;border:1px solid var(--cream3);border-radius:8px;padding:10px 14px;border-right:3px solid ${e.color};display:flex;align-items:flex-start;gap:10px;transition:box-shadow .15s;cursor:default"
+               onmouseover="this.style.boxShadow='0 2px 10px rgba(26,31,26,.08)'" onmouseout="this.style.boxShadow=''">
+            <span style="font-size:16px;flex-shrink:0;margin-top:1px">${e.icon}</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+                <span style="font-size:12px;font-weight:600;color:var(--ink)">${e.title}</span>
+                <span style="font-size:9px;font-family:var(--mono);border-radius:20px;padding:1px 8px;border:1px solid ${e.color}44;color:${e.color};background:${e.color}0f">${CAT_LABELS[e.cat]||e.cat}</span>
+                <span style="font-size:9px;font-family:var(--mono);color:var(--ink5);background:var(--cream);border-radius:4px;padding:1px 6px;border:1px solid var(--cream3)">${e.room}</span>
+              </div>
+              <div style="font-size:11px;color:var(--ink4);font-family:var(--mono);line-height:1.5">${e.detail}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+const MODULE_TITLES = {
+  "census_v3.html":         {title:"النمو والـ Census",    crumb:"GROWTH · HARVEST · QUALITY"},
+  "climate_monitor_v2.html":{title:"المناخ والتحكم",       crumb:"CLIMATE CONTROL"},
+  "irrigation_log.html":    {title:"الري والتسميد",        crumb:"FERTIGATION LOG"},
+  "ipm_monitor_v2.html":    {title:"المكافحة المتكاملة",   crumb:"IPM MONITOR"},
+};
+
+function navigate(type, el){
+  // Remove active from all
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+
+  if(type==='dashboard'||type==='registration'||type==='history'){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    document.getElementById('page-'+type).classList.add('on');
+    const info = PAGE_TITLES[type];
+    document.getElementById('tb-title').textContent = info.title;
+    document.getElementById('tb-crumb').textContent = info.crumb;
+    if(type==='registration') renderRegistration();
+    if(type==='history'){ filterHistory(); renderHistoryTimeline(); }
+  } else {
+    // module
+    const src = el.getAttribute('data-src');
+    const frame = document.getElementById('module-frame');
+    frame.src = src;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    document.getElementById('page-module').classList.add('on');
+    const info = MODULE_TITLES[src] || {title:el.querySelector('.sb-item-text')?.textContent||'', crumb:'MODULE'};
+    document.getElementById('tb-title').textContent = info.title;
+    document.getElementById('tb-crumb').textContent = info.crumb;
+  }
+}
+
+function toggleSidebar(){
+  sidebarCollapsed = !sidebarCollapsed;
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('sb-collapse-btn');
+  sb.classList.toggle('collapsed', sidebarCollapsed);
+  btn.textContent = sidebarCollapsed ? '▶' : '◀';
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
+function renderDashboard(){
+  const totalRooms   = FARMS_DATA.reduce((a,f)=>a+f.rooms.length,0);
+  const totalPlants  = FARMS_DATA.reduce((a,f)=>a+f.rooms.reduce((b,r)=>b+r.plants,0),0);
+  const totalHarvest = FARMS_DATA.reduce((a,f)=>a+f.totalHarvest,0);
+  const alertCount   = FARMS_DATA.reduce((a,f)=>a+f.alerts.length,0);
+
+  // Hero stats
+  document.getElementById('hero-stats').innerHTML=[
+    {v:totalPlants.toLocaleString(), l:"نبتة"},
+    {v:totalRooms, l:"صوبة"},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.area,0).toLocaleString()+" م²", l:"مساحة"},
+    {v:totalHarvest+" kg", l:"محصول الموسم"},
+  ].map(s=>`<div class="hero-stat"><div class="hs-num">${s.v}</div><div class="hs-lbl">${s.l}</div></div>`).join('');
+
+  // Global alerts
+  const allAlerts = FARMS_DATA.flatMap(f=>f.alerts);
+  document.getElementById('alerts-list').innerHTML = allAlerts.slice(0,6).map(a=>`
+    <div class="alert-item">
+      <div class="ai-dot" style="background:${a.c}"></div>
+      <span>${a.t}</span>
+    </div>`).join('') || '<div style="color:rgba(240,237,230,.4);font-size:11px;font-family:var(--mono)">✓ لا توجد تنبيهات</div>';
+
+  // KPI mini
+  document.getElementById('kpi-mini').innerHTML=[
+    {v:alertCount, l:"تنبيهات",   c:alertCount>0?"var(--rose-l)":undefined},
+    {v:FARMS_DATA.length, l:"مزارع", c:undefined},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>!r.waterOk&&r.waterPct<50).length,0), l:"ري متأخر", c:undefined},
+    {v:FARMS_DATA.reduce((a,f)=>a+f.rooms.filter(r=>r.pestOk&&r.disOk).length,0), l:"صوب سليمة", c:"#5abf7e"},
+  ].map(k=>`<div class="kpi-mini"><div class="km-num" ${k.c?`style="color:${k.c}"`:''}>${k.v}</div><div class="km-lbl">${k.l}</div></div>`).join('');
+
+  // Farm cards
+  document.getElementById('farms-grid').innerHTML = FARMS_DATA.map(f=>{
+    const totalF=f.rooms.reduce((a,r)=>a+r.plants,0);
+    const alertsOk=f.alerts.length===0;
+    const roomPills=f.rooms.map(r=>`
+      <span class="fc-room-pill"
+        style="color:${STAGE_COLORS[r.stage]||'#888'};border-color:${STAGE_COLORS[r.stage]||'#888'}33;background:${STAGE_COLORS[r.stage]||'#888'}0f"
+        onclick="event.stopPropagation();openRoomDetail('${r.id}')">
+        ${r.id}
+      </span>`).join('');
+    const alertChips=f.alerts.map(a=>`
+      <div class="fc-alert-chip" style="color:${a.c};border-color:${a.c}44;background:${a.c}10">
+        <span>⚠</span><span>${a.t}</span>
+      </div>`).join('');
+    return `
+    <div class="farm-card" onclick="navigate('module',document.querySelector('[data-src=\\'climate_monitor_v2.html\\']'))">
+      <div class="fc-image">
+        <img src="${f.img}" alt="${f.name}" loading="lazy">
+        <div class="fc-image-overlay"></div>
+        <span class="fc-badge">${f.location}</span>
+        <span class="fc-farm-name">${f.name}</span>
+      </div>
+      <div class="fc-body">
+        <div class="fc-location">📍 ${f.location} · منذ ${f.founded}</div>
+        <div class="fc-stats">
+          <div class="fc-stat"><div class="fcs-num" style="color:${f.color}">${f.rooms.length}</div><div class="fcs-lbl">صوب</div></div>
+          <div class="fc-stat"><div class="fcs-num">${totalF.toLocaleString()}</div><div class="fcs-lbl">نبتة</div></div>
+          <div class="fc-stat"><div class="fcs-num">${f.area.toLocaleString()}</div><div class="fcs-lbl">م²</div></div>
+        </div>
+        <div class="fc-rooms" style="margin-bottom:10px">${roomPills}</div>
+        <div class="fc-alerts">
+          ${alertsOk?'<span class="badge b-ok">✓ جميع الصوب سليمة</span>':alertChips}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderDashboardCharts();
+}
+
+function renderDashboardCharts(){
+  const labels = ["28/4","29/4","30/4","1/5","2/5","3/5","4/5"];
+  const cd = id=>{ if(chartInst[id]){chartInst[id].destroy();delete chartInst[id];} };
+
+  // Temp
+  cd('ch-temp');
+  const tc=document.getElementById('ch-temp')?.getContext('2d'); if(!tc) return;
+  chartInst['ch-temp']=new Chart(tc,{type:'line',
+    data:{labels,datasets:FARMS_DATA.map((f,i)=>({
+      label:f.name.replace('مزرعة ',''),
+      data:[27+i,29+i,27+i,31+i,28+i,28+i,30+i].map(v=>+(v+(Math.random()-.5)).toFixed(1)),
+      borderColor:f.color,backgroundColor:f.color+'20',borderWidth:2,pointRadius:3,pointBackgroundColor:f.color,tension:.3,fill:false,
+    }))},
+    options:opts(v=>v+'°')
+  });
+
+  // Harvest
+  cd('ch-harvest');
+  const hc=document.getElementById('ch-harvest')?.getContext('2d'); if(!hc) return;
+  chartInst['ch-harvest']=new Chart(hc,{type:'bar',
+    data:{labels,datasets:FARMS_DATA.map((f,i)=>({
+      label:f.name.replace('مزرعة ',''),
+      data:[40+i*10,55+i*8,48+i*9,62+i*7,58+i*8,52+i*9,60+i*8].map(v=>Math.round(v+(Math.random()-.5)*5)),
+      backgroundColor:f.color+'77',borderColor:f.color,borderWidth:1,borderRadius:3,
+    }))},
+    options:opts(v=>v+'kg')
+  });
+
+  // IPM
+  cd('ch-ipm');
+  const ic=document.getElementById('ch-ipm')?.getContext('2d'); if(!ic) return;
+  chartInst['ch-ipm']=new Chart(ic,{type:'line',
+    data:{labels,datasets:FARMS_DATA.map((f,i)=>({
+      label:f.name.replace('مزرعة ',''),
+      data:Array.from({length:7},()=>Math.floor(Math.random()*f.alerts.length*3+1)),
+      borderColor:f.color,backgroundColor:'transparent',borderWidth:1.5,pointRadius:3,pointBackgroundColor:f.color,tension:.3,
+    }))},
+    options:opts()
+  });
+
+  // Irrigation
+  cd('ch-irrig');
+  const irrc=document.getElementById('ch-irrig')?.getContext('2d'); if(!irrc) return;
+  chartInst['ch-irrig']=new Chart(irrc,{type:'line',
+    data:{labels,datasets:FARMS_DATA.map((f,i)=>({
+      label:f.name.replace('مزرعة ',''),
+      data:Array.from({length:7},()=>Math.round(55+i*8+(Math.random()-.3)*12)),
+      borderColor:f.color,backgroundColor:f.color+'15',borderWidth:2,pointRadius:2,tension:.4,fill:true,
+    }))},
+    options:opts(v=>v+'%')
+  });
+}
+
+function opts(callback){
+  return {
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{labels:{color:"var(--ink4)",font:{family:"Fira Code",size:9},boxWidth:9}}},
+    scales:{
+      x:{ticks:{color:"var(--ink5)",font:{size:9}},grid:{color:"rgba(26,31,26,.06)"},border:{display:false}},
+      y:{ticks:{color:"var(--ink5)",font:{size:9},callback},grid:{color:"rgba(26,31,26,.06)"},border:{display:false},min:0},
+    }
+  };
+}
+
+// ═══════════════════════════════════════════
+//  REGISTRATION TAB
+// ═══════════════════════════════════════════
+function renderRegistration(){
+  // Farm list sidebar
+  document.getElementById('reg-farm-list').innerHTML = FARMS_DATA.map(f=>`
+    <div class="reg-farm-btn${f.id===currentRegFarm?' on':''}" onclick="selectRegFarm('${f.id}')">
+      <div class="rfb-dot" style="background:${f.color}"></div>
+      <div>
+        <div class="rfb-name">${f.name}</div>
+        <div class="rfb-rooms">${f.rooms.length} صوب · ${f.area.toLocaleString()} م²</div>
+      </div>
+    </div>`).join('');
+
+  renderRegContent();
+}
+
+function selectRegFarm(id){
+  currentRegFarm = id;
+  renderRegistration();
+}
+
+function renderRegContent(){
+  const f = FARMS_DATA.find(x=>x.id===currentRegFarm);
+  const allWorkers = [...new Set(f.rooms.flatMap(r=>r.workers))];
+  const totalPlants = f.rooms.reduce((a,r)=>a+r.plants,0);
+
+  document.getElementById('reg-content').innerHTML=`
+
+    <!-- Farm Info -->
+    <div class="reg-card">
+      <div class="reg-card-hdr">
+        <div style="width:10px;height:10px;border-radius:50%;background:${f.color}"></div>
+        <div class="reg-card-title">بيانات المزرعة — ${f.name}</div>
+        <span class="badge b-info" style="margin-right:auto">ID: ${f.id}</span>
+      </div>
+      <div class="reg-card-body">
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label">اسم المزرعة</label>
+            <input class="form-input" value="${f.name}" id="fi-name">
+          </div>
+          <div class="form-field">
+            <label class="form-label">الموقع / المحافظة</label>
+            <input class="form-input" value="${f.location}" id="fi-loc">
+          </div>
+          <div class="form-field">
+            <label class="form-label">سنة التأسيس</label>
+            <input class="form-input" value="${f.founded}" id="fi-year">
+          </div>
+          <div class="form-field">
+            <label class="form-label">المساحة الإجمالية (م²)</label>
+            <input class="form-input" type="number" value="${f.area}" id="fi-area">
+          </div>
+          <div class="form-field">
+            <label class="form-label">عدد الغرف / الصوب</label>
+            <input class="form-input" type="number" value="${f.rooms.length}" readonly style="opacity:.6">
+          </div>
+          <div class="form-field">
+            <label class="form-label">إجمالي النباتات</label>
+            <input class="form-input" type="number" value="${totalPlants}" readonly style="opacity:.6">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workers -->
+    <div class="reg-card">
+      <div class="reg-card-hdr">
+        <div class="reg-card-title">العمال المسجلون</div>
+        <span class="badge b-ok">${allWorkers.length} عامل</span>
+        <button class="btn-outline-sm" style="margin-right:auto" onclick="addWorkerPrompt()">+ إضافة عامل</button>
+      </div>
+      <div class="reg-card-body">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${allWorkers.map(w=>`
+            <div style="background:var(--cream);border:1px solid var(--cream3);border-radius:20px;padding:5px 14px;font-size:12px;display:flex;align-items:center;gap:7px">
+              <span>👤</span><span style="font-weight:500">${w}</span>
+              <span style="font-family:var(--mono);font-size:9px;color:var(--ink5)">${f.rooms.filter(r=>r.workers.includes(w)).map(r=>r.id).join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Rooms table -->
+    <div class="reg-card">
+      <div class="reg-card-hdr">
+        <div class="reg-card-title">الغرف والصوب</div>
+        <span class="badge b-ok">${f.rooms.length} صوبة</span>
+        <button class="btn-outline-sm" style="margin-right:auto" onclick="addRoomPrompt()">+ إضافة غرفة</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="room-reg-tbl">
+          <thead>
+            <tr>
+              <th>رقم الغرفة</th>
+              <th>الصنف</th>
+              <th>المساحة (م²)</th>
+              <th>الأبعاد</th>
+              <th>عدد النباتات</th>
+              <th>عمر النباتات</th>
+              <th>التجهيز</th>
+              <th>عدد عينات Census</th>
+              <th>العمال</th>
+              <th>المرحلة الحالية</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${f.rooms.map(r=>{
+              const stageColor = STAGE_COLORS[r.stage]||'#888';
+              return `<tr>
+                <td class="td-mono" style="color:${f.color}">${r.id}</td>
+                <td style="font-weight:600">${r.variety}</td>
+                <td class="td-mono">${r.area}</td>
+                <td class="td-mono" style="color:var(--ink4)">${r.dim}</td>
+                <td class="td-mono">${r.plants.toLocaleString()}</td>
+                <td class="td-mono">${r.age} سنة</td>
+                <td style="font-size:11px">${r.setup}</td>
+                <td class="td-mono" style="color:var(--berry2)">${r.samples} عينة</td>
+                <td>${r.workers.map(w=>`<span class="worker-pill">👤 ${w}</span>`).join('')}</td>
+                <td><span style="background:${stageColor}18;border:1px solid ${stageColor}44;color:${stageColor};border-radius:20px;padding:2px 9px;font-size:10px;font-family:var(--mono);font-weight:600">${STAGE_LABELS[r.stage]||r.stage}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding-bottom:20px">
+      <button class="btn-outline-sm" onclick="renderRegContent()">↺ إعادة ضبط</button>
+      <button class="btn-save" onclick="saveReg()">💾 حفظ التغييرات</button>
+    </div>
+  `;
+}
+
+function addFarmPrompt(){
+  const name=prompt("اسم المزرعة الجديدة:");
+  if(!name) return;
+  const loc=prompt("الموقع/المحافظة:");
+  FARMS_DATA.push({id:`F-0${FARMS_DATA.length+1}`,name,location:loc||"—",color:"#6B8FBF",founded:new Date().getFullYear().toString(),area:0,img:"https://images.unsplash.com/photo-1520412099551-62b6bafeb5bb?auto=format&fit=crop&w=800&q=80",rooms:[],totalHarvest:0,alerts:[]});
+  currentRegFarm=FARMS_DATA[FARMS_DATA.length-1].id;
+  renderRegistration();
+}
+
+function addWorkerPrompt(){
+  const name=prompt("اسم العامل:");
+  const room=prompt("رقم الغرفة:");
+  if(!name) return;
+  const f=FARMS_DATA.find(x=>x.id===currentRegFarm);
+  const r=f.rooms.find(x=>x.id===room);
+  if(r&&!r.workers.includes(name)) r.workers.push(name);
+  renderRegContent();
+}
+
+function addRoomPrompt(){
+  const id=prompt("رقم الغرفة (مثال: BB-08):");
+  if(!id) return;
+  const variety=prompt("الصنف:");
+  const plants=parseInt(prompt("عدد النباتات:")||0);
+  const f=FARMS_DATA.find(x=>x.id===currentRegFarm);
+  f.rooms.push({id,variety:variety||"—",area:0,dim:"—",plants,age:0,setup:"كوكوبيت",samples:5,workers:[],stage:"budding",waterPct:0,pestOk:true,disOk:true,tempIn:22});
+  renderRegContent();
+}
+
+function saveReg(){
+  const f=FARMS_DATA.find(x=>x.id===currentRegFarm);
+  const n=document.getElementById('fi-name')?.value; if(n) f.name=n;
+  const l=document.getElementById('fi-loc')?.value;  if(l) f.location=l;
+  const y=document.getElementById('fi-year')?.value; if(y) f.founded=y;
+  const a=document.getElementById('fi-area')?.value; if(a) f.area=parseInt(a);
+  const btn=document.querySelector('.btn-save');
+  btn.textContent="✓ تم الحفظ"; btn.style.background="var(--leaf2)";
+  setTimeout(()=>{ btn.textContent="💾 حفظ التغييرات"; btn.style.background=""; },2200);
+  renderDashboard();
+}
+
+function openRoomDetail(id){
+  // Navigate to climate module for that room
+  const iframe=document.getElementById('module-frame');
+  iframe.src="climate_monitor_v2.html";
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-module').classList.add('on');
+  document.getElementById('tb-title').textContent="المناخ والتحكم";
+  document.getElementById('tb-crumb').textContent="CLIMATE CONTROL — "+id;
+}
+
+// ═══════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════
+renderDashboard();
+</script>
+</body>
+</html>
